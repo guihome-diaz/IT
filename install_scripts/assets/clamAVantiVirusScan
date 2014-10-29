@@ -1,0 +1,6 @@
+#!/bin/sh
+# cron script to check for virus everyday.
+#
+# Note: I exclude the /sys folder because of specific errors on my OVH distribution.
+#
+30 02 * * * clamscan -r -i --exclude-dir=^/sys /

@@ -1,0 +1,20 @@
+##
+## Ubuntu repositories
+## Ubuntu 14.04 LTS => trusty
+##
+## Last change: september 2014, Guillaume Diaz
+##
+ 
+## Ubuntu official repos
+deb http://se.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+deb http://se.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+ 
+## Backports. Community repos approved by Canonical
+deb http://se.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse
+ 
+## Canonical (Ubuntu) partners
+deb http://archive.canonical.com/ubuntu trusty partner
+ 
+## 3rd parties libraries
+#deb http://extras.ubuntu.com/ubuntu trusty main

@@ -1,0 +1,40 @@
+body {
+	background-color: #e6e6e6;
+	width: 100%;
+	background:url(./img/daxiongmao_logo_v2.png);
+	background-position: 28px 5px;
+	background-repeat: no-repeat;
+}
+
+h1 {
+	color: #88AA00;
+	margin: 20px 0 0 50px;
+}
+
+h3 {
+	color: #88AA00;
+	margin: 16px 0 0 50px;
+}
+
+
+a {
+	text-decoration: none;
+}
+
+td {
+	text-align: center;
+	vertical-align: middle;
+}
+
+.icon {
+	width: 200px;
+	height: 160px;
+	text-align: center;
+	background:url(./img/shadow.png);
+	background-position: 28px 5px;
+	background-repeat: no-repeat;
+}
+
+
+
+
