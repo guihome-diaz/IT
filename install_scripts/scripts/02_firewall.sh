@@ -31,8 +31,11 @@ function setupFirewall() {
 	FIREWALL_START_SCRIPT="/etc/firewall/firewall-start.sh"
 
 	#### Copy log file and restart rsyslog
+	touch /var/log/iptables.log
+	chmod 777 /var/log/iptables.log
 	cp firewall/10-iptables.conf /etc/rsyslog.d
 	service rsyslog restart
+	
 	#### Firewall to copy, link and start
 	cp -r firewall /etc
 	chmod -R 755 /etc/firewall/*.sh
