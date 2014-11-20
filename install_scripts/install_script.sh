@@ -50,6 +50,7 @@ source ./scripts/11_apache2_web_server.sh
 source ./scripts/20_samba.sh
 source ./scripts/30_antivirus.sh
 source ./scripts/31_rabbitmq.sh
+source ./scripts/33_logstash.sh
 
 
 # Enable log file writing as /dev/fd/3
@@ -102,6 +103,7 @@ dialog --backtitle "VEHCO" \
         "Database"     "MySQL database" off \
         "Web-server"   "Apache2 web server" off \
         "File-share"   "Samba file-share" off \
+        "Logstash"     "Logstash data export" off \
         "AntiVirus"    "ClamAV antiVirus + daily scan" off \
         "RabbitMQ"    "RabbitMQ messaging server" off 2> $tempfile
 retval=$?
@@ -195,6 +197,15 @@ do
 			echo " " >> $logFile
 			;;
 
+		"Logstash")
+			setupLogstash $EXECUTION_PATH
+			echo " " >> $logFile
+			echo "##############" >> $logFile
+			echo "# Logstash #" >> $logFile
+			echo "##############" >> $logFile
+			echo "Adjust your configuration in /etc/logstash/conf.d/" >> $logFile
+			;;
+			
 		"AntiVirus")
 			setupAntivirus $EXECUTION_PATH
 			;;

@@ -389,8 +389,8 @@ function incomingPortFiltering {
 	#################
 	# SSH
 	echo -e " ... Opening SSH"	
-	$IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
-	$IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
+	$IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 --syn -j LOG --log-prefix "iptables - ssh: " -j ACCEPT 
+	$IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 --syn -j LOG --log-prefix "iptables - ssh: " -j ACCEPT
 
 	# Remote desktop 
 	#echo -e " ... Opening NoMachine"
@@ -455,6 +455,11 @@ function incomingPortFiltering {
 	#echo -e " ... Opening Zabbix"
 	#$IPTABLES -A INPUT -p tcp --dport 10051 -j ACCEPT	# Zabbix server
 
+	#echo -e " ... Opening ELK (ElasticSearch, Logstash, Kibana)"
+	#$IPTABLES -A INPUT -p tcp --dport 9200 -j ACCEPT	# HTTP
+	#$IPTABLES -A INPUT -p tcp --dport 9300 -j ACCEPT	# Transport
+	#$IPTABLES -A INPUT -p tcp --dport 54328 -j ACCEPT	# Multicasting
+	#$IPTABLES -A INPUT -p udp --dport 54328 -j ACCEPT	# Multicasting
 
 	#################
 	# Java
@@ -480,20 +485,6 @@ function incomingPortFiltering {
 	#echo -e " ... Opening RabbitMQ"
 	#$IPTABLES -A INPUT -p tcp --dport 15672 -j ACCEPT 	 # HTTP console
 	#$IPTABLES -A INPUT -p tcp --dport 5672 -j ACCEPT    # AMPQ protocol
-
-
-	#################
-	# VEHCO
-	#################
-	#echo -e " ... Opening VEHCO Codriver"
-	#$IPTABLES -A INPUT -p tcp --dport 7777 -j ACCEPT	# CoDriver vehicle <> Server protocol
-
-	#echo -e " ... Opening VEHCO ELO"
-	#$IPTABLES -A INPUT -p udp --dport 7789 -j ACCEPT	# ELO OBC tracking (legacy)
-	#$IPTABLES -A INPUT -p udp --dport 7792 -j ACCEPT	# ELO OBC tracking
-	#$IPTABLES -A INPUT -p udp --dport 7795 -j ACCEPT	# ELO RTD OBC authentication
-	#$IPTABLES -A INPUT -p udp --dport 7793 -j ACCEPT	# ELO RTD OBC dump
-	
 	   
 	## TODO enable IP @ filtering    	
 	# IP @ filtering example -> for dev.vehco.com
@@ -587,7 +578,7 @@ function outgoingPortFiltering {
 	##############
 	
 	echo -e " ... I.T ports"
-	echo -e "        LDAP, Printing, WhoIs, UPnP, Webmin, Zabbix ..."	
+	echo -e "        LDAP, Printing, WhoIs, UPnP, Webmin, Zabbix, ELK ..."	
 	# Domain
 	$IPTABLES -A OUTPUT -p tcp --dport 113 -j ACCEPT    # Kerberos
 	$IPTABLES -A OUTPUT -p tcp --dport 389 -j ACCEPT    # LDAP 
@@ -604,6 +595,12 @@ function outgoingPortFiltering {
 
 	# Zabbix
 	$IPTABLES -A OUTPUT -p tcp --dport 10051 -j ACCEPT
+
+	# ELK (ElasticSearch, Logstash, Kibana)
+	$IPTABLES -A OUTPUT -p tcp --dport 9200 -j ACCEPT   # HTTP
+	$IPTABLES -A OUTPUT -p tcp --dport 9300 -j ACCEPT   # Transport
+	$IPTABLES -A OUTPUT -p tcp --dport 54328 -j ACCEPT	# Multicasting
+	$IPTABLES -A OUTPUT -p udp --dport 54328 -j ACCEPT	# Multicasting
 
 	
 	##############
@@ -660,21 +657,6 @@ function outgoingPortFiltering {
 
 	# Software quality
 	$IPTABLES -A OUTPUT -p tcp --dport 9000 -j ACCEPT    # Sonar
-
-	
-	#################
-	# VEHCO
-	#################
-	$IPTABLES -A OUTPUT -p tcp --dport 8083 -j ACCEPT    # Jenkins VEHCO
-	$IPTABLES -A OUTPUT -p tcp --dport 9003 -j ACCEPT    # Sonar VEHCO
-
-	$IPTABLES -A OUTPUT -p tcp --dport 7777 -j ACCEPT	# CoD vehicle <> Server	
-
-	$IPTABLES -A OUTPUT -p udp --dport 7789 -j ACCEPT	# ELO OBC tracking (legacy)
-	$IPTABLES -A OUTPUT -p udp --dport 7792 -j ACCEPT	# ELO OBC tracking
-	$IPTABLES -A OUTPUT -p udp --dport 7795 -j ACCEPT	# ELO RTD OBC authentication
-	$IPTABLES -A OUTPUT -p udp --dport 7793 -j ACCEPT	# ELO RTD OBC dump
-	$IPTABLES -A OUTPUT -p tcp --dport 8841 -j ACCEPT	# ELO Tracking server <> Vehco Manager
 
 }
 
@@ -773,8 +755,18 @@ function forward {
 }
 
 
+function logDropped {
 
+	echo " "
+	echo " [!] Dropped packets will be logged"
+	echo " "
 
+	iptables -N LOGGING
+	iptables -A INPUT -j LOGGING
+	iptables -A OUTPUT -j LOGGING
+	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
+	iptables -A LOGGING -j DROP
+}
 
 # Note that the order in which rules are appended is very important. 
 # For example, if your first rule is to deny everything... then no matter what you specifically, it will be denied. 
@@ -815,6 +807,9 @@ fi
 #------------------
 #forward
 
+# Log dropped packets
+#---------------------
+logDropped
 
 echo " " 
 echo " firewall started !"

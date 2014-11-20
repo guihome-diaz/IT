@@ -1,0 +1,2 @@
+FAIL2BAN %{TIMESTAMP_ISO8601:timestamp} %{JAVACLASS:criteria}: %{LOGLEVEL:level} \[%{WORD:service}\] Ban %{IPV4:ban_ip}
+

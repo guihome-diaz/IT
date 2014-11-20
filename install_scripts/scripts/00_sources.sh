@@ -45,8 +45,10 @@ function setupSourcesList() {
 		apt-get install oracle-java7-installer oracle-jdk7-installer
 	fi
 
-
-
+	# Install key for ELK [ElasticSearch, Logstash, Kibana] repository
+	echo -e "\n\n $YELLOW Add key for ELK repository [ElasticSearch, Logstash, Kibana] $WHITE"
+	wget -qO - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | sudo apt-key add -
+	apt-get update > /dev/null
 	# Restrict to IPv4 only ?
 	dialog --title "Prefer IPv4 over IPv6?" \
 		   --yesno "Do you want to use IPv4 instead of IPv6 when possible (recommanded) ?" 7 60

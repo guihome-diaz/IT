@@ -1,0 +1,8 @@
+NETFILTERMAC %{COMMONMAC:dst_mac}:%{COMMONMAC:src_mac}:%{ETHTYPE:ethtype}
+ETHTYPE (?:(?:[A-Fa-f0-9]{2}):(?:[A-Fa-f0-9]{2}))
+
+# IPv6 + v4
+IPTABLES %{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME} .* IN=(%{WORD:in_device})? OUT=(%{WORD:out_device})? *(MAC=%{NETFILTERMAC})? SRC=%{IP:src_ip} DST=%{IP:dst_ip} *(LEN=%{INT:pkt_length})? *(TOS=%{BASE16NUM:pkt_tos})? *(PREC=%{BASE16NUM:pkt_prec})? *(TTL=%{INT:pkt_ttl})? ID=%{INT:pkt_id} .* *(PROTO=%{WORD:protocol}) SPT=%{INT:src_port} DPT=%{INT:dst_port} *(WINDOW=%{INT:pkt_window})? *(RES=%{BASE16NUM:pkt_res})? .* *(URGP=%{INT:pkt_urgp})?
+
+# IPv4 only
+IPTABLES_V4 %{SYSLOGTIMESTAMP:timestamp} %{HOSTNAME} .* IN=(%{WORD:in_device})? OUT=(%{WORD:out_device})? *(MAC=%{NETFILTERMAC})? SRC=%{IPV4:src_ip} DST=%{IPV4:dst_ip} *(LEN=%{INT:pkt_length})? *(TOS=%{BASE16NUM:pkt_tos})? *(PREC=%{BASE16NUM:pkt_prec})? *(TTL=%{INT:pkt_ttl})? ID=%{INT:pkt_id} .* *(PROTO=%{WORD:protocol}) SPT=%{INT:src_port} DPT=%{INT:dst_port} *(WINDOW=%{INT:pkt_window})? *(RES=%{BASE16NUM:pkt_res})? .* *(URGP=%{INT:pkt_urgp})?

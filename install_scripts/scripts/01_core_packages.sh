@@ -21,6 +21,8 @@ function setupCorePackages() {
 	echo -e "... this might take some time, please wait"
 	echo -e " "
 
+	echo -e "\n\n $YELLOW   >> Installing RsysLog $WHITE \n" 
+	apt-get install -y rsyslog
 	echo -e "\n\n $YELLOW   >> Installing Linux Editors $WHITE \n"
 	apt-get install -y vim vim-nox vim-scripts nano
 

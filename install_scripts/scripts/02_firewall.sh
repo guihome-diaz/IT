@@ -30,7 +30,9 @@ function setupFirewall() {
 	FIREWALL_SCRIPT="/etc/firewall/firewall.sh"
 	FIREWALL_START_SCRIPT="/etc/firewall/firewall-start.sh"
 
-
+	#### Copy log file and restart rsyslog
+	cp firewall/10-iptables.conf /etc/rsyslog.d
+	service rsyslog restart
 	#### Firewall to copy, link and start
 	cp -r firewall /etc
 	chmod -R 755 /etc/firewall/*.sh
@@ -58,9 +60,8 @@ function setupFirewall() {
 	        "SVN"          "Subversion server (3690)" off \
 	        "LDAP"         "LDAP server (389, 636)" off \
 	        "Zabbix"       "Zabbix monitoring server (10051)" off \
-	        "Webmin"       "Webmin administrative tool (10000, 20000)" off \
-	        "VEHCO_CoD"    "VEHCO CoDriver" off \
-	        "VEHCO_ELO"    "VEHCO ELO RTD server" off 2> $tempfile
+	        "ELK"          "ELK logs monitoring (9200, 9300, 54328)" off \
+	        "Webmin"       "Webmin administrative tool (10000, 20000)" off 2> $tempfile
 	retval=$?
 	choices=`cat $tempfile`
 	case $retval in
@@ -155,24 +156,19 @@ function setupFirewall() {
 				sed -i 's/#echo -e " ... Opening Zabbix/echo -e " ... Opening Zabbix/g' $FIREWALL_START_SCRIPT
 				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 10051 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 10051 -j ACCEPT/g' $FIREWALL_START_SCRIPT
 				;;
+			"ELK")
+				echo -e "\n\n $YELLOW >> Opening ELK (ElasticSearch, Logstash, Kibana) $WHITE"
+				sed -i 's/#echo -e " ... Opening ELK/echo -e " ... Opening ELK/g' $FIREWALL_START_SCRIPT
+				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 9200 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 9200 -j ACCEPT/g' $FIREWALL_START_SCRIPT
+				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 9300 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 9300 -j ACCEPT/g' $FIREWALL_START_SCRIPT
+				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 54328 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 54328 -j ACCEPT/g' $FIREWALL_START_SCRIPT
+				sed -i 's/#$IPTABLES -A INPUT -p udp --dport 54328 -j ACCEPT/$IPTABLES -A INPUT -p udp --dport 54328 -j ACCEPT/g' $FIREWALL_START_SCRIPT
+				;;
 	        "Webmin")
 				echo -e "\n\n $YELLOW >> Opening Webmin administrative tool (tcp 10000, 20000) $WHITE"
 				sed -i 's/#echo -e " ... Opening Webmin/echo -e " ... Opening Webmin/g' $FIREWALL_START_SCRIPT
 				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 10000 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 10000 -j ACCEPT/g' $FIREWALL_START_SCRIPT
 				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 20000 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 20000 -j ACCEPT/g' $FIREWALL_START_SCRIPT
-				;;
-			"VEHCO_CoD")
-				echo -e "\n\n $YELLOW >> Opening VEHCO CoDriver protocol (tcp 7777) $WHITE"
-				sed -i 's/#echo -e " ... Opening VEHCO Codriver/echo -e " ... Opening VEHCO Codriver/g' $FIREWALL_START_SCRIPT
-				sed -i 's/#$IPTABLES -A INPUT -p tcp --dport 7777 -j ACCEPT/$IPTABLES -A INPUT -p tcp --dport 7777 -j ACCEPT/g' $FIREWALL_START_SCRIPT
-				;;
-			"VEHCO_ELO")
-				echo -e "\n\n $YELLOW >> Opening VEHCO CoDriver protocol (tcp 7777) $WHITE"
-				sed -i 's/#echo -e " ... Opening VEHCO ELO/echo -e " ... Opening VEHCO ELO/g' $FIREWALL_START_SCRIPT
-				sed -i 's/#$IPTABLES -A INPUT -p udp --dport 7789 -j ACCEPT/$IPTABLES -A INPUT -p udp --dport 7789 -j ACCEPT/g' $FIREWALL_START_SCRIPT
-				sed -i 's/#$IPTABLES -A INPUT -p udp --dport 7792 -j ACCEPT/$IPTABLES -A INPUT -p udp --dport 7792 -j ACCEPT/g' $FIREWALL_START_SCRIPT
-				sed -i 's/#$IPTABLES -A INPUT -p udp --dport 7795 -j ACCEPT/$IPTABLES -A INPUT -p udp --dport 7795 -j ACCEPT/g' $FIREWALL_START_SCRIPT
-				sed -i 's/#$IPTABLES -A INPUT -p udp --dport 7793 -j ACCEPT/$IPTABLES -A INPUT -p udp --dport 7793 -j ACCEPT/g' $FIREWALL_START_SCRIPT
 				;;
 			*)
 				echo "Something else: $choice"
@@ -190,20 +186,22 @@ function setupFirewall() {
 			sed -i 's/#echo -e "              || --> OUTGOING    $RED accept all $BLACK/echo -e "              || --> OUTGOING    $RED accept all $BLACK/g' $FIREWALL_START_SCRIPT
 			sed -i 's/$IPTABLES -P OUTPUT DROP/$IPTABLES -P OUTPUT ACCEPT/g' $FIREWALL_START_SCRIPT
 			sed -i 's/$IP6TABLES -P OUTPUT DROP/$IP6TABLES -P OUTPUT ACCEPT/g' $FIREWALL_START_SCRIPT
+			# need to be done in 2 times to avoid commented function!
 			sed -i 's/outgoingPortFiltering/#outgoingPortFiltering/g' $FIREWALL_START_SCRIPT
 			sed -i 's/function #outgoingPortFiltering/function outgoingPortFiltering/g' $FIREWALL_START_SCRIPT			
+			# do not drop output packets
+			sed -i 's/iptables -A OUTPUT -j LOGGING/#iptables -A OUTPUT -j LOGGING/g' $FIREWALL_START_SCRIPT
+			echo -e "              || --> OUTGOING    $RED accept all $BLACK"
 			;;
 	   1)   # [no] button
 			echo -e "\n\n Skipping Output configuration. Default is output RESTRICTED" 
+			echo -e "              || --> OUTGOING    $GREEN reject all $BLACK"
 			;;
 	   255) 
 			echo -e "\n\n Skipping Output configuration. Default is output RESTRICTED" 
+			echo -e "              || --> OUTGOING    $GREEN reject all $BLACK"
 			;;
 	esac
-
-
-	echo -e "              || --> OUTGOING    $GREEN reject all $BLACK"
-	#echo -e "              || --> OUTGOING    $RED accept all $BLACK"
 
 
 	###### Should we enable full LAN access (not recommanded) - Ask the user
