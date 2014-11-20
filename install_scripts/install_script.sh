@@ -25,7 +25,7 @@ if [ ! -d "$EXECUTION_PATH/assets" ]; then
 	exit 1
 fi
 
-if [ ! -d "$EXECUTION_PATH/install_scripts" ]; then
+if [ ! -d "$EXECUTION_PATH/scripts" ]; then
 	echo -e "$RED_BOLD " 
 	echo -e "!!!!!!!!!!!!!!!!!!!!!!!" 
 	echo -e "!! Resources missing !!" 
