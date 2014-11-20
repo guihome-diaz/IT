@@ -24,10 +24,10 @@ function setupSourcesList() {
 	echo -e "#################################### $WHITE"
 	echo -e " " 
 	echo -e "\n\n $YELLOW Attempt to update /etc/apt/sources.list $WHITE" 
-	if [ ! -f /etc/apt/sources.list.vehcobackup ]; then
+	if [ ! -f /etc/apt/sources.list.backup ]; then
 	    echo -e "\n\n $YELLOW ... Updating repositories list $WHITE"
-	    cp /etc/apt/sources.list /etc/apt/sources.list.vehcobackup
-	    cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list
+	    cp /etc/apt/sources.list /etc/apt/sources.list.backup
+	    cp $ASSETS_PATH/apt/sources_ovh.list /etc/apt/sources.list
 	    apt-get update > /dev/null
 	else 
 		echo -e "\n\n $YELLOW ... Repositories list already seems to be up-to-date, nothing to do $WHITE" 

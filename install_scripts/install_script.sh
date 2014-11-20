@@ -91,9 +91,9 @@ DIALOG_ESC=255
 tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
 trap "rm -f $tempfile" 0 1 2 5 15
 
-dialog --backtitle "VEHCO" \
+dialog --backtitle "Install script" \
 	--title "Feature list" \
-    --checklist "Hi, what features do you want to install?" 20 75 5 \
+    --checklist "Hi, what features do you want to install?" 20 75 10 \
         "Sources"      "Ubuntu 14.04 LTS repositories" on \
         "CorePackages" "Linux core packages" on \
         "UIPackages"   "Ubuntu UI application and tools" off \
