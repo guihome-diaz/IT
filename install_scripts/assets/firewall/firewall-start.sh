@@ -36,6 +36,7 @@ IP6TABLES=`which ip6tables`
 # --------------------- #
 # network configuration
 INT_ETH=`ifconfig -a | sed -n 's/^\([^ ]\+\).*/\1/p' | grep -Fvx -e lo | grep -Fvx -e wlan0`
+#INT_ETH="eth0"
 IP_LAN_ETH_V4=`/sbin/ifconfig $INT_ETH | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
 IP_LAN_ETH_V6_LINK=`/sbin/ifconfig $INT_ETH | grep 'inet6 addr:' | grep 'Link' | awk '{print $3}'`
 IP_LAN_ETH_V6_GLOBAL=`/sbin/ifconfig $INT_ETH | grep 'inet6 addr:' | grep 'Global' | awk '{print $3}'`
@@ -49,6 +50,19 @@ INT_VPN=tun0
 VPN_PORT="8080"
 VPN_PROTOCOL="udp"
 
+
+function logDropped {
+
+	echo " "
+	echo " [!] Dropped packets will be logged"
+	echo " "
+
+	iptables -N LOGGING
+	iptables -A INPUT -j LOGGING
+	iptables -A OUTPUT -j LOGGING
+	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
+	iptables -A LOGGING -j DROP
+}
 
 # To enable networking modules in the current OS
 function enableModules {
@@ -389,8 +403,8 @@ function incomingPortFiltering {
 	#################
 	# SSH
 	echo -e " ... Opening SSH"	
-	$IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 --syn -j LOG --log-prefix "iptables - ssh: " -j ACCEPT 
-	$IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 --syn -j LOG --log-prefix "iptables - ssh: " -j ACCEPT
+	$IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT 
+	$IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
 
 	# Remote desktop 
 	#echo -e " ... Opening NoMachine"
@@ -755,18 +769,6 @@ function forward {
 }
 
 
-function logDropped {
-
-	echo " "
-	echo " [!] Dropped packets will be logged"
-	echo " "
-
-	iptables -N LOGGING
-	iptables -A INPUT -j LOGGING
-	iptables -A OUTPUT -j LOGGING
-	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
-	iptables -A LOGGING -j DROP
-}
 
 # Note that the order in which rules are appended is very important. 
 # For example, if your first rule is to deny everything... then no matter what you specifically, it will be denied. 
