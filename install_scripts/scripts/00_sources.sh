@@ -39,10 +39,10 @@ function setupSourcesList() {
 		echo -e "\n\n $YELLOW Installation of Java repository $WHITE"
 		add-apt-repository ppa:webupd8team/java
 		apt-get update > /dev/null
-		apt-get install oracle-java7-installer oracle-jdk7-installer
+		apt-get install oracle-java7-installer oracle-java8-installer oracle-java8-set-default oracle-jdk7-installer 
 		echo -e "\n\n $YELLOW  ... fixing dependencies $WHITE"
 		apt-get install -f 
-		apt-get install oracle-java7-installer oracle-jdk7-installer
+		apt-get install oracle-java7-installer oracle-java8-installer oracle-java8-set-default oracle-jdk7-installer
 	fi
 
 	# Install key for ELK [ElasticSearch, Logstash, Kibana] repository
