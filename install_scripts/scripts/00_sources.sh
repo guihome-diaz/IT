@@ -27,7 +27,19 @@ function setupSourcesList() {
 	if [ ! -f /etc/apt/sources.list.backup ]; then
 	    echo -e "\n\n $YELLOW ... Updating repositories list $WHITE"
 	    cp /etc/apt/sources.list /etc/apt/sources.list.backup
-	    cp $ASSETS_PATH/apt/sources_ovh.list /etc/apt/sources.list
+		
+		dialog --title "List of repositories" --yesno "Is that an OVH server?" 7 60
+		ovhServerAnswer=$?
+		case $ovhServerAnswer in
+		   0)	# [yes] button
+				cp $ASSETS_PATH/apt/sources_ovh.list /etc/apt/sources.list ;;
+		   1)   # [no] button
+				cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list ;;
+		   255) # [esc] button
+				echo -e "\n\n Skipping choice, using not OVH as default"
+				cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list ;;
+		esac
+				
 	    apt-get update > /dev/null
 	else 
 		echo -e "\n\n $YELLOW ... Repositories list already seems to be up-to-date, nothing to do $WHITE" 
@@ -87,7 +99,7 @@ function setupSourcesList() {
 			apt-get autoremove
 			echo -e "\n\n $YELLOW ... Cleaning repositories list $WHITE"
 			apt-get autoclean && apt-get clean 
-			echo -e "\n\n $GREEN ... distrubution upgrade complete! $WHITE"
+			echo -e "\n\n $GREEN ... distribution upgrade complete! $WHITE"
 			;;
 	   1)   # [no] button
 			echo -e "\n\n Skipping distribution upgrade, [NO] button" 

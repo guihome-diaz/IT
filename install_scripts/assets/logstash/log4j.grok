@@ -1,0 +1,45 @@
+###### %d %5p %t %c - %m%n 
+
+# Some logs might start with spaces :'S ...
+LOG4J_COMMON_PATTERN_V1 .* %{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{USERNAME:thread} %{JAVACLASS:logger} - (?<content>(.|\r|\n)*)
+LOG4J_COMMON_PATTERN_V2 .* %{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{USERNAME:thread} %{JAVACLASS:logger} - (?<content>(.|\r|\n)*)
+
+# Nominal cases
+LOG4J_COMMON_PATTERN_V3 ^%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{USERNAME:thread} %{JAVACLASS:logger} - (?<content>(.|\r|\n)*)
+LOG4J_COMMON_PATTERN_V4 ^%{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{USERNAME:thread} %{JAVACLASS:logger} - (?<content>(.|\r|\n)*)
+
+# When log is split on many lines right away
+LOG4J_COMMON_PATTERN_V5 ^%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{USERNAME:thread} %{JAVACLASS:logger} (?<content>(.|\r|\n)*)
+LOG4J_COMMON_PATTERN_V6 ^%{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{USERNAME:thread} %{JAVACLASS:logger} (?<content>(.|\r|\n)*)
+
+
+###### %d %5p %c{1} - %m%n 
+
+# Some logs might start with spaces :'S ...
+LOG4J_ALT_PATTERN_V1 .* %{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{WORD:logger} - (?<content>(.|\r|\n)*)
+LOG4J_ALT_PATTERN_V2 .* %{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{WORD:logger} - (?<content>(.|\r|\n)*)
+
+# Nominal cases
+LOG4J_ALT_PATTERN_V3 ^%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{WORD:logger} - (?<content>(.|\r|\n)*)
+LOG4J_ALT_PATTERN_V4 ^%{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{WORD:logger} - (?<content>(.|\r|\n)*)
+
+# When log is split on many lines right away
+LOG4J_ALT_PATTERN_V5 ^%{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{WORD:logger} (?<content>(.|\r|\n)*)
+LOG4J_ALT_PATTERN_V6 ^%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{WORD:logger} (?<content>(.|\r|\n)*)
+
+
+
+###### %d %5p %t %c{1} - %m%n 
+
+# Some logs might start with spaces :'S ...
+LOG4J_ALT_2_PATTERN_V1 .* %{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{USERNAME:thread} %{WORD:logger} - (?<content>(.|\r|\n)*)
+LOG4J_ALT_2_PATTERN_V2 .* %{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{USERNAME:thread} %{WORD:logger} - (?<content>(.|\r|\n)*)
+
+# Nominal cases
+LOG4J_ALT_2_PATTERN_V3 ^%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{USERNAME:thread} %{WORD:logger} - (?<content>(.|\r|\n)*)
+LOG4J_ALT_2_PATTERN_V4 ^%{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{USERNAME:thread} %{WORD:logger} - (?<content>(.|\r|\n)*)
+
+# When log is split on many lines right away
+LOG4J_ALT_2_PATTERN_V5 ^%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{USERNAME:thread} %{WORD:logger} (?<content>(.|\r|\n)*)
+LOG4J_ALT_2_PATTERN_V6 ^%{TIMESTAMP_ISO8601:timestamp} .* %{LOGLEVEL:level} %{USERNAME:thread} %{WORD:logger} (?<content>(.|\r|\n)*)
+

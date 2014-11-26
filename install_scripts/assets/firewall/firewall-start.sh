@@ -51,8 +51,8 @@ VPN_PORT="8080"
 VPN_PROTOCOL="udp"
 
 
-function logDropped {
 
+function logDropped {
 	echo " "
 	echo " [!] Dropped packets will be logged"
 	echo " "
@@ -63,6 +63,69 @@ function logDropped {
 	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
 	iptables -A LOGGING -j DROP
 }
+
+
+##### Source IP @ filter
+# usage:   sourceIpFiltering <portNumber>
+function soureIpFiltering() {
+        SOURCE_PORT=$1
+        echo "     ... Applying source IP @ filter on TCP $SOURCE_PORT"
+
+
+        # LAN
+        if [ ! -z "$IP_LAN_V4" ] 
+		then
+        	$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s $IP_LAN_V4 -j ACCEPT
+		fi
+
+        # VPN
+        if [ ! -z "$IP_LAN_VPN" ] 
+		then
+        	$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s $IP_LAN_VPN -j ACCEPT
+		fi
+
+        ##### Remote location(s)
+        #$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 5.39.81.23 -j ACCEPT
+
+        # Drop all the rest
+        $IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 0.0.0.0/0 -j DROP
+}
+
+
+##### Allow FORWARD to...
+function forwardSources() {
+        echo " "
+        echo "Allow port forwarding for specific server(s)"
+        echo "  => This will allow packets to be reach specific server(s)"
+        echo " "
+
+        # LAN
+        if [ ! -z "$IP_LAN_V4" ] 
+		then
+       		$IPTABLES -A FORWARD -s $IP_LAN_V4 -j ACCEPT
+		fi
+
+        # VPN
+        if [ ! -z "$IP_LAN_VPN" ] 
+		then
+        	$IPTABLES -A FORWARD -s $IP_LAN_VPN -j ACCEPT
+		fi
+
+        ##### Remote server(s)
+        #$IPTABLES -A FORWARD -s 82.231.97.17 -j ACCEPT
+}
+
+
+##### setup TCP port forwarding
+# usage:   forwardTcpPort <sourcePort> <targetServer> <targetPort>
+function forwardTcpPort() {
+        SOURCE_PORT=$1
+        TARGET_SERVER=$2
+        TARGET_PORT=$3
+        echo "     ... forwarding TCP $SOURCE_PORT   to     $TARGET_SERVER:$TARGET_PORT"
+        $IPT -A PREROUTING -t nat -p tcp --dport $SOURCE_PORT -j DNAT --to $TARGET_SERVER:$TARGET_PORT
+}
+
 
 # To enable networking modules in the current OS
 function enableModules {
@@ -127,7 +190,6 @@ function enableModules {
 	echo 1800 > /proc/sys/net/ipv4/tcp_keepalive_time
 	## Adjust TTL value
 	echo 64 > /proc/sys/net/ipv4/ip_default_ttl
-
 	# Port forwarding in general
 	echo " ... Enable forwarding"
 	echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -690,7 +752,12 @@ function vpn {
 		echo -e "# VPN protocol   : $VPN_PROTOCOL"
 		echo -e "-------------------------------------- "
 
-		echo -e " ... Allow$GREEN VPN$BLACK - all INPUT,OUTPUT,FORWARD"
+		# VPN
+		echo -e " ... Allow VPN connections"
+		$IPTABLES -A INPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
+		$IPTABLES -A OUTPUT -p tcp --dport $VPN_PORT -j ACCEPT
+		
+		echo -e " ... Allow VPN packets type INPUT,OUTPUT,FORWARD"
 		$IPTABLES -A INPUT -i $INT_VPN -m state ! --state INVALID -j ACCEPT
 		$IPTABLES -A OUTPUT -o $INT_VPN -m state ! --state INVALID -j ACCEPT
 		$IPTABLES -A FORWARD -o $INT_VPN -m state ! --state INVALID -j ACCEPT
@@ -698,72 +765,45 @@ function vpn {
 		# Allow forwarding
 		echo -e " ... Enable VPN forwarding"
 		$IPTABLES -A FORWARD -s $IP_LAN_VPN -j ACCEPT
+		$IPTABLES -A FORWARD -i $INT_VPN -o $INT_ETH -j ACCEPT
+        $IPTABLES -A FORWARD -i $INT_ETH -o $INT_VPN -j ACCEPT
 		 
 		# Allow devices communication $ETH0 <--> tun0
 		$IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN -o $INT_ETH -j MASQUERADE
 
 		# Allow VPN clients data exchange
-		echo -e " ... Allow$GREEN VPN clients communication$BLACK"
+		echo -e " ... Allow VPN clients communication"
 		$IPTABLES -A INPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
 		$IPTABLES -A OUTPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
 
-		# VPN
-		echo -e " ... Allow VPN connections"
-		$IPTABLES -A INPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
-		$IPTABLES -A OUTPUT -p tcp --dport $VPN_PORT -j ACCEPT
+		####### Add route(s) to remote network(s)
+		# You must add a new route for each network you'd like to access through the VPN server!
+		# The VPN server must be able to reach the remote network! (otherwise it cannot acts as a GW !)
+		# route add -net <network>/<mask> gw <VPN_SERVER_ETH_IP>
+		#######
+		echo " "
+		echo " ... adding VPN route between VPN server and remote LAN(s)"
+		#route add -net 192.168.12.0/24 gw 192.168.1.45
     fi
 }
 
 
-
+# Port forwarding setup
 function forward {
 	echo " "
 	echo "---------------------------------"
 	echo " Port forwarding configuration"
 	echo "---------------------------------"
-
-
-	###############################################
-	# List of allowed source IP @ for forwarding  #
-	###############################################
-	echo " Setup list of source IP @ that are allowed for port forwarding"
-
-	# French office
-	$IPT -A FORWARD -s 90.83.80.64/27 -j ACCEPT
-	$IPT -A FORWARD -s 90.83.80.123 -j ACCEPT
-
-
-	#######################
-	# VEHCO servers list  #
-	#######################
-	echo " Setup list of VEHCO servers that will provide some services through port forwarding"
-
-	# Server list
-	bellmanServer=192.168.1.50	# Bellman bus server (the one that has ActiveMQ on it)
-	rabbitmqServer=172.16.50.4	# Smartcard RABBIT MQ server
-
-	# Allow forwarding (POSTROUTING) to the servers
-    $IPT -A POSTROUTING -d $bellmanServer -t nat -j MASQUERADE
-	$IPT -A POSTROUTING -d $rabbitmqServer -t nat -j MASQUERADE
-
 	
-	##################
-	# Forward rules  #
-	##################
-	# For each forward rule you must:
-	#   1. Open the target port locally (INPUT filter) 
-	#   2. Add a PREROUTING rule so every request on the currentServer:localPort are send to remoteHost:port	
-	echo " Setup forward rules"
+	### Allow forward to specific servers
+	forwardSources
 
-
-	echo "    || ActiveMQ       - from :5672 to $bellmanServer:5672"
-    $IPT -A INPUT -p tcp --dport 5672 -j ACCEPT
-    $IPT -A PREROUTING -t nat -p tcp --dport 5672 -j DNAT --to $bellmanServer:5672
-
-	echo "    || RabbitMQ       - from :5673 to $rabbitmqServer:5672"
-    $IPT -A INPUT -p tcp --dport 5673 -j ACCEPT
-    $IPT -A PREROUTING -t nat -p tcp --dport 5673 -j DNAT --to $rabbitmqServer:5672
-
+    ## Target ports
+    LAMP_Server=192.168.1.50
+    forwardTcpPort 10022 $LAMP_Server 22
+    forwardTcpPort 10080 $LAMP_Server 80
+    forwardTcpPort 13306 $LAMP_Server 3306
+    forwardTcpPort 18080 $LAMP_Server 8080
 
 	echo " "
 }
