@@ -105,7 +105,7 @@ function setupUIPackages() {
 				echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
 				add-apt-repository ppa:team-xbmc/ppa
 				apt-get update
-				apt-get install -y xbmc
+				apt-get install -y kodi
 				;;
 
 			"Office")
