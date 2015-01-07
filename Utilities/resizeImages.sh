@@ -68,12 +68,12 @@ find "$1" -depth -type f -name '*' | while read file
 			if [ $file_width -ge $file_height ]
 			then
 				echo "processing horizon. file: $directory/$fullname"
-				convert -filter spline -resize 1920x1080\> -unsharp 1.5x1+0.7+0.02 $directory/$fullname $TEMP_DIR/HD1080/$directory/$name-HD1080.$extension
-				convert -filter spline -resize 1280x720\> -unsharp 1.5x1+0.7+0.02 $directory/$fullname $TEMP_DIR/HD720/$directory/$name-HD720.$extension
-			else
-				echo "processing vertical file: $directory/$fullname"
 				convert -filter spline -resize 1080x1920\> -unsharp 1.5x1+0.7+0.02 $directory/$fullname $TEMP_DIR/HD1080/$directory/$name-HD1080.$extension
 				convert -filter spline -resize 720x1280\> -unsharp 1.5x1+0.7+0.02 $directory/$fullname $TEMP_DIR/HD720/$directory/$name-HD720.$extension
+			else
+				echo "processing vertical file: $directory/$fullname"
+				convert -filter spline -resize 1920x1080\> -unsharp 1.5x1+0.7+0.02 $directory/$fullname $TEMP_DIR/HD1080/$directory/$name-HD1080.$extension
+				convert -filter spline -resize 1280x720\> -unsharp 1.5x1+0.7+0.02 $directory/$fullname $TEMP_DIR/HD720/$directory/$name-HD720.$extension
 			fi
 		fi
 
