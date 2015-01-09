@@ -45,6 +45,8 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing unetbootin to create USB install disk $WHITE \n"
 	apt-get install -y unetbootin
 
+	echo -e "\n\n $YELLOW   >> Installing gparted to manage disks $WHITE \n"
+	apt-get install -y gparted
 
 
 	tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/testUIpackages$$
