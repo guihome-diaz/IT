@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<link rel="stylesheet" href="./assets/style.css" />
+</head>
+
+<body>
+	<h1>Backup mediawiki</h1>
+
+	<p>
+		<img src="./assets/backup.jpg" alt="backup image" /> <br>
+		Clik on the link below to start the backup process. <br>
+		This operation can take up to 5 minutes. Please <strong>do NOT refresh your browser or click submit again</strong> in the meantime!<br>
+		<br>
+	   	<input type="button" id="submitMediaWikiBackup" value="Run backup" />    	
+	</p>
+	
+	<p class="modal">
+		<img src="./assets/loading.gif" alt="loading animation" />
+		&nbsp;&nbsp;&nbsp; Loading... Please wait
+	</p>
+	
+	<p class="successPanel">
+		<img src="./assets/success_icon.png" alt="Success" />
+		&nbsp;&nbsp;&nbsp; Backup success !
+		<br><br><br>
+	</p>
+	<p class="errorPanel">
+		<img src="./assets/error_icon.png" alt="Error" />
+		&nbsp;&nbsp;&nbsp; Backup failure !
+		<br><br><br>
+	</p>
+	
+	<div id="scriptResult"></div>
+
+	<!-- ######################## -->
+	<!-- # JavaScript libraries # -->
+	<!-- ######################## -->
+	<!-- Note: JS libraries must be at the end of the page to speed up loading -->
+
+	<!-- Load JavaScript-->
+	<script type="text/javascript" src="./assets/jquery-2.1.3.min.js"></script>	
+	<script type="text/javascript" src="./assets/application.js"></script>
+</body>
+</html>

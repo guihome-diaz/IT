@@ -1,0 +1,23 @@
+.modal {
+	display: none;
+}
+.hidden {
+    display: none;
+}
+.visible {
+    display: block;
+}
+.successPanel {
+    display: none;
+}
+.errorPanel {
+    display: none;
+}
+body {
+}
+
+/* Form settings */
+#mediaWikiBackup { padding:20px; }
+#mediaWikiBackup .field { padding: 4px; margin:1px; background: #eee; }
+#mediaWikiBackup .field label { display:inline-block; width:200px; margin-left:5px; }
+#mediaWikiBackup .field input { display:inline-block; }
