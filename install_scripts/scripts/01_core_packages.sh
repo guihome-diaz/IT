@@ -44,15 +44,16 @@ function setupCorePackages() {
 	apt-get install -y libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl
 	apt-get install -y libnet-ident-perl libnet-dns-perl
 
+	echo -e "\n\n $YELLOW   >> Installing Python $WHITE \n"
+	apt-get install -y python3 python3-doc
+	apt-get install -y python-pip
+	apt-get install -y pkg-config
+	
 	echo -e "\n\n $YELLOW   >> Installing Advanced APT manager $WHITE \n"
 	apt-get install -y software-properties-common python-software-properties
 
 	echo -e "\n\n $YELLOW   >> Installing Processes manager $WHITE \n"
 	apt-get install -y htop
-
-	echo -e "\n\n $YELLOW   >> Installing Python $WHITE \n"
-	apt-get install -y python3 python3-doc
-	apt-get install -y pkg-config
 
 	echo -e "\n\n $YELLOW   >> Installing Startup manager $WHITE \n"
 	apt-get install -y sysv-rc-conf
