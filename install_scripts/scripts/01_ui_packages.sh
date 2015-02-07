@@ -111,6 +111,10 @@ function setupUIPackages() {
 				add-apt-repository ppa:team-xbmc/ppa
 				apt-get update
 				apt-get install -y kodi
+				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
+				add-apt-repository ppa:stebbins/handbrake-releases
+				apt-get update
+				apt-get install -y handbrake-gtk handbrake-cli
 				;;
 
 			"Office")
