@@ -11,7 +11,7 @@ deb mirror://mirrors.ubuntu.com/mirrors.txt trusty main restricted universe mult
 deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-updates main restricted universe multiverse
 deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted universe multiverse
 ## Backports. Community repos approved by Canonical
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-backports main restricted universe multiverse+
+deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-backports main restricted universe multiverse
 
 ## Canonical (Ubuntu) partners
 deb http://archive.canonical.com/ubuntu trusty partner
@@ -19,11 +19,14 @@ deb http://archive.canonical.com/ubuntu trusty partner
 ## 3rd parties libraries
 #deb http://extras.ubuntu.com/ubuntu trusty main
 
+## Spotify
+deb http://repository.spotify.com stable non-free
+
 ## ELK stack: Elastic search, Logstack, Kibana
 # sources: 
 #    1. http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup-repositories.html
 #    2. http://logstash.net/docs/latest/repositories
 # NB: all repository versions must match!
-deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main
-deb http://packages.elasticsearch.org/logstash/1.4/debian stable main
+#deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main
+#deb http://packages.elasticsearch.org/logstash/1.4/debian stable main
 
