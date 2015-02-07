@@ -45,6 +45,7 @@ IP_LAN_ETH_V6_GLOBAL=`/sbin/ifconfig $INT_ETH | grep 'inet6 addr:' | grep 'Globa
 IP_LAN_V4="myLocalNetwork"
 IP_LAN_V6=""
 IP_LAN_VPN=""
+IP_LAN_VPN_PRO=""
 
 INT_VPN=tun0
 VPN_PORT="8080"
@@ -738,53 +739,77 @@ function outgoingPortFiltering {
 
 # VPN configuration
 function vpn {		
-    if [ ! -z "$IP_LAN_VPN" ] 
-	then
-		echo -e " "		
-		echo -e "------------------------"
-		echo -e " VPN configuration"
-		echo -e "------------------------"
-		
-		echo " " 
-		echo -e "# VPN interface  : $INT_VPN"
-		echo -e "# VPN IP @       : $IP_LAN_VPN"
-		echo -e "# VPN port       : $VPN_PORT"
-		echo -e "# VPN protocol   : $VPN_PROTOCOL"
-		echo -e "-------------------------------------- "
+if [[ ! -z "$IP_LAN_VPN_PRV" || ! -z "$IP_LAN_VPN_PRO" ]]
+then
+ 
+  echo " "		
+  echo "------------------------"
+  echo " VPN configuration"
+  echo "------------------------"
+  echo "    # VPN interface  : $INT_VPN"
+  echo "    # VPN port       : $VPN_PORT"
+  echo "    # VPN protocol   : $VPN_PROTOCOL"
+  echo "    -------------------------------------- "
+ 
+  echo "      ... Allow VPN connections through $INT_VPN"
+  $IPTABLES -A INPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
+  $IPTABLES -A OUTPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
+  # Hint: if you do not accept all RELATED,ESTABLISHED connections then you must allow the source port
+  $IPTABLES -A OUTPUT -p $VPN_PROTOCOL --sport $VPN_PORT -j ACCEPT
+ 
+  echo "     ... Allow VPN packets type INPUT,OUTPUT,FORWARD"
+  $IPTABLES -A INPUT -i $INT_VPN -m state ! --state INVALID -j ACCEPT
+  $IPTABLES -A OUTPUT -o $INT_VPN -m state ! --state INVALID -j ACCEPT
+  $IPTABLES -A FORWARD -o $INT_VPN -m state ! --state INVALID -j ACCEPT
+ 
+  # Allow forwarding
+  echo "      ... Allow packets to by forward from|to the VPN"
+  $IPTABLES -A FORWARD -i $INT_VPN -o $INT_ETH -j ACCEPT
+  $IPTABLES -A FORWARD -i $INT_ETH -o $INT_VPN -j ACCEPT
+ 
+ 
+  echo "    -------------------------------------- "
+  echo "      Open VPN LAN(s)"
+  echo "    -------------------------------------- "
+ 
+  if [ ! -z "$IP_LAN_VPN" ]
+  then
+      echo "      # VPN network IP @  : $IP_LAN_VPN"
+ 
+      # Allow packets to be send from|to the VPN network
+      $IPTABLES -A FORWARD -s $IP_LAN_VPN -j ACCEPT
+      $IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN -o $INT_ETH -j MASQUERADE
+ 
+      # Allow VPN client <-> client communication
+      $IPTABLES -A INPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
+      $IPTABLES -A OUTPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
+  fi
+ 
+  if [ ! -z "$IP_LAN_VPN_PRO" ]
+  then
+      echo "      # VPN network IP @  : $IP_LAN_VPN_PRO"
+      # Allow packets to be send from|to the VPN network
+      $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRO -j ACCEPT
+      $IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN_PRO -o $INT_ETH -j MASQUERADE
+ 
+      # Allow VPN client <-> client communication
+      $IPTABLES -A INPUT -s $IP_LAN_VPN_PRO -d $IP_LAN_VPN_PRO -m state ! --state INVALID -j ACCEPT
+      $IPTABLES -A OUTPUT -s $IP_LAN_VPN_PRO -d $IP_LAN_VPN_PRO -m state ! --state INVALID -j ACCEPT
+  fi
+ 
+  ####### Add route(s) to remote network(s)
+  # You must add a new route for each network you'd like to access through the VPN server!
+  # The VPN server must be able to reach the remote network! (otherwise it cannot acts as a GW !)
+  # route add -net <network>/<mask> gw <VPN_SERVER_ETH_IP>
+  #
+  # !! This information should be pushed by the server !! 
+  # If not you can either add it manually over here (= in Iptables) or in the OpenVPN client conf.
+  #######
+  #echo "      ... add VPN route between VPN LAN and current location"
+  #route add -net 192.168.12.0/24 gw 192.168.1.45
+ 
+fi
 
-		# VPN
-		echo -e " ... Allow VPN connections"
-		$IPTABLES -A INPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
-		$IPTABLES -A OUTPUT -p tcp --dport $VPN_PORT -j ACCEPT
-		
-		echo -e " ... Allow VPN packets type INPUT,OUTPUT,FORWARD"
-		$IPTABLES -A INPUT -i $INT_VPN -m state ! --state INVALID -j ACCEPT
-		$IPTABLES -A OUTPUT -o $INT_VPN -m state ! --state INVALID -j ACCEPT
-		$IPTABLES -A FORWARD -o $INT_VPN -m state ! --state INVALID -j ACCEPT
-
-		# Allow forwarding
-		echo -e " ... Enable VPN forwarding"
-		$IPTABLES -A FORWARD -s $IP_LAN_VPN -j ACCEPT
-		$IPTABLES -A FORWARD -i $INT_VPN -o $INT_ETH -j ACCEPT
-        $IPTABLES -A FORWARD -i $INT_ETH -o $INT_VPN -j ACCEPT
-		 
-		# Allow devices communication $ETH0 <--> tun0
-		$IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN -o $INT_ETH -j MASQUERADE
-
-		# Allow VPN clients data exchange
-		echo -e " ... Allow VPN clients communication"
-		$IPTABLES -A INPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
-		$IPTABLES -A OUTPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
-
-		####### Add route(s) to remote network(s)
-		# You must add a new route for each network you'd like to access through the VPN server!
-		# The VPN server must be able to reach the remote network! (otherwise it cannot acts as a GW !)
-		# route add -net <network>/<mask> gw <VPN_SERVER_ETH_IP>
-		#######
-		echo " "
-		echo " ... adding VPN route between VPN server and remote LAN(s)"
-		#route add -net 192.168.12.0/24 gw 192.168.1.45
-    fi
 }
 
 
@@ -840,10 +865,8 @@ outgoingPortFiltering
 
 #VPN
 #--------------------
-if [ ! -z "$IP_LAN_VPN" ] 
-then
-	vpn
-fi
+vpn
+
 
 # Forwarding
 #------------------
