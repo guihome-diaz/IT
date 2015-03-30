@@ -44,7 +44,7 @@ IP_LAN_ETH_V6_GLOBAL=`/sbin/ifconfig $INT_ETH | grep 'inet6 addr:' | grep 'Globa
 
 IP_LAN_V4="myLocalNetwork"
 IP_LAN_V6=""
-IP_LAN_VPN=""
+IP_LAN_VPN_PRV=""
 IP_LAN_VPN_PRO=""
 
 INT_VPN=tun0
@@ -57,7 +57,6 @@ function logDropped {
 	echo " "
 	echo " [!] Dropped packets will be logged"
 	echo " "
-
 	iptables -N LOGGING
 	iptables -A INPUT -j LOGGING
 	iptables -A OUTPUT -j LOGGING
@@ -72,7 +71,6 @@ function soureIpFiltering() {
         SOURCE_PORT=$1
         echo "     ... Applying source IP @ filter on TCP $SOURCE_PORT"
 
-
         # LAN
         if [ ! -z "$IP_LAN_V4" ] 
 		then
@@ -80,9 +78,13 @@ function soureIpFiltering() {
 		fi
 
         # VPN
-        if [ ! -z "$IP_LAN_VPN" ] 
+        if [ ! -z "$IP_LAN_VPN_PRV" ] 
 		then
-        	$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s $IP_LAN_VPN -j ACCEPT
+        	$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s $IP_LAN_VPN_PRV -j ACCEPT
+		fi
+        if [ ! -z "$IP_LAN_VPN_PRO" ] 
+		then
+        	$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s $IP_LAN_VPN_PRO -j ACCEPT
 		fi
 
         ##### Remote location(s)
@@ -107,9 +109,9 @@ function forwardSources() {
 		fi
 
         # VPN
-        if [ ! -z "$IP_LAN_VPN" ] 
+        if [ ! -z "$IP_LAN_VPN_PRV" ] 
 		then
-        	$IPTABLES -A FORWARD -s $IP_LAN_VPN -j ACCEPT
+        	$IPTABLES -A FORWARD -s $IP_LAN_VPN_PRV -j ACCEPT
 		fi
 
         ##### Remote server(s)
@@ -772,17 +774,17 @@ then
   echo "      Open VPN LAN(s)"
   echo "    -------------------------------------- "
  
-  if [ ! -z "$IP_LAN_VPN" ]
+  if [ ! -z "$IP_LAN_VPN_PRV" ]
   then
-      echo "      # VPN network IP @  : $IP_LAN_VPN"
+      echo "      # VPN network IP @  : $IP_LAN_VPN_PRV"
  
       # Allow packets to be send from|to the VPN network
-      $IPTABLES -A FORWARD -s $IP_LAN_VPN -j ACCEPT
-      $IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN -o $INT_ETH -j MASQUERADE
+      $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRV -j ACCEPT
+      $IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN_PRV -o $INT_ETH -j MASQUERADE
  
       # Allow VPN client <-> client communication
-      $IPTABLES -A INPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
-      $IPTABLES -A OUTPUT -s $IP_LAN_VPN -d $IP_LAN_VPN -m state ! --state INVALID -j ACCEPT
+      $IPTABLES -A INPUT -s $IP_LAN_VPN_PRV -d $IP_LAN_VPN_PRV -m state ! --state INVALID -j ACCEPT
+      $IPTABLES -A OUTPUT -s $IP_LAN_VPN_PRV -d $IP_LAN_VPN_PRV -m state ! --state INVALID -j ACCEPT
   fi
  
   if [ ! -z "$IP_LAN_VPN_PRO" ]
