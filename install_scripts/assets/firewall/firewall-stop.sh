@@ -29,11 +29,18 @@ echo " "
 # -------------------------------- #
 MODPROBE=`which modprobe`
 IPTABLES=`which iptables`
+IP6TABLES=`which ip6tables`
 
 # ------------- #
 #  Flush rules  #
 # ------------- #
 echo -e " ...$RED Flush existing rules $BLACK"
+$IP6TABLES -F
+$IP6TABLES -X	
+$IPTABLES -F
+$IPTABLES -X
+
+# Filter rules
 $IPTABLES -t filter -F
 $IPTABLES -t filter -X
 
@@ -42,9 +49,10 @@ $IPTABLES -t nat -F
 $IPTABLES -t nat -X
 
 # delete MANGLE rules (packets modifications)
-# Supprimer les regles de modification de paquets (mangle)
 $IPTABLES -t mangle -F
 $IPTABLES -t mangle -X
+$IP6TABLES -t mangle -F
+$IP6TABLES -t mangle -X
 
 # ---------------- #
 #  Default policy  #
@@ -60,6 +68,29 @@ $IPTABLES -A INPUT -j ACCEPT
 $IPTABLES -A FORWARD -j DROP
 $IPTABLES -A OUTPUT -j ACCEPT
 
+$IP6TABLES -A INPUT -j ACCEPT
+$IP6TABLES -A FORWARD -j DROP
+$IP6TABLES -A OUTPUT -j ACCEPT
+
+echo -e " ... Reject invalid packets"
+$IPTABLES -A INPUT -p tcp -m state --state INVALID -j DROP
+$IPTABLES -A INPUT -p udp -m state --state INVALID -j DROP
+$IPTABLES -A INPUT -p icmp -m state --state INVALID -j DROP
+$IPTABLES -A OUTPUT -p tcp -m state --state INVALID -j DROP
+$IPTABLES -A OUTPUT -p udp -m state --state INVALID -j DROP
+$IPTABLES -A OUTPUT -p icmp -m state --state INVALID -j DROP
+$IPTABLES -A FORWARD -p tcp -m state --state INVALID -j DROP
+$IPTABLES -A FORWARD -p udp -m state --state INVALID -j DROP
+
+$IP6TABLES -A INPUT -p tcp -m state --state INVALID -j DROP
+$IP6TABLES -A INPUT -p udp -m state --state INVALID -j DROP
+$IP6TABLES -A INPUT -p icmp -m state --state INVALID -j DROP
+$IP6TABLES -A OUTPUT -p tcp -m state --state INVALID -j DROP
+$IP6TABLES -A OUTPUT -p udp -m state --state INVALID -j DROP
+$IP6TABLES -A OUTPUT -p icmp -m state --state INVALID -j DROP
+$IP6TABLES -A FORWARD -p tcp -m state --state INVALID -j DROP
+$IP6TABLES -A FORWARD -p udp -m state --state INVALID -j DROP
+
 echo -e "          keep ESTABLISHED,RELATED"
 # Keep established connections
 $IPTABLES -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
@@ -74,8 +105,7 @@ echo -e " ... Allow SSH access "
 # SSH
 #  >> Limit to 3 connections / 180 seconds ! 
 $IPTABLES -A INPUT -p tcp -m state --state NEW -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
-# OVH SSH backup connection
-$IPTABLES -A INPUT -p tcp -m state --state NEW -m limit --limit 3/min --limit-burst 3 --dport 1022 -j ACCEPT
+
 
 echo -e " ... Broadcast and multicast rules for$GREEN DHCP$BLACK"
 # DHCP client >> Broadcast IP request 

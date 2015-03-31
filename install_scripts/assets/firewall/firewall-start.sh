@@ -57,11 +57,11 @@ function logDropped {
 	echo " "
 	echo " [!] Dropped packets will be logged"
 	echo " "
-	iptables -N LOGGING
-	iptables -A INPUT -j LOGGING
-	iptables -A OUTPUT -j LOGGING
-	iptables -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
-	iptables -A LOGGING -j DROP
+	$IPTABLES -N LOGGING
+	$IPTABLES -A INPUT -j LOGGING
+	$IPTABLES -A OUTPUT -j LOGGING
+	$IPTABLES -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
+	$IPTABLES -A LOGGING -j DROP
 }
 
 
@@ -69,7 +69,7 @@ function logDropped {
 # usage:   sourceIpFiltering <portNumber>
 function soureIpFiltering() {
         SOURCE_PORT=$1
-        echo "     ... Applying source IP @ filter on TCP $SOURCE_PORT"
+        echo "     ... Applying source IPv4 @ filter on TCP $SOURCE_PORT"
 
         # LAN
         if [ ! -z "$IP_LAN_V4" ] 
@@ -88,6 +88,7 @@ function soureIpFiltering() {
 		fi
 
         ##### Remote location(s)
+        # Replace -s X.X.X.X by each location allowed
         #$IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 5.39.81.23 -j ACCEPT
 
         # Drop all the rest
@@ -99,7 +100,8 @@ function soureIpFiltering() {
 function forwardSources() {
         echo " "
         echo "Allow port forwarding for specific server(s)"
-        echo "  => This will allow packets to be reach specific server(s)"
+        echo "  => This will allow packets to reach specific server(s)"
+        echo "This must be done BEFORE you actually forward data to these servers!"
         echo " "
 
         # LAN
@@ -207,7 +209,11 @@ function defaultPolicy {
 	echo -e "------------------------"
 
 	$IP6TABLES -F
-	
+	$IP6TABLES -X	
+	$IPTABLES -F
+	$IPTABLES -X
+
+    # Filter rules
 	$IPTABLES -t filter -F
 	$IPTABLES -t filter -X
 	
@@ -218,6 +224,8 @@ function defaultPolicy {
 	# delete MANGLE rules (packets modifications)
 	$IPTABLES -t mangle -F
 	$IPTABLES -t mangle -X
+	$IP6TABLES -t mangle -F
+	$IP6TABLES -t mangle -X
 
 	echo -e " "		
 	echo -e "------------------------"
@@ -263,17 +271,13 @@ function defaultPolicy {
 	
 	## Localhost
 	echo -e " ... Allow localhost"
-	# Allow localhost communication
-	$IPTABLES -A INPUT -i lo -s 127.0.0.0/24 -d 127.0.0.0/24 -j ACCEPT
-	$IPTABLES -A OUTPUT -o lo -s 127.0.0.0/24 -d 127.0.0.0/24 -j ACCEPT
-	$IP6TABLES -A INPUT -i lo -j ACCEPT
-	$IP6TABLES -A OUTPUT -o lo  -j ACCEPT
-	
-	# Only localhost on Loopback interface + no forward
-	$IPTABLES -A INPUT ! -i lo -s 127.0.0.0/24 -j DROP	
-	$IPTABLES -A FORWARD -s 127.0.0.0/24 -j DROP
-	$IP6TABLES -A INPUT ! -i lo -s ::1/128 -j DROP
-	$IP6TABLES -A FORWARD -s ::1/128 -j DROP
+    $IPTABLES -A INPUT ! -i lo -s 127.0.0.0/24 -j DROP	
+	$IPTABLES -A OUTPUT ! -o lo -d 127.0.0.0/24 -j DROP
+    $IPTABLES -A FORWARD -s 127.0.0.0/24 -j DROP
+
+    $IP6TABLES -A INPUT ! -i lo -s ::1/128 -j DROP
+    $IP6TABLES -A OUTPUT ! -o lo -d ::1/128 -j DROP
+    $IP6TABLES -A FORWARD -s ::1/128 -j DROP
 	
 	## IPv6 security
 	# No IPv4 -> IPv6 tunneling
@@ -502,6 +506,7 @@ function incomingPortFiltering {
 	# Software quality
 	#echo -e " ... Opening SonarQube"	
 	#$IPTABLES -A INPUT -p tcp --dport 9000 -j ACCEPT    # Sonar
+	#soureIpFiltering 9000
 
 
 	#################
@@ -510,7 +515,7 @@ function incomingPortFiltering {
 	# MySQL db
 	#echo -e " ... Opening MySQL database"
 	#$IPTABLES -A INPUT -p tcp --dport 3306 -j ACCEPT
-
+	#soureIpFiltering 3306
 
 	#################
 	# IT
