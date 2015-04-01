@@ -16,6 +16,7 @@ BLUE="\\033[0;34m"
 GREEN="\\033[0;32m"
 #BLACK="\\033[0;30m"
 BLACK="\\033[0;37m"
+
 echo " "
 echo " "
 echo " "
@@ -96,15 +97,24 @@ echo -e "          keep ESTABLISHED,RELATED"
 $IPTABLES -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 $IPTABLES -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-# Allow localhost communication
-echo -e " ... Allow$GREEN localhost $BLACK"
-$IPTABLES -A INPUT -i lo -s 127.0.0.0/24 -d 127.0.0.0/24 -j ACCEPT
-$IPTABLES -A OUTPUT -o lo -s 127.0.0.0/24 -d 127.0.0.0/24 -j ACCEPT
+$IP6TABLES -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+$IP6TABLES -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-echo -e " ... Allow SSH access "
+## Localhost
+echo -e " ... Allow localhost"
+$IPTABLES -A INPUT ! -i lo -s 127.0.0.0/24 -j DROP	
+$IPTABLES -A OUTPUT ! -o lo -d 127.0.0.0/24 -j DROP
+$IPTABLES -A FORWARD -s 127.0.0.0/24 -j DROP
+
+$IP6TABLES -A INPUT ! -i lo -s ::1/128 -j DROP
+$IP6TABLES -A OUTPUT ! -o lo -d ::1/128 -j DROP
+$IP6TABLES -A FORWARD -s ::1/128 -j DROP
+
+
 # SSH
-#  >> Limit to 3 connections / 180 seconds ! 
-$IPTABLES -A INPUT -p tcp -m state --state NEW -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
+echo -e " ... Allow$GREEN SSH$BLACK access "
+$IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
+$IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
 
 
 echo -e " ... Broadcast and multicast rules for$GREEN DHCP$BLACK"

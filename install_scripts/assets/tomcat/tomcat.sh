@@ -196,6 +196,16 @@ function start() {
                        --exec "$JAVA_HOME/bin/java" \
                        >/dev/null; then
 
+      # Clean tomcat base temp directory
+      rm -rf "$CATALINA_TMPDIR"
+      mkdir -p "$CATALINA_TMPDIR" || {
+        log_failure_msg "could not create JVM temporary directory"
+        exit 1
+      }
+      chown -R $USER $CATALINA_TMPDIR
+      chgrp -R $GROUP $CATALINA_TMPDIR      
+
+
       # Start Tomcat
       run_catalina start
 
