@@ -64,6 +64,14 @@ CATALINA_TMPDIR="$CATALINA_BASE/temp"
 
 
 
+# This enable the system logger and related functions
+. /lib/lsb/init-functions
+if [ -r /etc/default/rcS ]; then
+  . /etc/default/rcS
+fi
+
+
+
 echo " "
 echo "# ------------------------- #"
 echo "# Tomcat start/stop manager #"
@@ -117,15 +125,6 @@ if [ -r /etc/default/locale ]; then
   . /etc/default/locale
   export LANG
 fi
-
-# Set environment settings
-# This enable the system logger and related functions
-. /lib/lsb/init-functions
-
-if [ -r /etc/default/rcS ]; then
-  . /etc/default/rcS
-fi
-
 
 # Look for Java Secure Sockets Extension (JSSE) JARs
 if [ -z "${JSSE_HOME}" -a -r "${JAVA_HOME}/jre/lib/jsse.jar" ]; then
