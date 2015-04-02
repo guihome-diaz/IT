@@ -8,18 +8,27 @@
 # Short-Description:    Firewall personnel
 ### END INIT INFO
 
-RED="\\033[0;31m"
-BLUE="\\033[0;32m"
-GREEN="\\033[0;32m"
-#BLACK="\\033[0;30m"
-BLACK="\\033[0;37m"
+# FIREWALL start/stop script
+# Copyright (C) 2015 Guillaume Diaz [guillaume @ qin-diaz.com]
+##################################
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##################################
 
-#Launch the firewall
 start() {
     /etc/firewall/firewall-start.sh
 }
 
-#Stop the firewall
 stop() {
     /etc/firewall/firewall-stop.sh
 }

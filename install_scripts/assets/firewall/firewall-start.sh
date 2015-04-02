@@ -1,9 +1,23 @@
 #!/bin/bash
-# Licence GNU GPL v3
-# Firewall -- Packet level filtering
-#   --> IPTABLES Rules
-#   version 1.0 - Septembre 2008
-#           1.1 - Novembre 2009
+# FIREWALL startup script
+# Copyright (C) 2015 Guillaume Diaz [guillaume @ qin-diaz.com]
+##################################
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##################################
+#
+#   version 1.0 - September 2008
+#           1.1 - November 2009
 #                  >> Network security (Chalmers) + english translation
 #   version 1.2 - January 2010
 #                  >> Add some protections against flooding
@@ -17,7 +31,6 @@
 #   version 1.6 - April 2015
 #                  >> Improving log using 'log_' functions
 #                  >> Adjusting IPv6 rules as well as DNS, FTP, VPN + simpler ESTABLISHED, RELATED
-#
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 #
@@ -765,7 +778,7 @@ if [ ! -z "$INT_WLAN" ] ; then
 fi
 
 ###### Required stuff
-log_daemon_msg "Firewall init"
+log_daemon_msg "Firewall init (DROP input but SSH, DROP output but few ports)"
 enableModules
 defaultPolicy
 protocolEnforcement
