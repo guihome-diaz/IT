@@ -1,4 +1,5 @@
 #!/bin/bash
+# Licence GNU GPL v3
 # Firewall -- Packet level filtering
 #   --> IPTABLES Rules
 #   version 1.0 - Septembre 2008
@@ -13,6 +14,9 @@
 #                  >> Simplifications thanks to Julien Rialland (VEHCO)
 #   version 1.5 - June 2014
 #                  >> Add IPv6 support + some updates to match http://daxiongmao.eu/wiki
+#   version 1.6 - April 2015
+#                  >> Improving log using 'log_' functions
+#                  >> Adjusting IPv6 rules as well as DNS, FTP, VPN + simpler ESTABLISHED, RELATED
 #
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
