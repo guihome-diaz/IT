@@ -80,25 +80,39 @@ VPN_PROTOCOL="udp"
 # Common functions
 # ------------------------------------------------------------------------------
 
-function soureIpFiltering() {
-    SOURCE_PORT=$1
 
-    # usage:   sourceIpFiltering <portNumber>
+# usage:   sourceIpFiltering <portNumber> <protocol>
+#          sourceIpFiltering 7792 udp
+function sourceIpFiltering() {
+    SOURCE_PORT=$1
+    PROTOCOL=$2
 
     ##########
     # List of allowed IP @
     ##########        
     # Remote IP @
-    $IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 5.39.81.23 -j ACCEPT
+    $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s 5.39.81.23 -j ACCEPT
+
     # LAN
-    $IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 192.168.1.0/24 -j ACCEPT
+    if [ ! -z "$IP_LAN_V4" ] ; then
+        $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $IP_LAN_V4 -j ACCEPT
+    fi
+
+    # VPN
+    if [ ! -z "$IP_LAN_VPN_PRV" ] ; then
+        $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $IP_LAN_VPN_PRV -j ACCEPT
+    fi
+    if [ ! -z "$IP_LAN_VPN_PRO" ] ; then
+        $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $IP_LAN_VPN_PRO -j ACCEPT
+    fi   
+
     # Accept localhost
-    $IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 127.0.0.1/24 -j ACCEPT
+    $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s 127.0.0.1/24 -j ACCEPT
 
     ##########
     # Drop all the rest
     ##########
-    $IPTABLES -A INPUT -p tcp --dport $SOURCE_PORT -s 0.0.0.0/0 -j DROP
+    $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s 0.0.0.0/0 -j DROP
 }
 
 
@@ -106,47 +120,57 @@ function soureIpFiltering() {
 # ------------------------------------------------------------------------------
 # Port forwarding setup
 # ------------------------------------------------------------------------------
-function forward {
-    log_daemon_msg "Firewall FORWARD rules"
 
-    REMOTE_WEB_SERVER=90.83.80.91
+function allowForwardingFromTo {
+    log_progress_msg "Allow forwarding from/to specific source IP@ and networks"
+     
+    # Remote IP @
+    $IPTABLES -A FORWARD -s 5.39.81.23 -j ACCEPT
+    $IPTABLES -A FORWARD -s 193.12.118.194 -j ACCEPT
+    $IPTABLES -A FORWARD -s 193.12.118.195 -j ACCEPT
+    $IPTABLES -A FORWARD -s 193.12.118.196 -j ACCEPT
 
-
-    #############################
-    # Allow forwarding to...
-    #
-    # Here you need to set the list of targets. 
-    # Ex:    remote user ---> MyServer ---> Target server
-    #############################
-    ### Remote servers
-    $IPTABLES -A FORWARD -s $REMOTE_WEB_SERVER -j ACCEPT 
-
-    ### LAN 
+    # LAN
     if [ ! -z "$IP_LAN_V4" ] ; then
         $IPTABLES -A FORWARD -s $IP_LAN_V4 -j ACCEPT
     fi
 
-    ### VPN
+    # VPN
     if [ ! -z "$IP_LAN_VPN_PRV" ] ; then
         $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRV -j ACCEPT
     fi
-
-    #############################
-    # FORWARD rules
-    #############################
-    forwardTcpPort 10022 $REMOTE_WEB_SERVER 22
-    forwardTcpPort 10080 $REMOTE_WEB_SERVER 80
-    forwardTcpPort 13306 $REMOTE_WEB_SERVER 3306
-
-    log_end_msg 0
+    if [ ! -z "$IP_LAN_VPN_PRO" ] ; then
+        $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRO -j ACCEPT
+    fi   
 }
 
-# usage:   forwardTcpPort <sourcePort> <targetServer> <targetPort>
-function forwardTcpPort() {
+# usage:   forwardPort <sourcePort> <protocol> <target server> <targetPort>
+#          forwardPort 7792 udp
+function forwardPort {
     SOURCE_PORT=$1
-    TARGET_SERVER=$2
-    TARGET_PORT=$3
-    $IPTABLES -A PREROUTING -t nat -p tcp --dport $SOURCE_PORT -j DNAT --to $TARGET_SERVER:$TARGET_PORT
+    PROTOCOL=$2
+    TARGET_SERVER=$3
+    TARGET_PORT=$4
+
+    $IPTABLES -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -j ACCEPT
+    $IPTABLES -A OUTPUT -p $PROTOCOL --dport $TARGET_PORT -j ACCEPT
+    $IPTABLES -A PREROUTING -t nat -p $PROTOCOL --dport $SOURCE_PORT -j DNAT --to $TARGET_SERVER:$TARGET_PORT
+}
+
+function forward {
+    log_daemon_msg "Port forwarding rules"
+
+    allowForwardingFromTo
+
+    # FORWARD rules
+    log_progress_msg "Forwarding from/to specific source IP@ and networks"
+
+    REMOTE_WEB_SERVER=90.83.80.91
+    forwardPort 41200 $REMOTE_WEB_SERVER 22
+    forwardPort 10080 $REMOTE_WEB_SERVER 80
+    forwardPort 13306 $REMOTE_WEB_SERVER 3306
+
+    log_end_msg 0
 }
 
 
@@ -234,7 +258,6 @@ function defaultPolicy {
     $IP6TABLES -P FORWARD DROP
     $IP6TABLES -P OUTPUT DROP
 
-
     log_progress_msg "Set common security filters"
     # Reject invalid packets
     $IPTABLES -A INPUT -p tcp -m state --state INVALID -j DROP
@@ -285,10 +308,10 @@ function defaultPolicy {
     $IPTABLES -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
     $IPTABLES -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
     $IPTABLES -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
     $IP6TABLES -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
     $IP6TABLES -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
     $IP6TABLES -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 
-    
 
     if [ ! -z "$IP_LAN_V4" ] 
     then
@@ -461,14 +484,14 @@ function incomingPortFiltering {
 
     # Software quality
     #$IPTABLES -A INPUT -p tcp --dport 9000 -j ACCEPT    # Sonar
-    #soureIpFiltering 9000
+    #sourceIpFiltering 9000 tcp
 
     #################
     # Database
     #################
     # MySQL db
     #$IPTABLES -A INPUT -p tcp --dport 3306 -j ACCEPT
-    #soureIpFiltering 3306
+    #sourceIpFiltering 3306 tcp
 
     #################
     # IT
@@ -478,6 +501,12 @@ function incomingPortFiltering {
     #$IPTABLES -A INPUT -p udp --dport 138 -j ACCEPT
     #$IPTABLES -A INPUT -p tcp --dport 139 -j ACCEPT
     #$IPTABLES -A INPUT -p tcp --dport 445 -j ACCEPT
+
+    #sourceIpFiltering 137 udp
+    #sourceIpFiltering 138 udp
+    #sourceIpFiltering 139 tcp
+    #sourceIpFiltering 445 tcp
+
 
     # LDAP
     #$IPTABLES -A INPUT -p tcp -m state --state NEW --dport 389 -j ACCEPT # LDAP
@@ -517,7 +546,7 @@ function incomingPortFiltering {
     #$IPTABLES -A INPUT -p tcp --dport 5672 -j ACCEPT    # AMPQ protocol
        
     ## TODO example of IP @ filtering       
-    #soureIpFiltering 8088    
+    #sourceIpFiltering 8088 udp
 
     log_end_msg 0
 }
@@ -684,6 +713,7 @@ function vpn {
         $IPTABLES -A FORWARD -o $INT_VPN -m state ! --state INVALID -j ACCEPT
 
         # Allow forwarding
+        log_daemon_msg "Enable forwarding"
         if [ ! -z "$INT_ETH" ] ; then
             $IPTABLES -A FORWARD -i $INT_VPN -o $INT_ETH -j ACCEPT
             $IPTABLES -A FORWARD -i $INT_ETH -o $INT_VPN -j ACCEPT
@@ -691,8 +721,7 @@ function vpn {
         if [ ! -z "$INT_WLAN" ] ; then
             $IPTABLES -A FORWARD -i $INT_VPN -o $INT_WLAN -j ACCEPT
             $IPTABLES -A FORWARD -i $INT_WLAN -o $INT_VPN -j ACCEPT
-        fi
-
+        fi            
         log_end_msg 0
 
 
@@ -788,6 +817,8 @@ log_end_msg 0
 ###### Port filtering (input | output | forwarding)
 incomingPortFiltering
 outgoingPortFiltering
+
+###### Forward
 #forward
 
 ###### VPN
