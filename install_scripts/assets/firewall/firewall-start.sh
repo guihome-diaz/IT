@@ -491,6 +491,8 @@ function incomingPortFiltering {
     #################
     # MySQL db
     #$IPTABLES -A INPUT -p tcp --dport 3306 -j ACCEPT
+    # PostgreSQL
+    #$IPTABLES -A INPUT -p tcp --dport 5432 -j ACCEPT
     #sourceIpFiltering 3306 tcp
 
     #################
@@ -648,6 +650,7 @@ function outgoingPortFiltering {
     $IPTABLES -A OUTPUT -p tcp --dport 9418 -j ACCEPT   # GIT
     # Database 
     $IPTABLES -A OUTPUT -p tcp --dport 3306 -j ACCEPT   # MySQL
+    $IPTABLES -A OUTPUT -p tcp --dport 5432 -j ACCEPT   # Postgresql
     $IPTABLES -A OUTPUT -p tcp --dport 1433 -j ACCEPT   # Microsoft SQL server
     $IPTABLES -A OUTPUT -p udp --dport 1433 -j ACCEPT   # Microsoft SQL server
     $IPTABLES -A OUTPUT -p tcp --dport 1434 -j ACCEPT   # Microsoft SQL server 2005
