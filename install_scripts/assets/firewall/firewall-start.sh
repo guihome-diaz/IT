@@ -479,7 +479,6 @@ function incomingPortFiltering {
     # JEE server      
     #$IPTABLES -A INPUT -p tcp --dport 4848 -j ACCEPT   # Glassfish admin
     #$IPTABLES -A INPUT -p tcp --dport 1527 -j ACCEPT   # Glassfish4 security manager
-    #echo -e " ... Opening Jboss Wildfly"   
     #$IPTABLES -A INPUT -p tcp --dport 9990 -j ACCEPT   # Jboss Widlfy admin
 
     # Software quality
