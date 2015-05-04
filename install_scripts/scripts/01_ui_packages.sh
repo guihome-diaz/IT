@@ -51,6 +51,8 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing gparted to manage disks $WHITE \n"
 	apt-get install -y gparted
 
+	echo -e "\n\n $YELLOW   >> Installing scanner tools $WHITE \n"
+	apt-get install -y simple-scan xsane
 
 	tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/testUIpackages$$
 	trap "rm -f $tempfile" 0 1 2 5 15
