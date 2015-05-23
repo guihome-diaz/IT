@@ -130,20 +130,19 @@ $IPTABLES -A INPUT -p udp -s 255.255.255.255 --sport 67 --dport 68 -j ACCEPT
 $IPTABLES -A OUTPUT -p udp --dport 67 -j ACCEPT 
 $IPTABLES -A OUTPUT -p udp --dport 68 -j ACCEPT 
  
+
 # DNS (udp)
-$IPTABLES -A OUTPUT -p udp --sport 53 -j ACCEPT
 $IPTABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
-$IPTABLES -A INPUT -p udp --sport 53 -j ACCEPT
 $IPTABLES -A INPUT -p udp --dport 53 -j ACCEPT
 $IP6TABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
-$IP6TABLES -A OUTPUT -p udp --sport 53 -j ACCEPT
 $IP6TABLES -A INPUT -p udp --dport 53 -j ACCEPT
-$IP6TABLES -A INPUT -p udp --sport 53 -j ACCEPT
+
 # DNS sec (tcp)
-$IPTABLES -A OUTPUT -p tcp --sport 53 -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
+$IPTABLES -A INPUT -p tcp --dport 53 -j ACCEPT
 $IP6TABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
-$IP6TABLES -A OUTPUT -p tcp --sport 53 -j ACCEPT
+$IP6TABLES -A INPUT -p tcp --dport 53 -j ACCEPT
+
 
 # FTP requests  
 # FTP data transfer

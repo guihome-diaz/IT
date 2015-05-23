@@ -173,15 +173,15 @@ function defaultPolicy {
 
 	## DNS
 	echo -e " ... Allow DNS requests"
-	$IPTABLES -A OUTPUT -p udp --dport 53 -m limit --limit 100/s -j ACCEPT
-	$IPTABLES -A OUTPUT -p udp --sport 53 -m limit --limit 100/s -j ACCEPT
-	$IPTABLES -A INPUT -p udp --dport 53 -m limit --limit 100/s -j ACCEPT
-	$IPTABLES -A INPUT -p udp --sport 53 -m limit --limit 100/s -j ACCEPT
+	$IPTABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
+	$IPTABLES -A INPUT -p udp --dport 53 -j ACCEPT
+	$IPTABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
+	$IPTABLES -A INPUT -p tcp --dport 53 -j ACCEPT
 	
-	$IP6TABLES -A OUTPUT -p udp --dport 53 -m limit --limit 100/s -j ACCEPT
-	$IP6TABLES -A OUTPUT -p udp --sport 53 -m limit --limit 100/s -j ACCEPT
-	$IP6TABLES -A INPUT -p udp --dport 53 -m limit --limit 100/s -j ACCEPT
-	$IP6TABLES -A INPUT -p udp --sport 53 -m limit --limit 100/s -j ACCEPT
+	$IP6TABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
+	$IP6TABLES -A INPUT -p udp --dport 53 -j ACCEPT
+	$IP6TABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
+	$IP6TABLES -A INPUT -p tcp --dport 53 -j ACCEPT
 }
 
 
