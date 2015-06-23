@@ -73,6 +73,9 @@ function setupCorePackages() {
 	echo -e "\n\n $YELLOW   >> Network clients (NFS, Samba) $WHITE \n"
 	apt-get install -y nfs-common smbclient
 
+	echo -e "\n\n $YELLOW   >> Auto-completion ignore case $WHITE \n"
+	echo "set completion-ignore-case On" >> ~/.inputrc
+
 	echo -e "\n\n $GREEN ... core packages installation complete! $WHITE"
 	echo -e " "
 }

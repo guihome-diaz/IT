@@ -59,14 +59,13 @@ fi
 #   COMMON VARIABLES    #
 # --------------------- #
 # network configuration
-INT_ETH=`ifconfig -a | sed -n 's/^\([^ ]\+\).*/\1/p' \
-         | grep -Fvx -e lo | grep -Fvx -e wlan0 \
-         | grep -Fvx -e tun0 | grep -Fvx -e tunl0 | grep -Fvx -e docker0 \
-         | grep -Fvx -e ip6tnl0 | grep -Fvx -e sit0 | grep -Fvx -e bond0 | grep -Fvx -e dummy0`
-INT_WLAN=`ifconfig -a | sed -n 's/^\([^ ]\+\).*/\1/p' \
-         | grep -Fvx -e lo | grep -Fvx -e eth0 \
-         | grep -Fvx -e tun0 | grep -Fvx -e tunl0 | grep -Fvx -e docker0 \
-         | grep -Fvx -e ip6tnl0 | grep -Fvx -e sit0 | grep -Fvx -e bond0 | grep -Fvx -e dummy0`
+
+INT_ETH="eth0"
+INT_WLAN="wlan0"
+#INT_ETH=`ifconfig -a | sed -n 's/^\([^ ]\+\).*/\1/p' \
+#         | grep -Fvx -e lo | grep -Fvx -e wlan0 \
+#         | grep -Fvx -e tun0 | grep -Fvx -e tunl0 | grep -Fvx -e docker0 \
+#         | grep -Fvx -e ip6tnl0 | grep -Fvx -e sit0 | grep -Fvx -e bond0 | grep -Fvx -e dummy0`
 
 IP_LAN_V4="myLocalNetwork"
 IP_LAN_V6=""
@@ -279,7 +278,7 @@ function defaultPolicy {
     $IP6TABLES -A FORWARD -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
 
     # Reserved addresses. We shouldn't received any packets from them!
-    $IPTABLES -A INPUT -s 10.0.0.0/8 -j DROP
+    $IPTABLES -A INPUT -s 10.0.0.0/8 -m comment --comment "Do not allow foreign LAN - class A" -j DROP
     $IPTABLES -A INPUT -s 169.254.0.0/16 -j DROP
     
     ## Localhost
@@ -316,14 +315,14 @@ function defaultPolicy {
     if [ ! -z "$IP_LAN_V4" ] 
     then
         log_progress_msg "Allow LAN communication - IP v4 - Network: $IP_LAN_V4"
-        $IPTABLES -A INPUT -s $IP_LAN_V4 -d $IP_LAN_V4 -j ACCEPT
-        $IPTABLES -A OUTPUT -s $IP_LAN_V4 -d $IP_LAN_V4 -j ACCEPT
+        $IPTABLES -A INPUT -s $IP_LAN_V4 -d $IP_LAN_V4 -m comment --comment "local LAN" -j ACCEPT
+        $IPTABLES -A OUTPUT -s $IP_LAN_V4 -d $IP_LAN_V4 -m comment --comment "local LAN" -j ACCEPT
     fi
     if [ ! -z "$IP_LAN_V6" ] 
     then
         log_progress_msg "Allow LAN communication - IP v6 - Network: $IP_LAN_V6"
-        $IP6TABLES -A INPUT -s $IP_LAN_V6 -d $IP_LAN_V6 -j ACCEPT
-        $IP6TABLES -A OUTPUT -s $IP_LAN_V6 -d $IP_LAN_V6 -j ACCEPT
+        $IP6TABLES -A INPUT -s $IP_LAN_V6 -d $IP_LAN_V6 -m comment --comment "local LAN" -j ACCEPT
+        $IP6TABLES -A OUTPUT -s $IP_LAN_V6 -d $IP_LAN_V6 -m comment --comment "local LAN" -j ACCEPT
     fi
 
     
@@ -331,7 +330,7 @@ function defaultPolicy {
     ## DHCP client >> Broadcast IP request 
     $IPTABLES -A INPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
     $IPTABLES -A OUTPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
-     
+
     # DNS
     $IPTABLES -A INPUT -p udp --sport 53 -m state --state ESTABLISHED -m comment --comment "DNS UDP" -j ACCEPT
     $IPTABLES -A INPUT -p tcp --sport 53 -m state --state ESTABLISHED -m comment --comment "DNS TCP" -j ACCEPT
@@ -343,6 +342,10 @@ function defaultPolicy {
     $IP6TABLES -A OUTPUT -p udp --dport 53 -m state --state NEW,ESTABLISHED -m comment --comment "DNS UDP" -j ACCEPT
     $IP6TABLES -A OUTPUT -p tcp --dport 53 -m state --state NEW,ESTABLISHED -m comment --comment "DNS TCP" -j ACCEPT
     
+    echo "     !!! If you lost Internet after running the script, please check your /etc/resolv.conf file"
+    echo "         Make sure you are not using 127.0.0.1 as default nameserver"
+
+
     # FTP requests  
     # FTP data transfer
     $IPTABLES -A OUTPUT -p tcp --dport 20 -m comment --comment "FTP data" -j ACCEPT
@@ -367,48 +370,51 @@ function defaultPolicy {
 function protocolEnforcement {
     log_progress_msg " Security protection"
     # ICMP packets should not be fragmented
-    $IPTABLES -A INPUT --fragment -p icmp -j DROP    
+    $IPTABLES -A INPUT --fragment -p icmp -m comment --comment "no ICMP fragments" -j DROP    
     # Limit ICMP Flood
-    $IPTABLES -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j ACCEPT
+    $IPTABLES -A INPUT -p icmp -m limit --limit 1/s --limit-burst 1 -m comment --comment "ICMP flood protection" -j ACCEPT
     #$IPTABLES -A OUTPUT -p icmp -m limit --limit 1/s --limit-burst 1 -j ACCEPT
-    $IPTABLES -A OUTPUT -p icmp --icmp-type 0 -j ACCEPT
-    $IPTABLES -A OUTPUT -p icmp --icmp-type 3 -j ACCEPT
-    $IPTABLES -A OUTPUT -p icmp --icmp-type 8 -j ACCEPT    
+    $IPTABLES -A OUTPUT -p icmp --icmp-type 0 -m comment --comment "echo reply" -j ACCEPT
+    $IPTABLES -A OUTPUT -p icmp --icmp-type 3 -m comment --comment "destination unreachable" -j ACCEPT
+    $IPTABLES -A OUTPUT -p icmp --icmp-type 8 -m comment --comment "echo request" -j ACCEPT    
     # Avoid common attacks ... but blocks ping
     #$IPTABLES -A OUTPUT -p icmp --icmp-type 3 -j DROP
 
     
     log_progress_msg " ... Layer 2: ICMP v6 "
     # Feedback for problems
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 1 -j ACCEPT
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 2 -j ACCEPT
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 3 -j ACCEPT
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 4 -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 1 -m comment --comment "destination unreachable" -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 2 -m comment --comment "packet too big" -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 3 -m comment --comment "time exceeded" -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 4 -m comment --comment "parameter problem" -j ACCEPT
     
     # Router and neighbor discovery 
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 133 -j ACCEPT
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 134 -j ACCEPT
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 135 -j ACCEPT
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 136 -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 133 -m comment --comment "router sollicitation" -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 134 -m comment --comment "router advertisement" -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 135 -m comment --comment "neighbor sollicitation" -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 136 -m comment --comment "neighbor advertisement" -j ACCEPT
     
-    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 133 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 134 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 135 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 136 -j ACCEPT
+    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 133 -m comment --comment "router sollicitation" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 134 -m comment --comment "router advertisement" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 135 -m comment --comment "neighbor sollicitation" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 136 -m comment --comment "neighbor advertisement" -j ACCEPT
     
     # Ping requests
-    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 128 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 128 -j ACCEPT
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 128 -m comment --comment "echo request" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 128 -m comment --comment "echo request" -j ACCEPT
+
+    $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type 129 -m comment --comment "echo reply" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p icmpv6 --icmpv6-type 129 -m comment --comment "echo reply" -j ACCEPT
     
     
     log_progress_msg " ... Layer 4: TCP # check packets conformity"
     # INCOMING packets check
     # All new incoming TCP should be SYN first
-    $IPTABLES -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+    $IPTABLES -A INPUT -p tcp ! --syn -m state --state NEW -m comment --comment "new TCP connection check" -j DROP
     # Avoid SYN Flood (max 3 SYN packets / second. Then Drop all requests !!)
-    $IPTABLES -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -j ACCEPT
+    $IPTABLES -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -m comment --comment "avoid TCP SYN flood" -j ACCEPT
     # Avoid fragment packets
-    $IPTABLES -A INPUT -f -j DROP
+    $IPTABLES -A INPUT -f -m comment --comment "no fragments" -j DROP
     # Check TCP flags -- flag 64, 128 = bogues
     $IPTABLES -A INPUT -p tcp --tcp-option 64 -j DROP
     $IPTABLES -A INPUT -p tcp --tcp-option 128 -j DROP
@@ -416,33 +422,34 @@ function protocolEnforcement {
 
     log_progress_msg " ... Layer 4: TCP # Avoid NMAP Scans"
     # XMAS-NULL
-    $IPTABLES -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags ALL NONE -m comment --comment "attack XMAS-NULL" -j DROP
     # XMAS-TREE
-    $IPTABLES -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags ALL ALL -m comment --comment "attack XMAS-tree" -j DROP
+    # Stealth XMAS Scan
+    $IPTABLES -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -m comment --comment "attack XMAS stealth" -j DROP
+
     # SYN/RST Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags SYN,RST SYN,RST -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags SYN,RST SYN,RST -m comment --comment "scan SYN/RST" -j DROP
     # SYN/FIN Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -m comment --comment "scan SYN/FIN" -j DROP
     # SYN/ACK Scan
     #$IPTABLES -A INPUT -p tcp --tcp-flags ALL ACK -j DROP
-    $IPTABLES -A INPUT -p tcp --tcp-flags SYN,ACK SYN,ACK -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags SYN,ACK SYN,ACK -m comment --comment "scan SYN/ACK" -j DROP
     # FIN/RST Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,RST FIN,RST -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,RST FIN,RST -m comment --comment "scan FIN/RST" -j DROP
     # FIN/ACK Scan
-    $IPTABLES -A INPUT -p tcp -m tcp --tcp-flags FIN,ACK FIN -j DROP
+    $IPTABLES -A INPUT -p tcp -m tcp --tcp-flags FIN,ACK FIN -m comment --comment "scan FIN/ACK" -j DROP
     # ACK/URG Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags ACK,URG URG -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags ACK,URG URG -m comment --comment "scan ACK/URG" -j DROP
     # FIN/URG/PSH Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,URG,PSH FIN,URG,PSH -j DROP
-    # Stealth XMAS Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,URG,PSH FIN,URG,PSH -m comment --comment "scan FIN/URG/PSH" -j DROP
     # XMAS-PSH Scan
-    $IPTABLES -A INPUT -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -m comment --comment "scan XMAS/PSH" -j DROP
     # End TCP connection
-    $IPTABLES -A INPUT -p tcp --tcp-flags ALL FIN -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags ALL FIN -m comment --comment "end TCP connection flag" -j DROP
     # Ports scans
-    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,SYN,RST,ACK SYN -j DROP
-    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,SYN,RST,ACK SYN -m comment --comment "common scan FIN/SYN/RST/ACK SYN" -j DROP
+    $IPTABLES -A INPUT -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -m comment --comment "common scan FIN/SYN/RST/ACK/PSH/URG NONE" -j DROP
 }
 
 
@@ -518,7 +525,9 @@ function incomingPortFiltering {
     #$IPTABLES -A INPUT -p tcp --dport 10000 -m comment --comment "Webmin services" -j ACCEPT 
     #$IPTABLES -A INPUT -p tcp --dport 20000 -m comment --comment "Webmin users" -j ACCEPT
 
+    #$IPTABLES -A INPUT -p tcp --dport 10050 -m comment --comment "Zabbix agent" -j ACCEPT
     #$IPTABLES -A INPUT -p tcp --dport 10051 -m comment --comment "Zabbix server" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 3030 -m comment --comment "Dashboard (zabbix)" -j ACCEPT
 
     # ElasticSearch, Logstash, Kibana
     #$IPTABLES -A INPUT -p tcp --dport 9200 -m comment --comment "ElasticSearch HTTP" -j ACCEPT
@@ -549,6 +558,14 @@ function incomingPortFiltering {
        
     ## TODO example of IP @ filtering       
     #sourceIpFiltering 8088 udp
+
+
+    ##########################
+    # Common input to reject
+    ##########################
+    $IPTABLES -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan DROP" -j DROP
+    $IPTABLES -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan DROP" -j DROP
+
 
     log_end_msg 0
 }
@@ -624,7 +641,8 @@ function outgoingPortFiltering {
     $IPTABLES -A OUTPUT -p tcp --dport 10000 -m comment --comment "Services and configuration" -j ACCEPT
     $IPTABLES -A OUTPUT -p tcp --dport 20000 -m comment --comment "Users management" -j ACCEPT
     # Zabbix
-    $IPTABLES -A OUTPUT -p tcp --dport 10051 -m comment --comment "Zabbix agent" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 10050 -m comment --comment "Zabbix agent" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 10051 -m comment --comment "Zabbix server" -j ACCEPT
     $IPTABLES -A OUTPUT -p tcp --dport 3030 -m comment --comment "Dashboard (zabbix)" -j ACCEPT
     # ELK (ElasticSearch, Logstash, Kibana)
     $IPTABLES -A OUTPUT -p tcp --dport 9200 -m comment --comment "ElasticSearch HTTP console" -j ACCEPT
