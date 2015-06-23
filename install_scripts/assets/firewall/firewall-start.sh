@@ -31,6 +31,9 @@
 #   version 1.6 - April 2015
 #                  >> Improving log using 'log_' functions
 #                  >> Adjusting IPv6 rules as well as DNS, FTP, VPN + simpler ESTABLISHED, RELATED
+#   version 1.7 - June 2015
+#                  >> Improving DNS
+#                  >> Add comments on all ports
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 #
@@ -126,9 +129,6 @@ function allowForwardingFromTo {
      
     # Remote IP @
     $IPTABLES -A FORWARD -s 5.39.81.23 -j ACCEPT
-    $IPTABLES -A FORWARD -s 193.12.118.194 -j ACCEPT
-    $IPTABLES -A FORWARD -s 193.12.118.195 -j ACCEPT
-    $IPTABLES -A FORWARD -s 193.12.118.196 -j ACCEPT
 
     # LAN
     if [ ! -z "$IP_LAN_V4" ] ; then
@@ -260,48 +260,48 @@ function defaultPolicy {
 
     log_progress_msg "Set common security filters"
     # Reject invalid packets
-    $IPTABLES -A INPUT -p tcp -m state --state INVALID -j DROP
-    $IPTABLES -A INPUT -p udp -m state --state INVALID -j DROP
-    $IPTABLES -A INPUT -p icmp -m state --state INVALID -j DROP
-    $IPTABLES -A OUTPUT -p tcp -m state --state INVALID -j DROP
-    $IPTABLES -A OUTPUT -p udp -m state --state INVALID -j DROP
-    $IPTABLES -A OUTPUT -p icmp -m state --state INVALID -j DROP
-    $IPTABLES -A FORWARD -p tcp -m state --state INVALID -j DROP
-    $IPTABLES -A FORWARD -p udp -m state --state INVALID -j DROP
+    $IPTABLES -A INPUT -p tcp -m state --state INVALID -m comment --comment "Reject invalid TCP" -j DROP
+    $IPTABLES -A INPUT -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
+    $IPTABLES -A INPUT -p icmp -m state --state INVALID -m comment --comment "Reject invalid ICMP" -j DROP
+    $IPTABLES -A OUTPUT -p tcp -m state --state INVALID -m comment --comment "Reject invalid TCP" -j DROP
+    $IPTABLES -A OUTPUT -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
+    $IPTABLES -A OUTPUT -p icmp -m state --state INVALID -m comment --comment "Reject invalid ICMP" -j DROP
+    $IPTABLES -A FORWARD -p tcp -m state --state INVALID -m comment --comment "Reject invalid TCP" -j DROP
+    $IPTABLES -A FORWARD -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
     
-    $IP6TABLES -A INPUT -p tcp -m state --state INVALID -j DROP
-    $IP6TABLES -A INPUT -p udp -m state --state INVALID -j DROP
-    $IP6TABLES -A INPUT -p icmpv6 -m state --state INVALID -j DROP
-    $IP6TABLES -A OUTPUT -p tcp -m state --state INVALID -j DROP
-    $IP6TABLES -A OUTPUT -p udp -m state --state INVALID -j DROP
-    $IP6TABLES -A OUTPUT -p icmpv6 -m state --state INVALID -j DROP
-    $IP6TABLES -A FORWARD -p tcp -m state --state INVALID -j DROP
-    $IP6TABLES -A FORWARD -p udp -m state --state INVALID -j DROP
+    $IP6TABLES -A INPUT -p tcp -m state --state INVALID -m comment --comment "Reject invalid TCP" -j DROP
+    $IP6TABLES -A INPUT -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
+    $IP6TABLES -A INPUT -p icmpv6 -m state --state INVALID -m comment --comment "Reject invalid ICMP6" -j DROP
+    $IP6TABLES -A OUTPUT -p tcp -m state --state INVALID -m comment --comment "Reject invalid TCP" -j DROP
+    $IP6TABLES -A OUTPUT -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
+    $IP6TABLES -A OUTPUT -p icmpv6 -m state --state INVALID -m comment --comment "Reject invalid ICMP6" -j DROP
+    $IP6TABLES -A FORWARD -p tcp -m state --state INVALID -m comment --comment "Reject invalid TCP" -j DROP
+    $IP6TABLES -A FORWARD -p udp -m state --state INVALID -m comment --comment "Reject invalid UDP" -j DROP
 
     # Reserved addresses. We shouldn't received any packets from them!
     $IPTABLES -A INPUT -s 10.0.0.0/8 -j DROP
     $IPTABLES -A INPUT -s 169.254.0.0/16 -j DROP
     
     ## Localhost
-    $IPTABLES -A INPUT ! -i lo -s 127.0.0.0/24 -j DROP  
-    $IPTABLES -A OUTPUT ! -o lo -d 127.0.0.0/24 -j DROP
-    $IPTABLES -A FORWARD -s 127.0.0.0/24 -j DROP
+    $IPTABLES -A INPUT ! -i lo -s 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP  
+    $IPTABLES -A OUTPUT ! -o lo -d 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP
+    $IPTABLES -A FORWARD -s 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP
 
-    $IP6TABLES -A INPUT ! -i lo -s ::1/128 -j DROP
-    $IP6TABLES -A OUTPUT ! -o lo -d ::1/128 -j DROP
-    $IP6TABLES -A FORWARD -s ::1/128 -j DROP
+    $IP6TABLES -A INPUT ! -i lo -s ::1/128 -m comment --comment "Reject none loopback on 'lo'" -j DROP
+    $IP6TABLES -A OUTPUT ! -o lo -d ::1/128 -m comment --comment "Reject none loopback on 'lo'" -j DROP
+    $IP6TABLES -A FORWARD -s ::1/128 -m comment --comment "Reject none loopback on 'lo'" -j DROP
     
     ## IPv6 security
     # No IPv4 -> IPv6 tunneling
-    $IP6TABLES -A INPUT -s 2002::/16 -j DROP        # 6to4 tunnels
-    $IP6TABLES -A FORWARD -s 2002::/16 -j DROP
-    $IP6TABLES -A INPUT -s 2001:0::/32 -j DROP      # Teredo tunnels
-    $IP6TABLES -A FORWARD -s 2001:0::/32 -j DROP
+    $IP6TABLES -A INPUT -s 2002::/16 -m comment --comment "Reject 6to4 tunnels" -j DROP
+    $IP6TABLES -A FORWARD -s 2002::/16 -m comment --comment "Reject 6to4 tunnels" -j DROP
+    $IP6TABLES -A INPUT -s 2001:0::/32 -m comment --comment "Reject Teredo tunnels" -j DROP
+    $IP6TABLES -A FORWARD -s 2001:0::/32 -m comment --comment "Reject Teredo tunnels" -j DROP
     
     # Block IPv6 protocol in IPv4 frames
-    $IPTABLES -A INPUT -p 41 -j DROP
-    $IPTABLES -A OUTPUT -p 41 -j DROP
-    $IPTABLES -A FORWARD -p 41 -j DROP
+    $IPTABLES -A INPUT -p 41 -m comment --comment "Block IPv6 protocol in IPv4 frames" -j DROP
+    $IPTABLES -A OUTPUT -p 41 -m comment --comment "Block IPv6 protocol in IPv4 frames" -j DROP
+    $IPTABLES -A FORWARD -p 41 -m comment --comment "Block IPv6 protocol in IPv4 frames" -j DROP
 
 
     log_progress_msg "Keep ESTABLISHED, RELATED connections"
@@ -329,30 +329,34 @@ function defaultPolicy {
     
     log_progress_msg "Enable common protocols: DHCP, DNS, FTP (passive/active)"
     ## DHCP client >> Broadcast IP request 
-    $IPTABLES -A OUTPUT -p udp -d 255.255.255.255 --sport 68 --dport 67 -j ACCEPT
-    $IPTABLES -A INPUT -p udp -s 255.255.255.255 --sport 67 --dport 68 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 67 -j ACCEPT 
-    $IPTABLES -A OUTPUT -p udp --dport 68 -j ACCEPT 
+    $IPTABLES -A INPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
+    $IPTABLES -A OUTPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
      
-    # DNS (udp)
-    $IPTABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
-    $IPTABLES -A INPUT -p udp --dport 53 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p udp --dport 53 -j ACCEPT
-    $IP6TABLES -A INPUT -p udp --dport 53 -j ACCEPT
+    # DNS
+    $IPTABLES -A INPUT -p udp --sport 53 -m state --state ESTABLISHED -m comment --comment "DNS UDP" -j ACCEPT
+    $IPTABLES -A INPUT -p tcp --sport 53 -m state --state ESTABLISHED -m comment --comment "DNS TCP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 53 -m state --state NEW,ESTABLISHED -m comment --comment "DNS UDP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 53 -m state --state NEW,ESTABLISHED -m comment --comment "DNS TCP" -j ACCEPT
 
-    # DNS sec (tcp)
-    $IPTABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
-    $IPTABLES -A INPUT -p tcp --dport 53 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p tcp --dport 53 -j ACCEPT
-    $IP6TABLES -A INPUT -p tcp --dport 53 -j ACCEPT
+    $IP6TABLES -A INPUT -p udp --sport 53 -m state --state ESTABLISHED -m comment --comment "DNS UDP" -j ACCEPT
+    $IP6TABLES -A INPUT -p tcp --sport 53 -m state --state ESTABLISHED -m comment --comment "DNS TCP" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p udp --dport 53 -m state --state NEW,ESTABLISHED -m comment --comment "DNS UDP" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p tcp --dport 53 -m state --state NEW,ESTABLISHED -m comment --comment "DNS TCP" -j ACCEPT
     
     # FTP requests  
     # FTP data transfer
-    $IPTABLES -A OUTPUT -p tcp --dport 20 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p tcp --dport 20 -j ACCEPT  
+    $IPTABLES -A OUTPUT -p tcp --dport 20 -m comment --comment "FTP data" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p tcp --dport 20 -m comment --comment "FTP data" -j ACCEPT  
     # FTP control (command)
-    $IPTABLES -A OUTPUT -p tcp --dport 21 -j ACCEPT
-    $IP6TABLES -A OUTPUT -p tcp --dport 21 -j ACCEPT  
+    $IPTABLES -A OUTPUT -p tcp --dport 21 -m comment --comment "FTP command" -j ACCEPT
+    $IP6TABLES -A OUTPUT -p tcp --dport 21 -m comment --comment "FTP command" -j ACCEPT  
+
+    # NTP
+    $IPTABLES -A INPUT -p udp --sport 123 -m state --state ESTABLISHED -m comment --comment "NTP (UDP)" -j ACCEPT
+    $IPTABLES -A INPUT -p tcp --sport 123 -m state --state ESTABLISHED -m comment --comment "NTP (TCP)" -j ACCEPT
+
+    $IPTABLES -A OUTPUT -p udp --dport 123 -m state --state NEW,ESTABLISHED -m comment --comment "NTP (UDP)" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 123 -m state --state NEW,ESTABLISHED -m comment --comment "NTP (TCP)" -j ACCEPT
 }
 
 
@@ -453,53 +457,53 @@ function incomingPortFiltering {
     # Remote access
     #################
     # SSH
-    $IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT 
-    $IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -j ACCEPT
+    $IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -m comment --comment "SSH" -j ACCEPT 
+    $IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -m comment --comment "SSH" -j ACCEPT
 
     # Remote desktop 
-    #$IPTABLES -A INPUT -p tcp --dport 4000 -j ACCEPT        # NoMachine LAN server
-    #$IPTABLES -A INPUT -p tcp --dport 4080 -j ACCEPT        # NoMachine HTTP server
-    #$IPTABLES -A INPUT -p tcp --dport 4443 -j ACCEPT        # NoMachine HTTPS server
-    #$IPTABLES -A INPUT -p udp --dport 4011:4999 -j ACCEPT   # NoMachine UDP real-time feed
+    #$IPTABLES -A INPUT -p tcp --dport 4000 -m comment --comment "NoMachine LAN server" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 4080 -m comment --comment "NoMachine HTTP server" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 4443 -m comment --comment "NoMachine HTTPS server" -j ACCEPT
+    #$IPTABLES -A INPUT -p udp --dport 4011:4999 -m comment --comment "NoMachine server UDP feed" -j ACCEPT
     
     #################
     # WEB
     #################
     # HTTP, HTTPS  
-    #$IPTABLES -A INPUT -p tcp --dport 80 -j ACCEPT      # Access restrictions managed by Apache2 VHost
-    #$IPTABLES -A INPUT -p tcp --dport 443 -j ACCEPT     # Access restrictions managed by Apache2 VHost
+    #$IPTABLES -A INPUT -p tcp --dport 80 -m comment --comment "HTTP" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 443 -m comment --comment "HTTPS" -j ACCEPT
 
     # Web server (HTTP alt)
-    #$IPTABLES -A INPUT -p tcp --dport 8080 -j ACCEPT
-    #$IPTABLES -A INPUT -p tcp --dport 8443 -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 8080 -m comment --comment "HTTP alt." -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 8443 -m comment --comment "HTTPS alt." -j ACCEPT
 
     # JEE server      
-    #$IPTABLES -A INPUT -p tcp --dport 4848 -j ACCEPT   # Glassfish admin
-    #$IPTABLES -A INPUT -p tcp --dport 1527 -j ACCEPT   # Glassfish4 security manager
-    #$IPTABLES -A INPUT -p tcp --dport 9990 -j ACCEPT   # Jboss Widlfy admin
+    #$IPTABLES -A INPUT -p tcp --dport 4848 -m comment --comment "Glassfish admin" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 1527 -m comment --comment "Glassfish security manager" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 9990 -m comment --comment "JBoss admin" -j ACCEPT
 
     # Software quality
-    #$IPTABLES -A INPUT -p tcp --dport 9000 -j ACCEPT    # Sonar
+    #$IPTABLES -A INPUT -p tcp --dport 9000 -m comment --comment "Sonarqube" -j ACCEPT
     #sourceIpFiltering 9000 tcp
 
     #################
     # Database
     #################
-    # MySQL db
-    #$IPTABLES -A INPUT -p tcp --dport 3306 -j ACCEPT
-    # PostgreSQL
-    #$IPTABLES -A INPUT -p tcp --dport 5432 -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 3306 -m comment --comment "MySQL" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 5432 -m comment --comment "PostgreSQL" -j ACCEPT
     #sourceIpFiltering 3306 tcp
 
     #################
     # IT
     #################
     # File-share
-    #$IPTABLES -A INPUT -p udp --dport 137 -j ACCEPT    # Access restrictions managed by Samba
-    #$IPTABLES -A INPUT -p udp --dport 138 -j ACCEPT
-    #$IPTABLES -A INPUT -p tcp --dport 139 -j ACCEPT
-    #$IPTABLES -A INPUT -p tcp --dport 445 -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 135 -m comment --comment "DCE endpoint resolution" -j ACCEPT
+    #$IPTABLES -A INPUT -p udp --dport 137 -m comment --comment "NetBIOS Name Service" -j ACCEPT
+    #$IPTABLES -A INPUT -p udp --dport 138 -m comment --comment "NetBIOS Datagram" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 139 -m comment --comment "NetBIOS Session" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 445 -m comment --comment "SMB over TCP" -j ACCEPT
 
+    #sourceIpFiltering 135 udp
     #sourceIpFiltering 137 udp
     #sourceIpFiltering 138 udp
     #sourceIpFiltering 139 tcp
@@ -507,41 +511,41 @@ function incomingPortFiltering {
 
 
     # LDAP
-    #$IPTABLES -A INPUT -p tcp -m state --state NEW --dport 389 -j ACCEPT # LDAP
-    #$IPTABLES -A INPUT -p tcp -m state --state NEW --dport 636 -j ACCEPT # LDAPS
+    #$IPTABLES -A INPUT -p tcp --dport 389 -m comment --comment "LDAP + LDAP startTLS" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 636 -m comment --comment "LDAPS" -j ACCEPT
 
     # IT tools
-    #$IPTABLES -A INPUT -p tcp --dport 10000 -j ACCEPT  # Webmin services
-    #$IPTABLES -A INPUT -p tcp --dport 20000 -j ACCEPT  # Webmin users management
+    #$IPTABLES -A INPUT -p tcp --dport 10000 -m comment --comment "Webmin services" -j ACCEPT 
+    #$IPTABLES -A INPUT -p tcp --dport 20000 -m comment --comment "Webmin users" -j ACCEPT
 
-    #$IPTABLES -A INPUT -p tcp --dport 10051 -j ACCEPT  # Zabbix server
+    #$IPTABLES -A INPUT -p tcp --dport 10051 -m comment --comment "Zabbix server" -j ACCEPT
 
     # ElasticSearch, Logstash, Kibana
-    #$IPTABLES -A INPUT -p tcp --dport 9200 -j ACCEPT   # HTTP
-    #$IPTABLES -A INPUT -p tcp --dport 9300 -j ACCEPT   # Transport
-    #$IPTABLES -A INPUT -p tcp --dport 54328 -j ACCEPT  # Multicasting
-    #$IPTABLES -A INPUT -p udp --dport 54328 -j ACCEPT  # Multicasting
+    #$IPTABLES -A INPUT -p tcp --dport 9200 -m comment --comment "ElasticSearch HTTP" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 9300 -m comment --comment "ElasticSearch Transport" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 54328 -m comment --comment "ElasticSearch Multicasting" -j ACCEPT
+    #$IPTABLES -A INPUT -p udp --dport 54328 -m comment --comment "ElasticSearch Multicasting" -j ACCEPT
 
     #################
     # Java
     #################
-    #$IPTABLES -A INPUT -p tcp --dport 1099 -j ACCEPT   # JMX
+    #$IPTABLES -A INPUT -p tcp --dport 1099 -m comment --comment "JMX" -j ACCEPT
 
     #################
     # Messaging
     #################
     # Open MQ (bundled with Glassfish)
-    #$IPTABLES -A INPUT -p tcp --dport 7676 -j ACCEPT    # JMS broker
+    #$IPTABLES -A INPUT -p tcp --dport 7676 -m comment --comment "OpenMQ" -j ACCEPT
     
     # ActiveMQ server
-    #$IPTABLES -A INPUT -p tcp --dport 8161 -j ACCEPT    # HTTP console
-    #$IPTABLES -A INPUT -p tcp --dport 8162 -j ACCEPT    # HTTPS console
-    #$IPTABLES -A INPUT -p tcp --dport 11099 -j ACCEPT   # JMX management
-    #$IPTABLES -A INPUT -p tcp --dport 61616 -j ACCEPT   # JMS queues
+    #$IPTABLES -A INPUT -p tcp --dport 8161 -m comment --comment "ActiveMQ HTTP console" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 8162 -m comment --comment "ActiveMQ HTTPS console" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 11099 -m comment --comment "ActiveMQ JMX" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 61616 -m comment --comment "ActiveMQ JMS Queues" -j ACCEPT
 
     # Rabbit MQ
-    #$IPTABLES -A INPUT -p tcp --dport 15672 -j ACCEPT   # HTTP console
-    #$IPTABLES -A INPUT -p tcp --dport 5672 -j ACCEPT    # AMPQ protocol
+    #$IPTABLES -A INPUT -p tcp --dport 15672 -m comment --comment "RabbitMQ HTTP console" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 5672 -m comment --comment "RabbitMQ data" -j ACCEPT
        
     ## TODO example of IP @ filtering       
     #sourceIpFiltering 8088 udp
@@ -561,131 +565,132 @@ function outgoingPortFiltering {
     # Main ports
     ##############
     # Remote Control
-    $IPTABLES -A OUTPUT -p tcp --dport 22 -j ACCEPT     # SSH (default port)
-    $IPTABLES -A OUTPUT -p tcp --dport 23 -j ACCEPT     # Telnet
+    $IPTABLES -A OUTPUT -p tcp --dport 22 -m comment --comment "SSH" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 23 -m comment --comment "Telnet" -j ACCEPT
     # Web
-    $IPTABLES -A OUTPUT -p tcp --dport 80 -j ACCEPT     # HTTP
-    $IPTABLES -A OUTPUT -p tcp --dport 443 -j ACCEPT    # HTTPS
-    $IPTABLES -A OUTPUT -p tcp --dport 8080 -j ACCEPT   # TomCat (Java Web Server)
+    $IPTABLES -A OUTPUT -p tcp --dport 80 -m comment --comment "HTTP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 443 -m comment --comment "HTTPS" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 8080 -m comment --comment "HTTP alt." -j ACCEPT
     # Core Linux services
-    $IPTABLES -A OUTPUT -p udp --dport 123 -j ACCEPT    # Time NTP UDP
-    $IPTABLES -A OUTPUT -p tcp --dport 135 -j ACCEPT    # Remote Procedure Call
+    $IPTABLES -A OUTPUT -p tcp --dport 135 -m comment --comment "RPC (Remote Procedure Call)" -j ACCEPT
 
     ##############
     # Remote control
     ##############
-    $IPTABLES -A OUTPUT -p tcp --dport 3389 -j ACCEPT          # Windows Remote Desktop (terminal Server)
-    $IPTABLES -A OUTPUT -p tcp --dport 5900 -j ACCEPT          # VNC and Apple Remote Desktop
+    $IPTABLES -A OUTPUT -p tcp --dport 3389 -m comment --comment "Microsoft RDP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 5900 -m comment --comment "VNC" -j ACCEPT
 
-    $IPTABLES -A OUTPUT -p tcp --dport 4000 -j ACCEPT          # NoMachine LAN access
-    $IPTABLES -A OUTPUT -p tcp --dport 4080 -j ACCEPT          # NoMachine HTTP access
-    $IPTABLES -A OUTPUT -p tcp --dport 4443 -j ACCEPT          # NoMachine HTTPS access
-    $IPTABLES -A OUTPUT -p udp --dport 4011:4999 -j ACCEPT     # NoMachine UDP transmission
+    $IPTABLES -A OUTPUT -p tcp --dport 4000 -m comment --comment "NoMachine LAN" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 4080 -m comment --comment "NoMachine HTTP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 4443 -m comment --comment "NoMachine HTTPS" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 4011:4999 -m comment --comment "NoMachine data feed" -j ACCEPT
 
     ##############
     # VMware products
     ##############
-    $IPTABLES -A OUTPUT -p tcp --dport 9443 -j ACCEPT   # VMware vsphere web client 
-                                                        # https://myServer:9443/vsphere-client
+    # https://myServer:9443/vsphere-client
+    $IPTABLES -A OUTPUT -p tcp --dport 9443 -m comment --comment "VMware vsphere web client" -j ACCEPT 
     
     ##############
     # Communication
     ##############
     # Email
-    $IPTABLES -A OUTPUT -p tcp --dport 25 -j ACCEPT     # SMTP
-    $IPTABLES -A OUTPUT -p tcp --dport 110 -j ACCEPT    # POP3
-    $IPTABLES -A OUTPUT -p tcp --dport 143 -j ACCEPT    # IMAP
-    $IPTABLES -A OUTPUT -p tcp --dport 993 -j ACCEPT    # IMAP over SSL
-    $IPTABLES -A OUTPUT -p tcp --dport 995 -j ACCEPT    # POP over SSL
-    $IPTABLES -A OUTPUT -p tcp --dport 587 -j ACCEPT    # SMTP SSL (gmail)
-    $IPTABLES -A OUTPUT -p tcp --dport 465 -j ACCEPT    # SMTP SSL (gmail)
+    $IPTABLES -A OUTPUT -p tcp --dport 25 -m comment --comment "SMTP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 110 -m comment --comment "POP3" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 143 -m comment --comment "IMAP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 993 -m comment --comment "IMAP over SSL" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 995 -m comment --comment "POP over SSL" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 587 -m comment --comment "SMTP SSL (gmail)" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 465 -m comment --comment "SMTP SSL (gmail)" -j ACCEPT
     
-    $IPTABLES -A OUTPUT -p tcp --dport 1863 -j ACCEPT   # MSN
-    $IPTABLES -A OUTPUT -p tcp --dport 5060 -j ACCEPT   # SIP -VoIP-
-    $IPTABLES -A OUTPUT -p udp --dport 5060 -j ACCEPT   # SIP -VoIP-
-    $IPTABLES -A OUTPUT -p tcp --dport 5061 -j ACCEPT   # MS Lync
-    $IPTABLES -A OUTPUT -p tcp --dport 5222 -j ACCEPT   # Google talk
+    $IPTABLES -A OUTPUT -p tcp --dport 1863 -m comment --comment "MSN" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 5060 -m comment --comment "SIP -VoIP-" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 5060 -m comment --comment "SIP -VoIP-" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 5061 -m comment --comment "MS Lync" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 5222 -m comment --comment "Google talk" -j ACCEPT
 
     ##############
     # I.T
     ##############
     # Domain
-    $IPTABLES -A OUTPUT -p tcp --dport 113 -j ACCEPT    # Kerberos
-    $IPTABLES -A OUTPUT -p tcp --dport 389 -j ACCEPT    # LDAP 
-    $IPTABLES -A OUTPUT -p tcp --dport 636 -j ACCEPT    # LDAP over SSL 
+    $IPTABLES -A OUTPUT -p tcp --dport 113 -m comment --comment "Kerberos" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 389 -m comment --comment "LDAP" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 636 -m comment --comment "LDAP over SSL" -j ACCEPT
     # Network Services
-    $IPTABLES -A OUTPUT -p tcp --dport 43 -j ACCEPT     # WhoIs
-    $IPTABLES -A OUTPUT -p tcp --dport 427 -j ACCEPT    # Service Location Protocol
-    $IPTABLES -A OUTPUT -p udp --dport 1900 -j ACCEPT   # UPnP - Peripheriques reseau
+    $IPTABLES -A OUTPUT -p tcp --dport 43 -m comment --comment "WhoIs" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 427 -m comment --comment "Service Location Protocol" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 1900 -m comment --comment "UPnP - Peripheriques reseau" -j ACCEPT
     # Webmin 
-    $IPTABLES -A OUTPUT -p tcp --dport 10000 -j ACCEPT  # Services and configuration
-    $IPTABLES -A OUTPUT -p tcp --dport 20000 -j ACCEPT  # Users management
+    $IPTABLES -A OUTPUT -p tcp --dport 10000 -m comment --comment "Services and configuration" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 20000 -m comment --comment "Users management" -j ACCEPT
     # Zabbix
-    $IPTABLES -A OUTPUT -p tcp --dport 10051 -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 10051 -m comment --comment "Zabbix agent" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 3030 -m comment --comment "Dashboard (zabbix)" -j ACCEPT
     # ELK (ElasticSearch, Logstash, Kibana)
-    $IPTABLES -A OUTPUT -p tcp --dport 9200 -j ACCEPT   # HTTP
-    $IPTABLES -A OUTPUT -p tcp --dport 9300 -j ACCEPT   # Transport
-    $IPTABLES -A OUTPUT -p tcp --dport 54328 -j ACCEPT  # Multicasting
-    $IPTABLES -A OUTPUT -p udp --dport 54328 -j ACCEPT  # Multicasting
+    $IPTABLES -A OUTPUT -p tcp --dport 9200 -m comment --comment "ElasticSearch HTTP console" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 9300 -m comment --comment "ElasticSearch Transport" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 54328 -m comment --comment "ElasticSearch Multicasting" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 54328 -m comment --comment "ElasticSearch Multicasting" -j ACCEPT
 
     ##############
     # File share
     ##############
-    $IPTABLES -A OUTPUT -p udp --dport 137 -j ACCEPT    # NetBios Name Service
-    $IPTABLES -A OUTPUT -p udp --dport 138 -j ACCEPT    # NetBios Data Exchange
-    $IPTABLES -A OUTPUT -p tcp --dport 139 -j ACCEPT    # NetBios Session + Samba
-    $IPTABLES -A OUTPUT -p tcp --dport 445 -j ACCEPT    # CIFS - Partage Win2K and more
-
+    $IPTABLES -A OUTPUT -p tcp --sport 135 -m state --state ESTABLISHED -m comment --comment "DCE endpoint resolution" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 137 -m comment --comment "NetBios Name Service" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 138 -m comment --comment "NetBios Data Exchange" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 139 -m comment --comment "NetBios Session + Samba" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 445 -m comment --comment "CIFS - Partage Win2K and more" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 548 -m comment --comment "Apple file sharing" -j ACCEPT
     ##############
     # Development
     ##############    
     # Java
-    $IPTABLES -A OUTPUT -p tcp --dport 1099 -j ACCEPT   # JMX default port
+    $IPTABLES -A OUTPUT -p tcp --dport 1099 -m comment --comment "JMX" -j ACCEPT
     # Version control
-    $IPTABLES -A OUTPUT -p tcp --dport 3690 -j ACCEPT   # SVN
-    $IPTABLES -A OUTPUT -p tcp --dport 9418 -j ACCEPT   # GIT
+    $IPTABLES -A OUTPUT -p tcp --dport 3690 -m comment --comment "SVN" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 9418 -m comment --comment "GIT" -j ACCEPT
     # Database 
-    $IPTABLES -A OUTPUT -p tcp --dport 3306 -j ACCEPT   # MySQL
-    $IPTABLES -A OUTPUT -p tcp --dport 5432 -j ACCEPT   # Postgresql
-    $IPTABLES -A OUTPUT -p tcp --dport 1433 -j ACCEPT   # Microsoft SQL server
-    $IPTABLES -A OUTPUT -p udp --dport 1433 -j ACCEPT   # Microsoft SQL server
-    $IPTABLES -A OUTPUT -p tcp --dport 1434 -j ACCEPT   # Microsoft SQL server 2005
-    $IPTABLES -A OUTPUT -p udp --dport 1434 -j ACCEPT   # Microsoft SQL server 2005
+    $IPTABLES -A OUTPUT -p tcp --dport 3306 -m comment --comment "MySQL" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 5432 -m comment --comment "Postgresql" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 1433 -m comment --comment "Microsoft SQL server" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 1433 -m comment --comment "Microsoft SQL server" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 1434 -m comment --comment "Microsoft SQL server 2005" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 1434 -m comment --comment "Microsoft SQL server 2005" -j ACCEPT
     # JEE server    
-    $IPTABLES -A OUTPUT -p tcp --dport 4848 -j ACCEPT   # Glassfish admin
-    $IPTABLES -A OUTPUT -p tcp --dport 1527 -j ACCEPT   # Glassfish4 security manager
-    $IPTABLES -A OUTPUT -p tcp --dport 9990 -j ACCEPT   # Jboss Widlfy admin
+    $IPTABLES -A OUTPUT -p tcp --dport 4848 -m comment --comment "Glassfish admin" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 1527 -m comment --comment "Glassfish4 security manager" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 9990 -m comment --comment "Jboss admin" -j ACCEPT
     # Open MQ (bundled with Glassfish)
-    $IPTABLES -A OUTPUT -p tcp --dport 7676 -j ACCEPT    # JMS broker
+    $IPTABLES -A OUTPUT -p tcp --dport 7676 -m comment --comment "OpenMQ" -j ACCEPT
     # ActiveMQ server
-    $IPTABLES -A OUTPUT -p tcp --dport 8161 -j ACCEPT    # HTTP console
-    $IPTABLES -A OUTPUT -p tcp --dport 8162 -j ACCEPT    # HTTPS console
-    $IPTABLES -A OUTPUT -p tcp --dport 11099 -j ACCEPT   # JMX management
-    $IPTABLES -A OUTPUT -p tcp --dport 61616 -j ACCEPT   # JMS queues
+    $IPTABLES -A OUTPUT -p tcp --dport 8161 -m comment --comment "ActiveMQ HTTP console" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 8162 -m comment --comment "ActiveMQ HTTPS console" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 11099 -m comment --comment "ActiveMQ JMX" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 61616 -m comment --comment "ActiveMQ JMS queues" -j ACCEPT
     # Rabbit MQ
-    $IPTABLES -A OUTPUT -p tcp --dport 15672 -j ACCEPT   # HTTP console
-    $IPTABLES -A OUTPUT -p tcp --dport 5672 -j ACCEPT    # AMPQ protocol
+    $IPTABLES -A OUTPUT -p tcp --dport 15672 -m comment --comment "RabbitMQ HTTP console" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 5672 -m comment --comment "RabbitMQ data" -j ACCEPT
     # Software quality
-    $IPTABLES -A OUTPUT -p tcp --dport 9000 -j ACCEPT    # Sonar
+    $IPTABLES -A OUTPUT -p tcp --dport 9000 -m comment --comment "Sonarqube" -j ACCEPT
 
     ################################
     # Blizzard Diablo 3
     ################################
     # Battle.net Desktop Application
-    $IPTABLES -A OUTPUT -p tcp --dport 1119 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 1119 -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 1119 -m comment --comment "Battle.net Desktop Application" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 1119 -m comment --comment "Battle.net Desktop Application" -j ACCEPT
     # Blizzard Downloader
-    $IPTABLES -A OUTPUT -p tcp --dport 1120 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 1120 -j ACCEPT
-    $IPTABLES -A OUTPUT -p tcp --dport 3724 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 3724 -j ACCEPT
-    $IPTABLES -A OUTPUT -p tcp --dport 4000 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 4000 -j ACCEPT
-    $IPTABLES -A OUTPUT -p tcp --dport 6112:6114 -j ACCEPT
-    $IPTABLES -A OUTPUT -p udp --dport 6112:6114 -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 1120 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 1120 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 3724 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 3724 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 4000 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 4000 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 6112:6114 -m comment --comment "Blizzard Downloader" -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 6112:6114 -m comment --comment "Blizzard Downloader" -j ACCEPT
     # Diablo 3
-    $IPTABLES -A OUTPUT -p udp --dport 6115:6120 -j ACCEPT
-    $IPTABLES -A OUTPUT -p tcp --dport 6115:6120 -j ACCEPT
+    $IPTABLES -A OUTPUT -p udp --dport 6115:6120 -m comment --comment "Diablo 3" -j ACCEPT
+    $IPTABLES -A OUTPUT -p tcp --dport 6115:6120 -m comment --comment "Diablo 3" -j ACCEPT
 
     log_end_msg 0
 }
@@ -702,24 +707,24 @@ function vpn {
 
         # Allow VPN connections through $INT_VPN
         # Hint: if you do not accept all RELATED,ESTABLISHED connections then you must allow the source port
-        $IPTABLES -A INPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
-        $IPTABLES -A OUTPUT -p $VPN_PROTOCOL --dport $VPN_PORT -j ACCEPT
-        $IPTABLES -A OUTPUT -p $VPN_PROTOCOL --sport $VPN_PORT -j ACCEPT
+        $IPTABLES -A INPUT -p $VPN_PROTOCOL --dport $VPN_PORT -m comment --comment "VPN incoming" -j ACCEPT
+        $IPTABLES -A OUTPUT -p $VPN_PROTOCOL --dport $VPN_PORT -m comment --comment "VPN outgoing" -j ACCEPT
+        $IPTABLES -A OUTPUT -p $VPN_PROTOCOL --sport $VPN_PORT -m comment --comment "VPN outgoing" -j ACCEPT
 
         # Allow VPN packets type INPUT,OUTPUT,FORWARD
-        $IPTABLES -A INPUT -i $INT_VPN -m state ! --state INVALID -j ACCEPT
-        $IPTABLES -A OUTPUT -o $INT_VPN -m state ! --state INVALID -j ACCEPT
-        $IPTABLES -A FORWARD -o $INT_VPN -m state ! --state INVALID -j ACCEPT
+        $IPTABLES -A INPUT -i $INT_VPN -m state ! --state INVALID -m comment --comment "Unvalid VPN packet" -j ACCEPT
+        $IPTABLES -A OUTPUT -o $INT_VPN -m state ! --state INVALID -m comment --comment "Unvalid VPN packet" -j ACCEPT
+        $IPTABLES -A FORWARD -o $INT_VPN -m state ! --state INVALID -m comment --comment "Unvalid VPN packet" -j ACCEPT
 
         # Allow forwarding
         log_daemon_msg "Enable forwarding"
         if [ ! -z "$INT_ETH" ] ; then
-            $IPTABLES -A FORWARD -i $INT_VPN -o $INT_ETH -j ACCEPT
-            $IPTABLES -A FORWARD -i $INT_ETH -o $INT_VPN -j ACCEPT
+            $IPTABLES -A FORWARD -i $INT_VPN -o $INT_ETH -m comment --comment "Forwarding ETH <> VPN" -j ACCEPT
+            $IPTABLES -A FORWARD -i $INT_ETH -o $INT_VPN -m comment --comment "Forwarding ETH <> VPN" -j ACCEPT
         fi
         if [ ! -z "$INT_WLAN" ] ; then
-            $IPTABLES -A FORWARD -i $INT_VPN -o $INT_WLAN -j ACCEPT
-            $IPTABLES -A FORWARD -i $INT_WLAN -o $INT_VPN -j ACCEPT
+            $IPTABLES -A FORWARD -i $INT_VPN -o $INT_WLAN -m comment --comment "Forwarding WLAN <> VPN" -j ACCEPT
+            $IPTABLES -A FORWARD -i $INT_WLAN -o $INT_VPN -m comment --comment "Forwarding WLAN <> VPN" -j ACCEPT
         fi            
         log_end_msg 0
 
@@ -728,7 +733,7 @@ function vpn {
         then
             log_daemon_msg "VPN to $IP_LAN_VPN_PRV"
             # Allow packets to be send from|to the VPN network
-            $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRV -j ACCEPT
+            $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRV -m comment --comment "Remote LAN (PRV) <> VPN" -j ACCEPT
             # Allow packet to go/from the VPN network to the LAN
             if [ ! -z "$INT_ETH" ] ; then
                 $IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN_PRV -o $INT_ETH -j MASQUERADE
@@ -746,7 +751,7 @@ function vpn {
         then
             log_daemon_msg "VPN to $IP_LAN_VPN_PRO"
             # Allow packets to be send from|to the VPN network
-            $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRO -j ACCEPT
+            $IPTABLES -A FORWARD -s $IP_LAN_VPN_PRO -m comment --comment "Remote LAN (PRV) <> VPN" -j ACCEPT
             # Allow packet to go/from the VPN network to the LAN
             if [ ! -z "$INT_ETH" ] ; then
                 $IPTABLES -t nat -A POSTROUTING -s $IP_LAN_VPN_PRO -o $INT_ETH -j MASQUERADE
