@@ -61,17 +61,8 @@ fi
 # network configuration
 
 INT_ETH="eth0"
-INT_WLAN="wlan0"
-#INT_ETH=`ifconfig -a | sed -n 's/^\([^ ]\+\).*/\1/p' \
-#         | grep -Fvx -e lo | grep -Fvx -e wlan0 \
-#         | grep -Fvx -e tun0 | grep -Fvx -e tunl0 | grep -Fvx -e docker0 \
-#         | grep -Fvx -e ip6tnl0 | grep -Fvx -e sit0 | grep -Fvx -e bond0 | grep -Fvx -e dummy0`
 
-IP_LAN_V4="myLocalNetwork"
-IP_LAN_V6=""
-IP_LAN_VPN_PRV=""
-IP_LAN_VPN_PRO=""
-
+IP_LAN_VPN_PRV="192.168.15.0/24"
 INT_VPN=tun0
 VPN_PORT="8080"
 VPN_PROTOCOL="udp"
@@ -127,6 +118,7 @@ function allowForwardingFromTo {
     log_progress_msg "Allow forwarding from/to specific source IP@ and networks"
      
     # Remote IP @
+    # TODO add luxembourg remote IP @
     $IPTABLES -A FORWARD -s 5.39.81.23 -j ACCEPT
 
     # LAN
@@ -164,10 +156,9 @@ function forward {
     # FORWARD rules
     log_progress_msg "Forwarding from/to specific source IP@ and networks"
 
-    REMOTE_WEB_SERVER=90.83.80.91
-    forwardPort 41200 $REMOTE_WEB_SERVER 22
-    forwardPort 10080 $REMOTE_WEB_SERVER 80
-    forwardPort 13306 $REMOTE_WEB_SERVER 3306
+    XINXIONGMAO=192.168.15.6
+    forwardPort 41200 tcp $XINXIONGMAO 41200
+    forwardPort 37350 udp $XINXIONGMAO 37350
 
     log_end_msg 0
 }
@@ -181,23 +172,25 @@ function forward {
 # To enable networking modules in the current OS
 function enableModules {
     log_progress_msg "Enable networking modules"
+    
+    # OVH modprobe is already done!
     ### IPv4
-    $MODPROBE ip_tables
-    $MODPROBE iptable_filter
-    $MODPROBE iptable_mangle
+#    $MODPROBE ip_tables
+#    $MODPROBE iptable_filter
+#    $MODPROBE iptable_mangle
     # Allow to use state match
-    $MODPROBE ip_conntrack
+#    $MODPROBE ip_conntrack
     # Allow NAT
-    $MODPROBE iptable_nat
+#    $MODPROBE iptable_nat
     ### IPv6
-    $MODPROBE ip6_tables
-    $MODPROBE ip6table_filter
-    $MODPROBE ip6table_mangle
+#    $MODPROBE ip6_tables
+#    $MODPROBE ip6table_filter
+#    $MODPROBE ip6table_mangle
     ### Allow active / passive FTP
-    $MODPROBE ip_conntrack_ftp
-    $MODPROBE ip_nat_ftp
+#    $MODPROBE ip_conntrack_ftp
+#    $MODPROBE ip_nat_ftp
     ### Allow log limits
-    $MODPROBE ipt_limit
+#    $MODPROBE ipt_limit
 
 
     log_progress_msg "Protocols enforcement"
@@ -251,11 +244,11 @@ function defaultPolicy {
     # IPv4
     $IPTABLES -P INPUT DROP
     $IPTABLES -P FORWARD DROP
-    $IPTABLES -P OUTPUT DROP            
+    $IPTABLES -P OUTPUT ACCEPT
     # IPv6
     $IP6TABLES -P INPUT DROP
     $IP6TABLES -P FORWARD DROP
-    $IP6TABLES -P OUTPUT DROP
+    $IP6TABLES -P OUTPUT ACCEPT
 
     log_progress_msg "Set common security filters"
     # Reject invalid packets
@@ -279,7 +272,7 @@ function defaultPolicy {
 
     # Reserved addresses. We shouldn't received any packets from them!
     $IPTABLES -A INPUT -s 10.0.0.0/8 -m comment --comment "Do not allow foreign LAN - class A" -j DROP
-    $IPTABLES -A INPUT -s 169.254.0.0/16 -j DROP
+    $IPTABLES -A INPUT -s 169.254.0.0/16 -m comment --comment "Do not allow weired LAN - 169.254.0.0/16" -j DROP
     
     ## Localhost
     $IPTABLES -A INPUT ! -i lo -s 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP  
@@ -350,9 +343,9 @@ function defaultPolicy {
     $IP6TABLES -A OUTPUT -p tcp --dport 53 -m comment --comment "DNS Sec TCP dPort" -j ACCEPT
     $IP6TABLES -A OUTPUT -p tcp --dport 53 -m comment --comment "DNS Sec TCP dPort" -j ACCEPT
     
+    
     echo "     !!! If you lost Internet after running the script, please check your /etc/resolv.conf file"
     echo "         Make sure you are not using 127.0.0.1 as default nameserver"
-
 
     # FTP requests  
     # FTP data transfer
@@ -475,6 +468,10 @@ function incomingPortFiltering {
     $IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -m comment --comment "SSH" -j ACCEPT 
     $IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 22 -m comment --comment "SSH" -j ACCEPT
 
+    # SSH custom port Daxiongmao
+    $IPTABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 2200 -m comment --comment "SSH" -j ACCEPT 
+    $IP6TABLES -A INPUT -p tcp -m limit --limit 3/min --limit-burst 3 --dport 2200 -m comment --comment "SSH" -j ACCEPT
+
     # Remote desktop 
     #$IPTABLES -A INPUT -p tcp --dport 4000 -m comment --comment "NoMachine LAN server" -j ACCEPT
     #$IPTABLES -A INPUT -p tcp --dport 4080 -m comment --comment "NoMachine HTTP server" -j ACCEPT
@@ -485,8 +482,8 @@ function incomingPortFiltering {
     # WEB
     #################
     # HTTP, HTTPS  
-    #$IPTABLES -A INPUT -p tcp --dport 80 -m comment --comment "HTTP" -j ACCEPT
-    #$IPTABLES -A INPUT -p tcp --dport 443 -m comment --comment "HTTPS" -j ACCEPT
+    $IPTABLES -A INPUT -p tcp --dport 80 -m comment --comment "HTTP" -j ACCEPT
+    $IPTABLES -A INPUT -p tcp --dport 443 -m comment --comment "HTTPS" -j ACCEPT
 
     # Web server (HTTP alt)
     #$IPTABLES -A INPUT -p tcp --dport 8080 -m comment --comment "HTTP alt." -j ACCEPT
@@ -504,9 +501,11 @@ function incomingPortFiltering {
     #################
     # Database
     #################
-    #$IPTABLES -A INPUT -p tcp --dport 3306 -m comment --comment "MySQL" -j ACCEPT
-    #$IPTABLES -A INPUT -p tcp --dport 5432 -m comment --comment "PostgreSQL" -j ACCEPT
+    # TODO re-enable source IP filtering once Luxembourg IP @ is known
     #sourceIpFiltering 3306 tcp
+    $IPTABLES -A INPUT -p tcp --dport 3306 -m comment --comment "MySQL" -j ACCEPT
+    #$IPTABLES -A INPUT -p tcp --dport 5432 -m comment --comment "PostgreSQL" -j ACCEPT
+
 
     #################
     # IT
@@ -800,7 +799,7 @@ function vpn {
         # If not you can either add it manually over here (= in Iptables) or in the OpenVPN client conf.
         #######
         #echo "      ... add VPN route between VPN LAN and current location"
-        #route add -net 192.168.12.0/24 gw 192.168.1.45
+        #route add -net 192.168.15.0/24 gw 192.168.1.45
     fi
 }
 
@@ -813,7 +812,7 @@ function logDropped {
     log_daemon_msg "Firewall log dropped packets"
     $IPTABLES -N LOGGING
     $IPTABLES -A INPUT -j LOGGING
-    $IPTABLES -A OUTPUT -j LOGGING
+    #$IPTABLES -A OUTPUT -j LOGGING
     $IPTABLES -A LOGGING -m limit --limit 2/min -j LOG --log-prefix "iptables - dropped: " --log-level 4
     $IPTABLES -A LOGGING -j DROP
     log_end_msg 0
@@ -846,10 +845,10 @@ log_end_msg 0
 
 ###### Port filtering (input | output | forwarding)
 incomingPortFiltering
-outgoingPortFiltering
+#outgoingPortFiltering
 
 ###### Forward
-#forward
+forward
 
 ###### VPN
 vpn
