@@ -48,22 +48,16 @@ source ./firewall-lib.sh
 INT_ETH="eth0"
 INT_WLAN="wlan0"
 
-IP_LAN_V4=""
-IP_LAN_V6=""
-IP_LAN_VPN_PRV=""
-IP_LAN_VPN_PRO=""
-
-INT_VPN=tun0
-VPN_PORT="8080"
-VPN_PROTOCOL="udp"
+IP_LAN_V4="172.16.100.0/24"
+IP_LAN_V6="2a02:678:421:8400::0/64"
 
 ##### Advanced settings
 # Source IP filtering
-declare -a sourcesIpAllowed=("5.39.81.23" "172.16.100.0/24" )
-declare -a sourcesIp6Allowed=("5.39.81.23" "172.16.100.0/24" )
+declare -a sourcesIpAllowed=("5.39.81.23" "172.16.100.0/24")
+declare -a sourcesIp6Allowed=("")
 # Allow forward for...
-declare -a forwardIpAllowed=("5.39.81.23")
-declare -a forwardIp6Allowed=("5.39.81.23")
+declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/24")
+declare -a forwardIp6Allowed=("")
 
 
 
@@ -74,20 +68,12 @@ declare -a forwardIp6Allowed=("5.39.81.23")
 # ----------------------------------------------------
 function enableIpv4 {
     clearPolicyIpv4
-
-        log_progress_msg "Set default policy IPv4"
-        iptables -P INPUT DROP
-        iptables -P FORWARD DROP
-        iptables -P OUTPUT DROP
-
+    setDefaultPolicyIpv4
     basicProtectionIpv4
-    commonProtocolIpv4
     protocolEnforcementIpv4
-
-        log_progress_msg "Keep ESTABLISHED, RELATED connections - IPv4"
-        iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-        iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
-        iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    keepEstablishedRelatedIpv4
+    commonProtocolIpv4
+    #filterNetworksIpv4
 }
 
 # ----------------------------------------------------
@@ -95,21 +81,13 @@ function enableIpv4 {
 # ----------------------------------------------------
 function enableIpv6 {
     clearPolicyIpv6
-
-        log_progress_msg "Set default policy IPv6"
-        ip6tables -P INPUT DROP
-        ip6tables -P FORWARD DROP
-        ip6tables -P OUTPUT DROP
-
-    blockRoutingHeaderIpv6
+    setDefaultPolicyIpv6
     basicProtectionIpv6
-    commonProtocolIpv6
     protocolEnforcementIpv6
-
-        log_progress_msg "Keep ESTABLISHED, RELATED connections - IPv6"
-        ip6tables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-        ip6tables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
-        ip6tables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT 
+    keepEstablishedRelatedIpv6
+    commonProtocolIpv6
+    blockRoutingHeaderIpv6
+    blockIp6Tunnels
 }
 
 
@@ -143,31 +121,30 @@ function incomingPortFiltering {
 
     ### Software quality
     #inputFiltering tcp 9000 "Sonarqube"
-    #sourceIpFiltering 9000 tcp
+    #sourceIpFilteringIpv4 9000 tcp $sourcesIpAllowed
 
     #################
     # Database
     #################
     #inputFiltering tcp 3306 "MySQL"
     #inputFiltering tcp 5432 "PostgreSQL"
-    #sourceIpFiltering 3306 tcp
+    #sourceIpFilteringIpv4 3306 tcp $$sourcesIpAllowed
 
     #################
     # IT
     #################
     # File-share
-    inputFiltering tcp 135 "DCE endpoint resolution"
-    inputFiltering tcp 137 "NetBIOS Name Service"
-    inputFiltering tcp 138 "NetBIOS Datagram"
-    inputFiltering tcp 139 "NetBIOS Session"
-    inputFiltering tcp 445 "SMB over TCP"
+    inputFiltering tcp 135 "Samba - DCE endpoint resolution"
+    inputFiltering tcp 137 "Samba - NetBIOS Name Service"
+    inputFiltering tcp 138 "Samba - NetBIOS Datagram"
+    inputFiltering tcp 139 "Samba - NetBIOS Session"
+    inputFiltering tcp 445 "Samba - over TCP"
 
-    #sourceIpFiltering 135 udp
-    #sourceIpFiltering 137 udp
-    #sourceIpFiltering 138 udp
-    #sourceIpFiltering 139 tcp
-    #sourceIpFiltering 445 tcp
-
+    #sourceIpFilteringIpv4 135 udp $$sourcesIpAllowed
+    #sourceIpFilteringIpv4 137 udp $$sourcesIpAllowed
+    #sourceIpFilteringIpv4 138 udp $$sourcesIpAllowed
+    #sourceIpFilteringIpv4 139 tcp $$sourcesIpAllowed
+    #sourceIpFilteringIpv4 445 tcp $$sourcesIpAllowed
 
     ### LDAP
     #inputFiltering tcp 389 "LDAP + LDAP startTLS"
@@ -207,19 +184,16 @@ function incomingPortFiltering {
     ### Rabbit MQ
     #inputFiltering tcp 15672 "RabbitMQ HTTP console"
     #inputFiltering tcp 5672 "RabbitMQ data"
-       
-    ## TODO example of IP @ filtering       
-    #sourceIpFiltering 8088 udp
 
 
     ##########################
     # Common input to reject
     ##########################
-    iptables -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan DROP" -j DROP
-    ip6tables -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan DROP" -j DROP
+    iptables -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan" -j DROP
+    ip6tables -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan" -j DROP
 
-    iptables -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan DROP" -j DROP
-    ip6tables -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan DROP" -j DROP
+    iptables -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan" -j DROP
+    ip6tables -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan" -j DROP
 
     log_end_msg 0
 }
@@ -377,12 +351,8 @@ echo "# --------------------- #"
 
 ###### Mandatory
 log_daemon_msg "Firewall init"
-enableIpv4
-enableIpv6
-
-#blockIp6Tunnels
-#enableIp6Tunnels
-
+    enableIpv4
+    enableIpv6
 log_end_msg 0
 
 
@@ -390,13 +360,30 @@ log_end_msg 0
 incomingPortFiltering
 outgoingPortFiltering
 
-###### Forward
-#forward
 
-###### VPN
-vpn
+############## 
+# Forwarding #
+##############
+#log_daemon_msg "Forward rules"
+#    ### IPv4
+#    # Allow forward for specific sources
+#    for forwardIP in "${forwardIpAllowed[@]}"
+#    do
+#        allowForwardingFromIpv4 $forwardIP "$forwardIP"
+#    done
+#    # Forward rules
+#    DAXIONGMAO_SERVER=90.83.80.91
+#    forwardPortIpv4 8090 udp $DAXIONGMAO_SERVER 8080 "Tomcat dev. server"
+#log_end_msg 0
 
-###### Log dropped packets
+
+#######
+# VPN #
+#######
+vpn tun0 8080 udp eth0 192.168.15.0/24
+
+
+###### Log and drop the rest!
 logDropped
 
 echo " "

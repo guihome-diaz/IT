@@ -54,19 +54,19 @@ case $1 in
         echo " IPv4 rules"
         echo "-----------------------------------------------------------"
         echo " "
-        /sbin/iptables -L -v -n
+        /sbin/iptables -L --line-numbers -v -n
         echo " "
         echo "-----------------------------------------------------------"
         echo " IPv4 NAT rules"
         echo "-----------------------------------------------------------"
         echo " "
-        /sbin/iptables -t nat -L -v -n
+        /sbin/iptables -t nat -L --line-numbers -v -n
         echo " "
         echo "-----------------------------------------------------------"
         echo " IPv6 rules"
         echo "-----------------------------------------------------------"
         echo " "
-        /sbin/ip6tables -L -v -n
+        /sbin/ip6tables -L --line-numbers -v -n
         ;;
     *)
         echo "Usage: firewall {start|stop|restart|status}"
