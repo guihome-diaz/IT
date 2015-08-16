@@ -45,49 +45,67 @@ source ./firewall-lib.sh
 # --------------------- #
 #   COMMON VARIABLES    #
 # --------------------- #
-INT_ETH="eth0"
-INT_WLAN="wlan0"
-
-IP_LAN_V4="172.16.100.0/24"
-IP_LAN_V6="2a02:678:421:8400::0/64"
+# Set to 0 to disable IPv4 and|or IPv6 firewall
+export DO_IPV4="1"
+export DO_IPV6="0"
 
 ##### Advanced settings
 # Source IP filtering
 declare -a sourcesIpAllowed=("5.39.81.23" "172.16.100.0/24")
 declare -a sourcesIp6Allowed=("")
-# Allow forward for...
-declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/24")
-declare -a forwardIp6Allowed=("")
 
 
 
+function firewallSetup {
+    log_daemon_msg "Firewall initialization"
+        # ----------------------------------------------------
+        # Core features
+        # ----------------------------------------------------
+        clearPolicies
+        setDefaultPolicies
+        basicProtection
+        protocolsEnforcement
+        keepEstablishedRelatedConnections
+        allowBaseCommunications
+        #blockIp4Ip6Tunnels
 
 
-# ----------------------------------------------------
-# IPv4
-# ----------------------------------------------------
-function enableIpv4 {
-    clearPolicyIpv4
-    setDefaultPolicyIpv4
-    basicProtectionIpv4
-    protocolEnforcementIpv4
-    keepEstablishedRelatedIpv4
-    commonProtocolIpv4
-    #filterNetworksIpv4
+        # ----------------------------------------------------
+        # IPv4
+        # ----------------------------------------------------
+        #filterNetworksIpv4
+        allowIpv4LAN "172.16.100.0/24"
+
+
+        # ----------------------------------------------------
+        # IPv6
+        # ----------------------------------------------------
+        allowIpv6LAN "2a02:678:421:8400::0/64"
+        #blockRoutingHeaderIpv6
+
+    log_end_msg 0
 }
 
+
+
 # ----------------------------------------------------
-# IPv6
+# Forwarding
 # ----------------------------------------------------
-function enableIpv6 {
-    clearPolicyIpv6
-    setDefaultPolicyIpv6
-    basicProtectionIpv6
-    protocolEnforcementIpv6
-    keepEstablishedRelatedIpv6
-    commonProtocolIpv6
-    blockRoutingHeaderIpv6
-    blockIp6Tunnels
+function forwardConfiguration {
+    log_daemon_msg "Forward rules"
+
+        ### IPv4
+        declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/24")
+        # Allow forward for specific sources
+        for forwardIP in "${forwardIpAllowed[@]}"
+        do
+            allowForwardingFromIpv4 $forwardIP "$forwardIP"
+        done
+        # Forward rules
+        DAXIONGMAO_SERVER=90.83.80.91
+        forwardPortIpv4 8090 udp $DAXIONGMAO_SERVER 8080 "Tomcat dev. server"
+
+    log_end_msg 0
 }
 
 
@@ -350,37 +368,18 @@ echo "#    FW START script    #"
 echo "# --------------------- #"
 
 ###### Mandatory
-log_daemon_msg "Firewall init"
-    enableIpv4
-    enableIpv6
-log_end_msg 0
-
+firewallSetup
 
 ###### Port filtering (input | output | forwarding)
 incomingPortFiltering
 outgoingPortFiltering
 
+###### Forward
+#forwardConfiguration
 
-############## 
-# Forwarding #
-##############
-#log_daemon_msg "Forward rules"
-#    ### IPv4
-#    # Allow forward for specific sources
-#    for forwardIP in "${forwardIpAllowed[@]}"
-#    do
-#        allowForwardingFromIpv4 $forwardIP "$forwardIP"
-#    done
-#    # Forward rules
-#    DAXIONGMAO_SERVER=90.83.80.91
-#    forwardPortIpv4 8090 udp $DAXIONGMAO_SERVER 8080 "Tomcat dev. server"
-#log_end_msg 0
-
-
-#######
-# VPN #
-#######
+###### VPN 
 vpn tun0 8080 udp eth0 192.168.15.0/24
+
 
 
 ###### Log and drop the rest!
