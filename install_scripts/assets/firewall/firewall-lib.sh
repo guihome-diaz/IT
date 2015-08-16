@@ -127,7 +127,13 @@ function enableModules {
     #     Since I'm using a VPN, I like to access both networks and exchange data between them. 
     #     That's why port forwarding is enable.
     echo 1 > /proc/sys/net/ipv4/ip_forward
-    #echo 0 > /proc/sys/net/ipv6/conf/all/forwarding
+
+	echo 2 > /proc/sys/net/ipv6/conf/all/use_tempaddr
+	echo 2 > /proc/sys/net/ipv6/conf/default/use_tempaddr
+	echo 2 > /proc/sys/net/ipv6/conf/eth0/use_tempaddr
+    echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+    echo 0 > /proc/sys/net/ipv6/conf/default/forwarding
+    echo 0 > /proc/sys/net/ipv6/conf/eth0/forwarding
 }
 
 
@@ -141,6 +147,9 @@ function clearPolicies {
     log_progress_msg "Flush existing rules"
     ipt46 -F
     ipt46 -X
+    # delete FILTER rules 
+    ipt46 -t filter -F
+    ipt46 -t filter -X
     # delete MANGLE rules (packets modifications)
     ipt46 -t mangle -F
     ipt46 -t mangle -X
@@ -161,6 +170,9 @@ function setDefaultPolicies {
 # Basic security settings
 function basicProtection {    
     log_progress_msg "Set common security filters"
+	#####################
+	### All protocols ###
+	#####################
     ipt46 -A INPUT -m state --state INVALID -m comment --comment "Invalid input" -j DROP
     ipt46 -A OUTPUT -m state --state INVALID -m comment --comment "Invalid input" -j DROP
     ipt46 -A FORWARD -m state --state INVALID -m comment --comment "Invalid forward" -j DROP
@@ -169,20 +181,21 @@ function basicProtection {
     ipt46 -A INPUT -p tcp -m state --state NEW ! --syn -m comment --comment "Invalid conn request" -j DROP
     ipt46 -A OUTPUT -p tcp -m state --state NEW ! --syn -m comment --comment "Invalid conn request" -j DROP
 
-    ####################
-    ####### IPv4 #######
-    ####################
+
+	############
+	### IPv4 ###
+	############
     ## Localhost
     ipt4 -A INPUT ! -i lo -s 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP  
     ipt4 -A OUTPUT ! -o lo -d 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP
 
-    ####################
-    ####### IPv6 #######
-    ####################
-    # Allow localhost traffic. This rule is for all protocols.
-    #ipt6 -A INPUT -s ::1 -d ::1 -j ACCEPT
-    #ipt6 -A INPUT ! -i lo -s ::1 -m comment --comment "Reject none loopback on 'lo'" -j DROP
-    #ipt6 -A OUTPUT ! -o lo -d ::1 -m comment --comment "Reject none loopback on 'lo'" -j DROP
+	############
+	### IPv6 ###
+	############    
+	# Allow localhost traffic. These rules are for all protocols.
+    ipt6 -A INPUT -s ::1 -d ::1 -j ACCEPT
+    ipt6 -A INPUT ! -i lo -s ::1 -m comment --comment "Reject none loopback on 'lo'" -j DROP
+    ipt6 -A OUTPUT ! -o lo -d ::1 -m comment --comment "Reject none loopback on 'lo'" -j DROP
 
     # Allow Link-Local addresses
     ipt6 -A INPUT -s fe80::/10 -j ACCEPT
@@ -191,7 +204,12 @@ function basicProtection {
     # However, when bridging in Linux (e.g. in Xen or OpenWRT), the FORWARD rule is needed:
     ipt6 -A FORWARD -s fe80::/10 -j ACCEPT
 
-    # Allow multicast
+
+	#################
+	### Multicast ###
+	#################    
+    ipt4 -A INPUT -m comment --comment "Multicast auto-configuration"  -d 224.0.0.0/24 -j ACCEPT 
+    ipt4 -A OUTPUT -m comment --comment "Multicast request"  -d 224.0.0.0/24 -j ACCEPT 
     ipt6 -A INPUT -d ff00::/8 -j ACCEPT
     ipt6 -A INPUT -s ff00::/8 -j ACCEPT
     ipt6 -A OUTPUT -d ff00::/8 -j ACCEPT
@@ -217,55 +235,10 @@ function protocolsEnforcement {
     ####### IPv6 #######
     log_progress_msg " ... Layer 2: ICMP v6 "
     # Don't DROP ICMP6 a lot of things are happening over there! It might completly block the connection if you DROP icmp6
-    # Avoid ICMP flood
-    ipt6 -A INPUT -p icmpv6 -m limit --limit 2/second --limit-burst 2 -j ACCEPT
-    # Accept the rest
+    ipt6 -A INPUT -j ACCEPT
     ipt6 -A OUTPUT -p icmpv6 -j ACCEPT  
     ipt6 -A FORWARD -p icmpv6 -j ACCEPT  
 
-
-    log_progress_msg " ... Layer 4: TCP # check packets conformity"
-    # INCOMING packets check
-    # All new incoming TCP should be SYN first
-    ipt46 -A INPUT -p tcp ! --syn -m state --state NEW -m comment --comment "new TCP connection check" -j DROP
-    # Avoid SYN Flood (max 3 SYN packets / second. Then Drop all requests !!)
-    ipt46 -A INPUT -p tcp --syn -m limit --limit 1/s --limit-burst 3 -m comment --comment "avoid TCP SYN flood" -j ACCEPT
-    # Avoid fragment packets
-    ipt46 -A INPUT -f -m comment --comment "no fragments" -j DROP
-    # Check TCP flags -- flag 64, 128 = bogues
-    ipt46 -A INPUT -p tcp --tcp-option 64 -j DROP
-    ipt46 -A INPUT -p tcp --tcp-option 128 -j DROP
-
-
-    log_progress_msg " ... Layer 4: TCP # Avoid NMAP Scans"
-    # XMAS-NULL
-    ipt46 -A INPUT -p tcp --tcp-flags ALL NONE -m comment --comment "attack XMAS-NULL" -j DROP
-    # XMAS-TREE
-    ipt46 -A INPUT -p tcp --tcp-flags ALL ALL -m comment --comment "attack XMAS-tree" -j DROP
-    # Stealth XMAS Scan
-    ipt46 -A INPUT -p tcp --tcp-flags ALL FIN,PSH,URG -m comment --comment "attack XMAS stealth" -j DROP
-    # SYN/RST Scan
-    ipt46 -A INPUT -p tcp --tcp-flags SYN,RST SYN,RST -m comment --comment "scan SYN/RST" -j DROP
-    # SYN/FIN Scan
-    ipt46 -A INPUT -p tcp --tcp-flags SYN,FIN SYN,FIN -m comment --comment "scan SYN/FIN" -j DROP
-    # SYN/ACK Scan
-    #iptables -A INPUT -p tcp --tcp-flags ALL ACK -j DROP
-    ipt46 -A INPUT -p tcp --tcp-flags SYN,ACK SYN,ACK -m comment --comment "scan SYN/ACK" -j DROP
-    # FIN/RST Scan
-    ipt46 -A INPUT -p tcp --tcp-flags FIN,RST FIN,RST -m comment --comment "scan FIN/RST" -j DROP
-    # FIN/ACK Scan
-    ipt46 -A INPUT -p tcp -m tcp --tcp-flags FIN,ACK FIN -m comment --comment "scan FIN/ACK" -j DROP
-    # ACK/URG Scan
-    ipt46 -A INPUT -p tcp --tcp-flags ACK,URG URG -m comment --comment "scan ACK/URG" -j DROP
-    # FIN/URG/PSH Scan
-    ipt46 -A INPUT -p tcp --tcp-flags FIN,URG,PSH FIN,URG,PSH -m comment --comment "scan FIN/URG/PSH" -j DROP
-    # XMAS-PSH Scan
-    ipt46 -A INPUT -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -m comment --comment "scan XMAS/PSH" -j DROP
-    # End TCP connection
-    ipt46 -A INPUT -p tcp --tcp-flags ALL FIN -m comment --comment "end TCP connection flag" -j DROP
-    # Ports scans
-    ipt46 -A INPUT -p tcp --tcp-flags FIN,SYN,RST,ACK SYN -m comment --comment "common scan FIN/SYN/RST/ACK SYN" -j DROP
-    ipt46 -A INPUT -p tcp --tcp-flags FIN,SYN,RST,PSH,ACK,URG NONE -m comment --comment "common scan FIN/SYN/RST/ACK/PSH/URG NONE" -j DROP
 }
 
 function keepEstablishedRelatedConnections {
@@ -506,15 +479,17 @@ function sourceIpFilteringIpv6() {
 # ------------------------------------------------------------------------------
 # VPN configuration
 # ------------------------------------------------------------------------------
-# usage:   vpn <String:vpn interface> <Int:vpn port> <String:vpn protocol> <String:local interface> <String:remote LAN [optional]>
+# usage:   vpn <vpn interface> <vpn port> <vpn protocol> <local interface> <remote LAN IPv4 [optional]> <remote LAN IPv6 [optional]> 
 #     ex   vpn tun0 8080 udp eth0
 #     ex   vpn tun0 8080 udp eth0 192.168.15.0/24
+#     ex   vpn tun0 8080 udp eth0 192.168.15.0/24 
 function vpn {   
     INT_VPN=$1
     VPN_PORT=$2
     VPN_PROTOCOL=$3 
     INT_LOCAL=$4
-    VPN_LAN=$5
+    VPN_LAN_IPv4=$5
+    VPN_LAN_IPv6=$6
 
     log_daemon_msg "Setting up VPN rules" 
 
@@ -538,22 +513,35 @@ function vpn {
     ipt46 -A FORWARD -i $INT_VPN -o $INT_LOCAL -m comment --comment "Forwarding $INT_LOCAL <> VPN" -j ACCEPT
     ipt46 -A FORWARD -i $INT_LOCAL -o $INT_VPN -m comment --comment "Forwarding $INT_LOCAL <> VPN" -j ACCEPT
 
+    # Allow packet to go/from the VPN network to the LAN
+    ipt46 -t nat -A POSTROUTING -o $INT_LOCAL -m comment --comment "Forward between interfaces" -j MASQUERADE
+
     ######
     # Allow local LAN / remote LAN communication through VPN
     ######
-    if [[ ! -z "$VPN_LAN" ]]
+    if [[ ! -z "$VPN_LAN_IPv4" ]]
     then
-        log_progress_msg "Enable forwarding form $INT_VPN /to/ $INT_LOCAL"
-        # Allow packets to be send from|to the VPN network
-        ipt4 -A FORWARD -s $VPN_LAN -m comment --comment "VPN remote LAN ($VPN_LAN)" -j ACCEPT
-        # Allow packet to go/from the VPN network to the LAN
-        ipt4 -t nat -A POSTROUTING -s $VPN_LAN -o $INT_LOCAL -j MASQUERADE
-
+    	log_progress_msg "VPN LAN IPv4: $VPN_LAN_IPv4"
+        # Allow packets to be send to VPN
+        ipt4 -A OUTPUT -d $VPN_LAN_IPv4 -m comment --comment "VPN LAN: $VPN_LAN_IPv4" -j ACCEPT
+        ipt4 -A FORWARD -s $VPN_LAN_IPv4 -m comment --comment "VPN LAN: $VPN_LAN_IPv4" -j ACCEPT
 
         log_progress_msg "Allow VPN client to client communication"
         # Allow VPN client <-> client communication
-        ipt4 -A INPUT -s $VPN_LAN -d $VPN_LAN -m state ! --state INVALID -j ACCEPT
-        ipt4 -A OUTPUT -s $VPN_LAN -d $VPN_LAN -m state ! --state INVALID -j ACCEPT
+        ipt4 -A INPUT -s $VPN_LAN_IPv4 -d $VPN_LAN_IPv4 -m state ! --state INVALID -m comment --comment "VPN client-to-client" -j ACCEPT
+        ipt4 -A OUTPUT -s $VPN_LAN_IPv4 -d $VPN_LAN_IPv4 -m state ! --state INVALID -m comment --comment "VPN client-to-client" -j ACCEPT
+    fi 
+    if [[ ! -z "$VPN_LAN_IPv6" ]]
+    then
+    	log_progress_msg "VPN LAN IPv6: $VPN_LAN_IPv6"
+        # Allow packets to be send to VPN
+        ipt6 -A OUTPUT -d $VPN_LAN_IPv6 -m comment --comment "VPN LAN: $VPN_LAN_IPv6" -j ACCEPT
+        ipt6 -A FORWARD -s $VPN_LAN_IPv6 -m comment --comment "VPN LAN: $VPN_LAN_IPv6" -j ACCEPT
+
+        log_progress_msg "Allow VPN client to client communication"
+        # Allow VPN client <-> client communication
+        ipt6 -A INPUT -s $VPN_LAN_IPv6 -d $VPN_LAN_IPv6 -m state ! --state INVALID -m comment --comment "VPN client-to-client" -j ACCEPT
+        ipt6 -A OUTPUT -s $VPN_LAN_IPv6 -d $VPN_LAN_IPv6 -m state ! --state INVALID -m comment --comment "VPN client-to-client" -j ACCEPT
     fi 
 
 
@@ -576,30 +564,29 @@ function vpn {
 # ------------------------------------------------------------------------------
 # LOGGING
 # ------------------------------------------------------------------------------
-function logDropped {
-    
-    ############ IPv4
-    log_daemon_msg "Firewall log dropped packets (ip v4)"
+function logDroppedIpv4 {
+    log_progress_msg "Firewall log dropped packets (ip v4)"
+
     # Create log chain
     ipt4 -N logging_v4
     # Apply chain rules to...
     ipt4 -A INPUT -j logging_v4
     ipt4 -A OUTPUT -j logging_v4
     # Rules to apply
-    ipt4 -A logging_v4 -m limit --limit 10/min -j LOG --log-prefix "IPv4 - dropped: " --log-level 4
+    ipt4 -A logging_v4 -m limit --limit 10/min -j LOG --log-prefix "iptables - IPv4 - dropped: " --log-level 4
     ipt4 -A logging_v4 -j DROP
+}
 
-    ############ IPv6
+function logDroppedIpv6 {
     log_progress_msg "Firewall log dropped packets (ip v6)"
+    
     # Create log chain
     ipt6 -N logging_v6
     # Apply chain rules to...
     ipt6 -A INPUT -j logging_v6
     ipt6 -A OUTPUT -j logging_v6
     # Rules to apply
-    ipt6 -A logging_v6 -m limit --limit 10/min -j LOG --log-prefix "IPv6 - dropped: " --log-level 4
+    ipt6 -A logging_v6 -m limit --limit 10/min -j LOG --log-prefix "iptables - IPv6 - dropped: " --log-level 4
     ipt6 -A logging_v6 -j DROP
-
-    log_end_msg 0
 }
 

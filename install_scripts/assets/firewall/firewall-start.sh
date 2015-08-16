@@ -39,7 +39,7 @@
 #
 
 #### Load other scripts
-source ./firewall-lib.sh
+source /etc/firewall/firewall-lib.sh
 
 
 # --------------------- #
@@ -47,7 +47,7 @@ source ./firewall-lib.sh
 # --------------------- #
 # Set to 0 to disable IPv4 and|or IPv6 firewall
 export DO_IPV4="1"
-export DO_IPV6="0"
+export DO_IPV6="1"
 
 ##### Advanced settings
 # Source IP filtering
@@ -67,7 +67,7 @@ function firewallSetup {
         protocolsEnforcement
         keepEstablishedRelatedConnections
         allowBaseCommunications
-        #blockIp4Ip6Tunnels
+        blockIp4Ip6Tunnels
 
 
         # ----------------------------------------------------
@@ -81,7 +81,7 @@ function firewallSetup {
         # IPv6
         # ----------------------------------------------------
         allowIpv6LAN "2a02:678:421:8400::0/64"
-        #blockRoutingHeaderIpv6
+        blockRoutingHeaderIpv6
 
     log_end_msg 0
 }
@@ -116,7 +116,7 @@ function incomingPortFiltering {
     log_daemon_msg "Firewall INPUT filtering"
 
     ### SSH
-    #inputFiltering tcp 22 "SSH" true
+    inputFiltering tcp 22 "SSH" true
 
     ### Remote desktop 
     #inputFiltering tcp 4000 "NoMachine LAN server"
@@ -125,7 +125,7 @@ function incomingPortFiltering {
     #inputFiltering udp 4011:4999 "NoMachine UDP data feed"
     
     ### HTTP, HTTPS  
-    #inputFiltering tcp 80 HTTP
+    #inputFiltering tcp 80 "HTTP"
     #inputFiltering tcp 443 "HTTPS"
 
     ### Web server (HTTP alt)
@@ -207,11 +207,9 @@ function incomingPortFiltering {
     ##########################
     # Common input to reject
     ##########################
-    iptables -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan" -j DROP
-    ip6tables -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan" -j DROP
-
-    iptables -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan" -j DROP
-    ip6tables -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan" -j DROP
+    ipt46 -A INPUT -p tcp --dport 631 -m comment --comment "Internet printing (IPP)" -j DROP
+    ipt46 -A INPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan" -j DROP
+    ipt46 -A INPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan" -j DROP
 
     log_end_msg 0
 }
@@ -356,6 +354,22 @@ function outgoingPortFiltering {
     outputFiltering udp 6115:6120 "Diablo 3"
     outputFiltering tcp 6115:6120 "Diablo 3"
 
+
+
+    ##########################
+    # Custom ports
+    ##########################
+    outputFiltering tcp 2200 "Custom SSH"
+
+
+    ##########################
+    # Common input to reject
+    ##########################
+    ipt46 -A OUTPUT -p tcp --dport 631 -m comment --comment "Internet printing (IPP)" -j DROP
+    ipt46 -A OUTPUT -p udp --sport 57621 --dport 57621 -m comment --comment "Spotify network scan" -j DROP
+    ipt46 -A OUTPUT -p udp --sport 17500 --dport 17500 -m comment --comment "Dropbox network scan" -j DROP
+
+
     log_end_msg 0
 }
 
@@ -378,12 +392,15 @@ outgoingPortFiltering
 #forwardConfiguration
 
 ###### VPN 
-vpn tun0 8080 udp eth0 192.168.15.0/24
+vpn "tun0" 8080 udp "eth0" "192.168.15.0/24" "2001:41d0:8:9318::/64"
 
 
 
 ###### Log and drop the rest!
-logDropped
+log_daemon_msg "Log and DROP packets"
+    logDroppedIpv4
+    logDroppedIpv6
+log_end_msg 0
 
 echo " "
 echo " "
