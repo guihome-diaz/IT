@@ -186,8 +186,13 @@ function basicProtection {
 	### IPv4 ###
 	############
     ## Localhost
+    # Filter sources
     ipt4 -A INPUT ! -i lo -s 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP  
     ipt4 -A OUTPUT ! -o lo -d 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP
+    # Accept all local packets
+    ipt4 -A INPUT -i lo -m comment --comment "Accept localhost packets" -j ACCEPT
+    ipt4 -A OUTPUT -o lo -m comment --comment "Accept localhost packets" -j ACCEPT
+
 
 	############
 	### IPv6 ###
@@ -252,8 +257,11 @@ function keepEstablishedRelatedConnections {
 function allowBaseCommunications {    
     log_progress_msg "Enable common protocols: DHCP, DNS, NTP, FTP (passive/active)"
     ## DHCP client >> Broadcast IP request 
-    ipt46 -A INPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
-    ipt46 -A OUTPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
+    ipt4 -A INPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
+    ipt4 -A OUTPUT -p udp --sport 67:68 --dport 67:68 -m comment --comment "DHCP" -j ACCEPT 
+
+    ipt6 -A INPUT -p udp --sport 546:547 --dport 546:547 -m comment --comment "DHCP" -j ACCEPT 
+    ipt6 -A INPUT -p udp --sport 546:547 --dport 546:547 -m comment --comment "DHCP" -j ACCEPT 
 
     # DNS (udp)
     ipt46 -A INPUT -p udp --sport 53 -m comment --comment "DNS UDP sPort" -j ACCEPT
@@ -266,10 +274,6 @@ function allowBaseCommunications {
     # Established, related input are already accepted earlier
     ipt46 -A OUTPUT -p tcp --sport 53 -m comment --comment "DNS Sec TCP sPort" -j ACCEPT
     ipt46 -A OUTPUT -p tcp --dport 53 -m comment --comment "DNS Sec TCP dPort" -j ACCEPT
-
-    #TODO
-    echo "     !!! If you lost Internet after running the script, please check your /etc/resolv.conf file"
-    echo "         Make sure you are not using 127.0.0.1 as default nameserver"
 
     # FTP data transfer
     ipt46 -A OUTPUT -p tcp --dport 20 -m comment --comment "FTP data" -j ACCEPT
@@ -515,6 +519,10 @@ function vpn {
 
     # Allow packet to go/from the VPN network to the LAN
     ipt46 -t nat -A POSTROUTING -o $INT_LOCAL -m comment --comment "Forward between interfaces" -j MASQUERADE
+
+    # TODO
+    # Allow IPv6 to be redirect
+    #ipt6 -t NAT -A POSTROUTING -s $VPN_LAN_IPv6 -j SNAT --to 
 
     ######
     # Allow local LAN / remote LAN communication through VPN

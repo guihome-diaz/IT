@@ -334,6 +334,30 @@ function outgoingPortFiltering {
     outputFiltering tcp 5672 "RabbitMQ data"
     # Software quality
     outputFiltering tcp 9000 "Sonarqube"
+  
+    ################################
+    # Communication
+    ################################
+    # Viber
+    outputFiltering tcp 4244 "Viber"
+    outputFiltering tcp 5242 "Viber"
+    outputFiltering udp 5243 "Viber"
+    outputFiltering udp 9785 "Viber"
+
+
+    ####################################
+    # STEAM 
+    ####################################
+    outputFiltering udp 4380 "Steam game client"
+    outputFiltering udp 27000:27015 "Steam game client traffic"
+    outputFiltering udp 27016:27030 "Steam game matchmaking and HLTV"
+    outputFiltering udp 27031:27036 "Steam in-home streaming"
+
+    outputFiltering tcp 27015 "Steam SRCDS Rcon port"
+    outputFiltering tcp 27036:27037 "Steam in-home streaming"
+
+
+
 
     ################################
     # Blizzard Diablo 3
