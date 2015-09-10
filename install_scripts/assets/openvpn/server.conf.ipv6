@@ -53,7 +53,7 @@ chroot /etc/openvpn/
 ##########################
 # Server mode and VPN subset
 server 192.168.15.0 255.255.255.0
-server-ipv6 2001:41d0:8:9318::/64
+server-ipv6 2001:41d0:8:9318::1/64
 # Maintain a record of client <-> virtual IP address associations in this file.  
 ifconfig-pool-persist ipp.txt
 # Keepalive (ping-like) 
@@ -93,13 +93,14 @@ push "redirect-gateway def1"
 # The following line is mandatory!! 
 # Set openvpn the default route for ipv6 connectivity
 push "route-ipv6 2000::/3"
-#  >> set the DNS Server
-# OpenDNS
-push "dhcp-option DNS 208.67.222.222"
-push "dhcp-option DNS 208.67.220.220"
-push "dhcp-option DNS 2620:0:ccc::2"
-push "dhcp-option DNS 2620:0:ccd::2"
-# Google
+
+# Set the client DNS Server (optional)
+## OpenDNS
+#push "dhcp-option DNS 208.67.222.222"
+#push "dhcp-option DNS 208.67.220.220"
+#push "dhcp-option DNS 2620:0:ccc::2"
+#push "dhcp-option DNS 2620:0:ccd::2"
+## Google
 #push "dhcp-option DNS 8.8.8.8"
 #push "dhcp-option DNS 8.8.4.4"
 #push "dhcp-option DNS 2001:4860:4860::8888"
