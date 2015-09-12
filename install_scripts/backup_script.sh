@@ -10,6 +10,7 @@
 #                                 * Maven
 #                                 * MySQL
 #                                 * Nexus
+#                                 * Postfix (email relay)
 #                                 * SonarQube
 #                                 * SSH
 #                                 * VPN
@@ -165,6 +166,15 @@ echo " NEXUS configuration saved. Not the artifacts; see /home/nexus"
 log_end_msg 0
 
 
+####### Postfix
+log_daemon_msg "Postfix (email relay)"
+mkdir -p ~/backup/etc/postfix
+cp /etc/postfix/main.cf ~/backup/etc/postfix/
+cp /etc/postfix/sasl_password ~/backup/etc/postfix/
+cp /etc/postfix/tls_policy ~/backup/etc/postfix/
+log_end_msg 0
+
+
 ####### SonarQube
 log_daemon_msg "SonarQube"
 mkdir -p ~/backup/opt/sonarqube/bin
@@ -174,7 +184,7 @@ mkdir -p ~/backup/etc/init.d
 cp -s /etc/init.d/sonarqube ~/backup/etc/init.d/
 mkdir -p ~/backup/usr/bin/
 cp -s /usr/bin/sonarqube ~/backup/usr/bin/
-log_end_msg
+log_end_msg 0
 
 
 ####### SSH
