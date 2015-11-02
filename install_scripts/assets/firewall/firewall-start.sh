@@ -227,6 +227,7 @@ function outgoingPortFiltering {
     ##############
     # Remote Control
     outputFiltering tcp 22 "SSH"
+    outputFiltering tcp 6000:6063 "SSH X11 forwarding"
     outputFiltering tcp 23 "Telnet"
     # Web
     outputFiltering tcp 80 "HTTP"
