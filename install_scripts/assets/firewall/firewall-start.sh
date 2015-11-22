@@ -380,6 +380,11 @@ function outgoingPortFiltering {
     outputFiltering tcp 6115:6120 "Diablo 3"
 
 
+    ##########################
+    # Spotify
+    ##########################
+    outputFiltering tcp 1935 "Spotify web player"
+
 
     ##########################
     # Custom ports
