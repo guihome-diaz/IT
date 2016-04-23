@@ -38,6 +38,8 @@
 #                  >> Bug fixes and new features for IPv6
 #                  >> Extracting some function into a dedicated file (library)
 #                  >> Same behaviours for IPv4 and IPv6
+#   version 1.9 - March 2016
+#                  >> Validation on Ubuntu 16.04
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 
@@ -128,9 +130,9 @@ function enableModules {
     #     That's why port forwarding is enable.
     echo 1 > /proc/sys/net/ipv4/ip_forward
 
-	echo 2 > /proc/sys/net/ipv6/conf/all/use_tempaddr
-	echo 2 > /proc/sys/net/ipv6/conf/default/use_tempaddr
-	echo 2 > /proc/sys/net/ipv6/conf/eth0/use_tempaddr
+    echo 2 > /proc/sys/net/ipv6/conf/all/use_tempaddr
+    echo 2 > /proc/sys/net/ipv6/conf/default/use_tempaddr
+    echo 2 > /proc/sys/net/ipv6/conf/eth0/use_tempaddr
     echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
     echo 0 > /proc/sys/net/ipv6/conf/default/forwarding
     echo 0 > /proc/sys/net/ipv6/conf/eth0/forwarding
@@ -170,9 +172,9 @@ function setDefaultPolicies {
 # Basic security settings
 function basicProtection {    
     log_progress_msg "Set common security filters"
-	#####################
-	### All protocols ###
-	#####################
+    #####################
+    ### All protocols ###
+    #####################
     ipt46 -A INPUT -m state --state INVALID -m comment --comment "Invalid input" -j DROP
     ipt46 -A OUTPUT -m state --state INVALID -m comment --comment "Invalid input" -j DROP
     ipt46 -A FORWARD -m state --state INVALID -m comment --comment "Invalid forward" -j DROP
@@ -182,9 +184,9 @@ function basicProtection {
     ipt46 -A OUTPUT -p tcp -m state --state NEW ! --syn -m comment --comment "Invalid conn request" -j DROP
 
 
-	############
-	### IPv4 ###
-	############
+    ############
+    ### IPv4 ###
+    ############
     ## Localhost
     # Filter sources
     ipt4 -A INPUT ! -i lo -s 127.0.0.0/24 -m comment --comment "Reject none loopback on 'lo'" -j DROP  
@@ -194,10 +196,10 @@ function basicProtection {
     ipt4 -A OUTPUT -o lo -m comment --comment "Accept localhost packets" -j ACCEPT
 
 
-	############
-	### IPv6 ###
-	############    
-	# Allow localhost traffic. These rules are for all protocols.
+    ############
+    ### IPv6 ###
+    ############    
+    # Allow localhost traffic. These rules are for all protocols.
     ipt6 -A INPUT -s ::1 -d ::1 -j ACCEPT
     ipt6 -A INPUT ! -i lo -s ::1 -m comment --comment "Reject none loopback on 'lo'" -j DROP
     ipt6 -A OUTPUT ! -o lo -d ::1 -m comment --comment "Reject none loopback on 'lo'" -j DROP
@@ -210,9 +212,9 @@ function basicProtection {
     ipt6 -A FORWARD -s fe80::/10 -j ACCEPT
 
 
-	#################
-	### Multicast ###
-	#################    
+    #################
+    ### Multicast ###
+    #################    
     ipt4 -A INPUT -m comment --comment "Multicast auto-configuration"  -d 224.0.0.0/24 -j ACCEPT 
     ipt4 -A OUTPUT -m comment --comment "Multicast request"  -d 224.0.0.0/24 -j ACCEPT 
     ipt6 -A INPUT -d ff00::/8 -j ACCEPT
@@ -277,6 +279,7 @@ function allowBaseCommunications {
 
     # FTP data transfer
     ipt46 -A OUTPUT -p tcp --dport 20 -m comment --comment "FTP data" -j ACCEPT
+    ipt46 -A OUTPUT -p tcp --sport 20 -m comment --comment "FTP data" -j ACCEPT
     # FTP control (command)
     ipt46 -A OUTPUT -p tcp --dport 21 -m comment --comment "FTP command" -j ACCEPT
 
@@ -597,4 +600,5 @@ function logDroppedIpv6 {
     ipt6 -A logging_v6 -m limit --limit 10/min -j LOG --log-prefix "iptables - IPv6 - dropped: " --log-level 4
     ipt6 -A logging_v6 -j DROP
 }
+
 

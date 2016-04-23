@@ -34,6 +34,8 @@
 #   version 1.7 - June 2015
 #                  >> Improving DNS
 #                  >> Add comments on all ports
+#   version 1.8 - March 2016 
+#                  >> Validation on Ubuntu 16.04
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 #
@@ -51,7 +53,7 @@ export DO_IPV6="1"
 
 ##### Advanced settings
 # Source IP filtering
-declare -a sourcesIpAllowed=("5.39.81.23" "172.16.100.0/24")
+declare -a sourcesIpAllowed=("5.39.81.23" "172.16.100.0/26")
 declare -a sourcesIp6Allowed=("")
 
 
@@ -74,7 +76,7 @@ function firewallSetup {
         # IPv4
         # ----------------------------------------------------
         #filterNetworksIpv4
-        allowIpv4LAN "172.16.100.0/24"
+        allowIpv4LAN "172.16.100.0/26"
 
 
         # ----------------------------------------------------
@@ -95,7 +97,7 @@ function forwardConfiguration {
     log_daemon_msg "Forward rules"
 
         ### IPv4
-        declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/24")
+        declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/26")
         # Allow forward for specific sources
         for forwardIP in "${forwardIpAllowed[@]}"
         do
@@ -203,6 +205,18 @@ function incomingPortFiltering {
     #inputFiltering tcp 15672 "RabbitMQ HTTP console"
     #inputFiltering tcp 5672 "RabbitMQ data"
 
+    ####################################
+    # STEAM 
+    ####################################
+    #inputFiltering udp 4380 "Steam game client"
+    #inputFiltering udp 27000:27015 "Steam game client traffic"
+    #inputFiltering udp 27016:27030 "Steam game matchmaking and HLTV"
+    #inputFiltering udp 27031:27036 "Steam in-home streaming"
+
+    #inputFiltering tcp 27015 "Steam SRCDS Rcon port"
+    #inputFiltering tcp 27036:27037 "Steam in-home streaming"
+
+    #inputFiltering tcp 6000:6063 "X11 streaming"
 
     ##########################
     # Common input to reject
@@ -227,7 +241,6 @@ function outgoingPortFiltering {
     ##############
     # Remote Control
     outputFiltering tcp 22 "SSH"
-    outputFiltering tcp 6000:6063 "SSH X11 forwarding"
     outputFiltering tcp 23 "Telnet"
     # Web
     outputFiltering tcp 80 "HTTP"
@@ -335,6 +348,8 @@ function outgoingPortFiltering {
     outputFiltering tcp 5672 "RabbitMQ data"
     # Software quality
     outputFiltering tcp 9000 "Sonarqube"
+    # JetBrains Hub
+    outputFiltering tcp 8081 "JetBrains hub"
   
     ################################
     # Communication
@@ -358,6 +373,7 @@ function outgoingPortFiltering {
     outputFiltering tcp 27036:27037 "Steam in-home streaming"
 
 
+    outputFiltering tcp 6000:6063 "X11 streaming"
 
 
     ################################
@@ -383,7 +399,7 @@ function outgoingPortFiltering {
     ##########################
     # Spotify
     ##########################
-    outputFiltering tcp 1935 "Spotify web player"
+    outputFiltering tcp 1935 "Spotify web client"
 
 
     ##########################
@@ -434,3 +450,4 @@ log_end_msg 0
 
 echo " "
 echo " "
+

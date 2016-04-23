@@ -45,6 +45,9 @@ function setupVim() {
 	echo -e 'set nu                  "Enable line numbers' >> /etc/vim/vimrc
 	echo -e 'set ruler               "Enable ruler' >> /etc/vim/vimrc
 	echo -e " " >> /etc/vim/vimrc
+	echo -e 'syntax on               "Language coloration' >> /etc/vim/vimrc
+	echo -e 'color desert            "Colorscheme' >> /etc/vim/vimrc
+	echo -e " " >> /etc/vim/vimrc
 
 }
 

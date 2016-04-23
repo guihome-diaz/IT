@@ -1,32 +1,25 @@
 ##
 ## Ubuntu repositories
 ## Ubuntu 14.04 LTS => trusty
+## Ubuntu 16.04 LTS => xenial
 ##
-## Last change: November 2014, Guillaume Diaz
+## Last change: April 2016, Guillaume Diaz
 ##
  
 ##### Use the closest server automatically, based on your geographic location #####
 ## Ubuntu official repos
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-updates main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt xenial main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-updates main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-security main restricted universe multiverse
 ## Backports. Community repos approved by Canonical
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-backports main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-backports main restricted universe multiverse
 
 ## Canonical (Ubuntu) partners
-deb http://archive.canonical.com/ubuntu trusty partner
+deb http://archive.canonical.com/ubuntu xenial partner
  
 ## 3rd parties libraries
-#deb http://extras.ubuntu.com/ubuntu trusty main
+#deb http://extras.ubuntu.com/ubuntu xenial main
 
 ## Spotify
 deb http://repository.spotify.com stable non-free
-
-## ELK stack: Elastic search, Logstack, Kibana
-# sources: 
-#    1. http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup-repositories.html
-#    2. http://logstash.net/docs/latest/repositories
-# NB: all repository versions must match!
-#deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main
-#deb http://packages.elasticsearch.org/logstash/1.4/debian stable main
 

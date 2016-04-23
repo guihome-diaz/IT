@@ -26,7 +26,7 @@ function setupSambaFileShare() {
 	
 	echo -e "\n\n $YELLOW Creating Samba user (user that will access the share) $WHITE \n\n"
 	smbUsername="smbuser"
-	smbPassword="vehco"
+	smbPassword="xiongmaos"
 	egrep "^$smbUsername" /etc/passwd >/dev/null
 	if [ $? -eq 0 ]; then
 		echo "Samba share user already exits!" 
@@ -50,6 +50,7 @@ function setupSambaFileShare() {
 	echo -e "\n\n $YELLOW Installing Samba client & server $WHITE \n\n"
 	apt-get install -y samba samba-common libkrb5-3 winbind smbclient
 	apt-get install -y cifs-utils
+	apt-get install libcups2 cups cups-pdf
 
 	# Setup default configuration
 	cp /etc/samba/smb.conf /etc/samba/smb.conf.backup

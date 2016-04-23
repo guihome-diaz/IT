@@ -27,8 +27,8 @@ cp /usr/lib/ssl/openssl.cnf .
 dir = /srv/ssl                            # Where everything is kept  [line 42]
  
 [ req_distinguished_name ]
-countryName_default             = SE                        # [line 128]   
-stateOrProvinceName_default     = Västra Götaland           # [line 134]
-localityName_default            = Goteborg                  # [line 137]
+countryName_default             = LU                        # [line 128]   
+stateOrProvinceName_default     = Luxembourg                # [line 134]
+localityName_default            = Luxembourg                # [line 137]
 0.organizationName_default      = Daxiongmao.eu             # [line 140]
 emailAddress_default            = guillaume@qin-diaz.com    # [line 154]

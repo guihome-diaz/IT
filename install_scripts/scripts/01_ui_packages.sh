@@ -54,10 +54,13 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing scanner tools $WHITE \n"
 	apt-get install -y simple-scan xsane
 
+	echo -e "\n\n $YELLOW   >> Installing Samba client $WHITE \n"
+	apt-get install system-config-samba
+
 	tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/testUIpackages$$
 	trap "rm -f $tempfile" 0 1 2 5 15
 
-	dialog --backtitle "VEHCO" \
+	dialog --backtitle "Xiongmaos" \
 		--title "UI applications" \
 	    --checklist "Hi, what features do you want to install?" 20 75 5 \
 	        "Network"      "Network utilities such as Filezilla, RDP, OpenVPN client, etc." on \
@@ -120,7 +123,7 @@ function setupUIPackages() {
 				;;
 
 			"Office")
-				echo -e "\n\n $YELLOW   >> Installing Libre Office and related dictionnaries + menu [EN, FR, SV] $WHITE \n"
+				echo -e "\n\n $YELLOW   >> Installing Libre Office and related dictionnaries + menu [EN, FR, SV, ZH] $WHITE \n"
 				apt-get install -y libreoffice libreoffice-calc libreoffice-draw  libreoffice-impress libreoffice-writer libreoffice-templates libreoffice-pdfimport
 				apt-get install -y hunspell-en-us hyphen-en-us mythes-en-us
 				apt-get install -y hunspell-fr hyphen-fr mythes-fr

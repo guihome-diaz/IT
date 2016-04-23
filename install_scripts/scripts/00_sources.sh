@@ -51,34 +51,11 @@ function setupSourcesList() {
 		echo -e "\n\n $YELLOW Installation of Java repository $WHITE"
 		add-apt-repository ppa:webupd8team/java
 		apt-get update > /dev/null
-		apt-get install oracle-java7-installer oracle-java8-installer oracle-java8-set-default oracle-jdk7-installer 
+		apt-get install oracle-java7-installer oracle-java8-installer oracle-java8-set-default 
 		echo -e "\n\n $YELLOW  ... fixing dependencies $WHITE"
 		apt-get install -f 
-		apt-get install oracle-java7-installer oracle-java8-installer oracle-java8-set-default oracle-jdk7-installer
+		apt-get install oracle-java7-installer oracle-java8-installer oracle-java8-set-default
 	fi
-
-	# Install key for ELK [ElasticSearch, Logstash, Kibana] repository
-	echo -e "\n\n $YELLOW Add key for ELK repository [ElasticSearch, Logstash, Kibana] $WHITE"
-	wget -qO - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | sudo apt-key add -
-	apt-get update > /dev/null
-	# Restrict to IPv4 only ?
-	dialog --title "Prefer IPv4 over IPv6?" \
-		   --yesno "Do you want to use IPv4 instead of IPv6 when possible (recommanded) ?" 7 60
-	ipAnswer=$?
-	case $ipAnswer in
-	   0)	# [yes] button 							
-			echo -e "\n\n $BLUE Setting IPv4 preference over IPv6, when possible $WHITE"
-			echo "Acquire::ForceIPv4 true;" > /etc/apt/apt.conf.d/99force-ipv4
-			chmod 644 /etc/apt/apt.conf.d/99force-ipv4
-			sed -i 's/#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/g' /etc/gai.conf
-			;;
-	   1)   # [no] button
-			echo -e "\n\n Let the default OS option: IPv6 has the preference, [NO] button" 
-			;;
-	   255) 
-			echo -e "\n\n Skipping IP settings, [ESC] key pressed." 
-			;;
-	esac
 
 
 	# Install all updates? 
