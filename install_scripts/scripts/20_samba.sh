@@ -29,18 +29,25 @@ function setupSambaFileShare() {
 	smbPassword="xiongmaos"
 	egrep "^$smbUsername" /etc/passwd >/dev/null
 	if [ $? -eq 0 ]; then
-		echo "Samba share user already exits!" 
+		echo "Samba user already exits!" 
 	else
-		echo -e "  Add new user to access samba shares" 
+                ## Create a new system user 'smbUser' and add it to the list of SAMBA users
+                # 1. New system user
+		echo -e "  Add new samba user" 
 		echo -e "     | "  
 		echo -e "     |- Login:    $smbUsername" 
-		echo -e "     |- Password: $smbPassword" 
 		echo -e " "
-		smbHashPass=$(perl -e 'print crypt($ARGV[0], "password")' $smbPassword)
-		useradd -c "Samba share user" -s /sbin/nologin -m -p $smbHashPass $smbUsername
+		useradd -c "Samba user" -s /sbin/nologin -m $smbUsername
 		if [ $? -eq 0 ]; then
-			echo -e "  $smbUsername has been added to system! :)" 
+                        passwd $smbUsername      
+                        # 2. Add system user to 'users'
 			useradd -G users $smbUsername
+			echo -e "  $smbUsername has been added to system" 
+                        # 3. Add account to SAMBA                  
+                        smbpasswd -a $smbUsername
+                        # 4. Grant SAMBA access to account
+                        smbpasswd -e $smbUsername
+			echo -e "  $smbUsername has been added to SAMBA and granted access" 
 		else
 			echo -e "  Failed to add a $smbUsername ! :(" 
 		fi
@@ -54,7 +61,8 @@ function setupSambaFileShare() {
 
 	# Setup default configuration
 	cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
-	cp $ASSETS_PATH/smb.conf /etc/samba/smb.conf
+	cp $ASSETS_PATH/samba/* /etc/samba/
+	cp /etc/samba/smb_guest.conf /etc/samba/smb.conf
 
 
 	# Ask user for LAN(s) information
