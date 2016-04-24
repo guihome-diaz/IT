@@ -32,8 +32,13 @@ function setupUIPackages() {
 	apt-get install -y libgtk2-appindicator-perl
 
 	echo -e "\n\n $YELLOW   >> Installing Sublime Text editor $WHITE \n"
-	add-apt-repository ppa:webupd8team/sublime-text-3 
-	apt-get update
+        # Sublime repository
+        sublimeRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep webupd8team-ubuntu-sublime | cut -d ':' -f 2- | grep "deb ")
+        if [[ -z "$sublimeRepo" ]]; then
+                echo -e "\n\n $YELLOW Installation of SUBLIME TEXT repository $WHITE"
+        	add-apt-repository ppa:webupd8team/sublime-text-3 
+                apt-get update > /dev/null
+        fi
 	apt-get install -y sublime-text-installer
 
 	echo -e "\n\n $YELLOW   >> Installing hexadecimal editor (BLESS) $WHITE \n"
@@ -112,9 +117,14 @@ function setupUIPackages() {
 				apt-get install -y openvpn
 				apt-get install -y network-manager-openvpn
 				echo -e "\n\n $YELLOW   >> Installing Deluge (Torrent client, very good!) $WHITE \n"
-				add-apt-repository ppa:deluge-team/ppa
-				apt-get update
-				apt-get install -y deluge
+                                # Deluge repository
+                                delugeRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep deluge-team | cut -d ':' -f 2- | grep "deb ")
+                                if [[ -z "$delugeRepo" ]]; then
+	                                echo -e "\n\n $YELLOW Installation of DELUGE repository $WHITE"
+	                                add-apt-repository ppa:deluge-team/ppa
+	                                apt-get update > /dev/null
+                                fi
+                                apt-get install -y deluge
 				;;
 
 			"Multimedia") 
@@ -125,30 +135,43 @@ function setupUIPackages() {
 				echo -e "\n\n $YELLOW   >> Multimedia features (audio) $WHITE \n"
 				apt-get install -y rhythmbox 
 				apt-get install -y rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer
+
+				# KODI (media center)
 				echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
 				# Requirements
 				apt-get install -y python-software-properties pkg-config
 				apt-get install -y software-properties-common
 				apt-get install -y unrar
-				# KODI (media center)
-				add-apt-repository ppa:team-xbmc/ppa
-				apt-get update
+                                # Kodi repository
+                                kodiRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep team-xbmc | cut -d ':' -f 2- | grep "deb ")
+                                if [[ -z "$kodiRepo" ]]; then
+	                                echo -e "\n\n $YELLOW Installation of KODI repository $WHITE"
+	                                add-apt-repository ppa:team-xbmc/ppa
+	                                apt-get update > /dev/null
+                                fi
 				apt-get install -y kodi
 
-				### Spotify official install process (https://www.spotify.com/lu-de/download/linux/)
-				# 1. Add the Spotify repository signing key to be able to verify downloaded packages
-				apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886
-				# 2. Add the Spotify repository
-				echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
-				# 3. Update list of available packages
-				apt-get update
+				# Spotify official install process (https://www.spotify.com/lu-de/download/linux/)
+                                spotifyRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep spotify | cut -d ':' -f 2- | grep "deb ")
+                                if [[ -z "$spotifyRepo" ]]; then
+	                                echo -e "\n\n $YELLOW Installation of SPOTIFY repository $WHITE"
+				        # 1. Add the Spotify repository signing key to be able to verify downloaded packages
+				        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886
+				        # 2. Add the Spotify repository
+				        echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
+				        # 3. Update list of available packages
+	                                apt-get update > /dev/null
+                                fi
 				# 4. Install Spotify
 				apt-get install -y spotify-client
-				#####
 
 				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
-				add-apt-repository ppa:stebbins/handbrake-releases
-				apt-get update
+                                handbreakRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep stebbins | cut -d ':' -f 2- | grep "deb ")
+                                if [[ -z "$handbreakRepo" ]]; then
+	                                echo -e "\n\n $YELLOW Installation of Hand-Brake repository $WHITE"
+               				add-apt-repository ppa:stebbins/handbrake-releases
+	                                apt-get update > /dev/null
+                                fi
 				apt-get install -y handbrake-gtk handbrake-cli
 				;;
 
@@ -186,8 +209,12 @@ function setupUIPackages() {
 			"Wine")
 				echo -e "\n\n $YELLOW   >> Installing Windows Emulator and Windows libraries (WINE) $WHITE \n"
 				# wine repository offer a better version than the one in Ubuntu official repositories
-				add-apt-repository ppa:ubuntu-wine/ppa
-				apt-get update
+                                wineRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep ubuntu-wine | cut -d ':' -f 2- | grep "deb ")
+                                if [[ -z "$wineRepo" ]]; then
+	                                echo -e "\n\n $YELLOW Installation of WINE repository $WHITE"
+               				add-apt-repository ppa:ubuntu-wine/ppa
+	                                apt-get update > /dev/null
+                                fi
 				apt-get install -y wine1.8
 				apt-get install -y winetricks 
 				apt-get install -y wine-mono

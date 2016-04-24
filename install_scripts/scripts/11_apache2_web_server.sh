@@ -121,7 +121,7 @@ function setupApacheWebServer() {
 
 			echo -e "\n\n $YELLOW Enabling PHP module $WHITE"
 			a2enmod php5
-			a2enmod php7.0
+			a2enmod php7
 			;;
 	   1)   # [no] button
 			echo -e "\n\n Skipping PHP installation, [NO] button" 

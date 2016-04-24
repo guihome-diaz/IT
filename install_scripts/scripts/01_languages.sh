@@ -22,7 +22,7 @@ function setupAdditionalLanguages() {
 	echo -e " "
 
 	echo -e "\n\n $YELLOW   >> Installing alternate fonts $WHITE \n"
-	apt-get install -y xfonts-intl-asian xfonts-intl-chinese xfonts-intl-european xfonts-intl-phonetic
+	apt-get install -y xfonts-intl-asian xfonts-intl-chinese xfonts-intl-chinese-big xfonts-intl-european xfonts-intl-phonetic
 	apt-get install -y mathematica-fonts
 	apt-get install -y ttf-mscorefonts-installer
 	apt-get install -y fontypython ttf-opensymbol
@@ -30,6 +30,12 @@ function setupAdditionalLanguages() {
 
 	echo -e "\n\n $YELLOW   >> Installing Chinese fonts $WHITE \n"
 	apt-get install -y fonts-arphic-ukai fonts-arphic-uming
+        apt-get install -y fonts-arphic-*
+        # See https://en.wikipedia.org/wiki/WenQuanYi
+        apt-get install -y fonts-wqy-zenhei fonts-wqy-microhei xfonts-wqy
+
+        # Android fonts
+        apt-get install -y fonts-droid-fallback fonts-roboto
 
 
 	# Install alternate Input ? UI only !
@@ -38,9 +44,16 @@ function setupAdditionalLanguages() {
 	keyboardAnswer=$?
 	case $keyboardAnswer in
 	   0)	# [yes] button 							
-			echo -e "\n\n $BLUE Setting-up IBUS and Chinese keyboard $WHITE"
+			echo -e "\n\n $BLUE Setting-up IBUS and Chinese keyboard (ubuntu <16) $WHITE"
 			apt-get install -y ibus
-			apt-get install -y ibus-pinyin ibus-googlepinyin
+			apt-get install -y ibus-pinyin
+                        apt-get install -y ibus-googlepinyin
+                        
+			echo -e "\n\n $BLUE Setting-up FCITX and Chinese keyboard (ubuntu 16+) $WHITE"
+                        apt-get install -y fcitx 
+                        apt-get install -y fcitx-libs fcitx-table-emoji fcitx-table-easy-big
+                        apt-get insatll -y fcitx-pinyin fcitx-sunpinyin fcitx-googlepinyin fcitx-libpinyin 
+                        apt-get install -y fcitx-anthy fcitx-mozc
 			;;
 	   1)   # [no] button
 			echo -e "\n\n No additional keyboards, [NO] button" 

@@ -40,13 +40,14 @@ function setupSourcesList() {
 				cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list ;;
 		esac
 				
+            echo -e "\n\n $YELLOW Please wait... Repositories update in progress $WHITE"
 	    apt-get update > /dev/null
 	else 
 		echo -e "\n\n $YELLOW ... Repositories list already seems to be up-to-date, nothing to do $WHITE" 
 	fi
 
 	# Java repository
-	javaRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep webupd8team | cut -d ':' -f 2- | grep "deb ")
+	javaRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep webupd8team-ubuntu-java | cut -d ':' -f 2- | grep "deb ")
 	if [[ -z "$javaRepo" ]]; then
 		echo -e "\n\n $YELLOW Installation of Java repository $WHITE"
 		add-apt-repository ppa:webupd8team/java
