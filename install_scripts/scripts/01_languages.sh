@@ -63,6 +63,15 @@ function setupAdditionalLanguages() {
 			;;
 	esac
 
+	echo -e "\n\n $YELLOW   >> Add support to display EN(GB), FR(FR), SV(SE), ZH(CN) $WHITE \n"
+        apt-get install -y locales
+        echo "en_GB.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local
+        echo "fr_FR.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local
+        echo "de_DE.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local
+        echo "sv_SE.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local
+        echo "zh_CN.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local
+        dpkg-reconfigure locales
+
 	echo -e "\n\n $GREEN ... language installation complete! $WHITE"
 	echo -e " "
 }
