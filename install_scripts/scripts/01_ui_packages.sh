@@ -57,6 +57,9 @@ function setupUIPackages() {
 	apt-get install -y sysinfo
 	apt-get install -y hardinfo
 
+	echo -e "\n\n $YELLOW   >> Power management (to disable the screen saver) $WHITE \n"
+	apt-get install -y caffeine
+
 	echo -e "\n\n $YELLOW   >> Installing gparted to manage disks $WHITE \n"
 	apt-get install -y gparted
 
