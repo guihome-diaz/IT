@@ -137,6 +137,10 @@ function setupUIPackages() {
 				apt-get install -y rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer
 
 				# KODI (media center)
+                                ## Trick 2016-04-24 until KODI ppa is stable:
+                                ##  - install KODI version packaged with ubuntu repository (it is stable);
+                                ##  - add team-xbmc repo and wait for stable upgrade.  
+                                apt-get install -y kodi
 				echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
 				# Requirements
 				apt-get install -y python-software-properties pkg-config

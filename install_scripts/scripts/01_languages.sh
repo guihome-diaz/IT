@@ -35,7 +35,7 @@ function setupAdditionalLanguages() {
         apt-get install -y fonts-wqy-zenhei fonts-wqy-microhei xfonts-wqy
 
         # Android fonts
-        apt-get install -y fonts-droid-fallback fonts-roboto
+        apt-get install -y fonts-droid-fallback fonts-roboto fonts-roboto-hinted
 
 
 	# Install alternate Input ? UI only !
