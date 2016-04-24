@@ -19,7 +19,3 @@ deb http://archive.canonical.com/ubuntu xenial partner
  
 ## 3rd parties libraries
 #deb http://extras.ubuntu.com/ubuntu xenial main
-
-## Spotify
-deb http://repository.spotify.com stable non-free
-

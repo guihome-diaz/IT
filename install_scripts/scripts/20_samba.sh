@@ -50,7 +50,7 @@ function setupSambaFileShare() {
 	echo -e "\n\n $YELLOW Installing Samba client & server $WHITE \n\n"
 	apt-get install -y samba samba-common libkrb5-3 winbind smbclient
 	apt-get install -y cifs-utils
-	apt-get install libcups2 cups cups-pdf
+	apt-get install -y libcups2 cups cups-pdf
 
 	# Setup default configuration
 	cp /etc/samba/smb.conf /etc/samba/smb.conf.backup

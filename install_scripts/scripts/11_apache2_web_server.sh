@@ -98,7 +98,7 @@ function setupApacheWebServer() {
 	phpAnswer=$?
 	case $phpAnswer in
 	   0)	# [yes] button						
-			echo -e "\n\n $YELLOW Installing PHP support for Apache2 web-support $WHITE" 
+			echo -e "\n\n $YELLOW Installing PHP 5 support for Apache2 web-support $WHITE" 
 			apt-get install -y libapache2-mod-php5 php5 php5-common
 			apt-get install -y php5-cli php5-cgi
 			apt-get install -y php5-curl php5-xmlrpc php5-xsl php5-dev php-pear 
@@ -109,8 +109,19 @@ function setupApacheWebServer() {
 			apt-get install -y php5-snmp
 			apt-get install -y php5-gd php5-imagick imagemagick
 
+			echo -e "\n\n $YELLOW Installing PHP 7 support for Apache2 web-support $WHITE" 
+			apt-get install -y libapache2-mod-php7.0 php7.0 php7.0-common
+			apt-get install -y php7.0-cli php7.0-cgi
+			apt-get install -y php7.0-curl php7.0-xsl php7.0-dev 
+			apt-get install -y php7.0-mysql
+			apt-get install -y php7.0-mcrypt
+			apt-get install -y php7.0-imap
+			apt-get install -y php7.0-snmp
+			apt-get install -y php7.0-gd
+
 			echo -e "\n\n $YELLOW Enabling PHP module $WHITE"
 			a2enmod php5
+			a2enmod php7.0
 			;;
 	   1)   # [no] button
 			echo -e "\n\n Skipping PHP installation, [NO] button" 

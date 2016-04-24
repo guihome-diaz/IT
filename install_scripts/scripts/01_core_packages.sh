@@ -40,6 +40,9 @@ function setupCorePackages() {
 	apt-get install -y make autoconf automake cpp gcc
 	apt-get install -y build-essential
 
+	echo -e "\n\n $YELLOW   >> Installing SVN client$WHITE \n"
+	apt-get install -y subversion
+
 	echo -e "\n\n $YELLOW   >> Installing Core libraries extensions $WHITE \n"
 	apt-get install -y libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl
 	apt-get install -y libnet-ident-perl libnet-dns-perl
@@ -72,6 +75,9 @@ function setupCorePackages() {
 
 	echo -e "\n\n $YELLOW   >> Network clients (NFS, Samba) $WHITE \n"
 	apt-get install -y nfs-common smbclient
+
+	echo -e "\n\n $YELLOW   >> Installing manual pages $WHITE \n"
+	apt-get install -y manpages
 
 	echo -e "\n\n $YELLOW   >> Auto-completion ignore case $WHITE \n"
 	echo "set completion-ignore-case On" >> ~/.inputrc

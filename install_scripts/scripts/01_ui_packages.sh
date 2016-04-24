@@ -39,14 +39,18 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing hexadecimal editor (BLESS) $WHITE \n"
 	apt-get install -y bless
 
+	echo -e "\n\n $YELLOW   >> Installing Web-Browser FIREFOX $WHITE \n"
+	apt-get install -y firefox
+
 	echo -e "\n\n $YELLOW   >> Installing Guake $WHITE \n"
 	apt-get install -y guake
 
 	echo -e "\n\n $YELLOW   >> Installing unetbootin to create USB install disk $WHITE \n"
 	apt-get install -y unetbootin
 
-	echo -e "\n\n $YELLOW   >> Installing Zenmap to scan the Network $WHITE \n"
-	apt-get install -y zenmap
+	echo -e "\n\n $YELLOW   >> Hardware detection $WHITE \n"
+	apt-get install -y sysinfo
+	apt-get install -y hardinfo
 
 	echo -e "\n\n $YELLOW   >> Installing gparted to manage disks $WHITE \n"
 	apt-get install -y gparted
@@ -65,6 +69,7 @@ function setupUIPackages() {
 	    --checklist "Hi, what features do you want to install?" 20 75 5 \
 	        "Network"      "Network utilities such as Filezilla, RDP, OpenVPN client, etc." on \
 	        "Multimedia"   "Multimedia libraries and players (VLC, RythmBox, etc.)" on \
+		"Dock"         "Dock (OS X like) on the desktop. Only for Xfe, Mint, Cinnamon" off \
 	        "Office"       "Libre office + diagrams + eBook tools" on \
 	        "Photo"        "Image editor (Gimp) and photo library (GThumb)" on \
 	        "Wine"         "Windows emulator" off 2> $tempfile
@@ -95,6 +100,9 @@ function setupUIPackages() {
 		case "$choice" in
 
 			"Network")		
+				echo -e "\n\n $YELLOW   >> Installing Network scanners (Wireshark, tShark, Nmap, Zenmap) $WHITE \n"
+				apt-get install -y tshark wireshark wireshark-doc
+				apt-get install -y nmap zenmap
 				echo -e "\n\n $YELLOW   >> Installing Filezilla $WHITE \n"
 				apt-get install -y filezilla
 				echo -e "\n\n $YELLOW   >> Installing RDP utility (Remmina rdesktop) $WHITE \n"
@@ -103,6 +111,10 @@ function setupUIPackages() {
 				echo -e "\n\n $YELLOW   >> Installing OpenVPN client + UI tool $WHITE \n"
 				apt-get install -y openvpn
 				apt-get install -y network-manager-openvpn
+				echo -e "\n\n $YELLOW   >> Installing Deluge (Torrent client, very good!) $WHITE \n"
+				add-apt-repository ppa:deluge-team/ppa
+				apt-get update
+				apt-get install -y deluge
 				;;
 
 			"Multimedia") 
@@ -111,17 +123,39 @@ function setupUIPackages() {
 				apt-get install -y vlc
 				apt-get install -y libquicktime2
 				echo -e "\n\n $YELLOW   >> Multimedia features (audio) $WHITE \n"
-				apt-get install -y rhythmbox rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer rhythmbox-radio-browser
+				apt-get install -y rhythmbox 
+				apt-get install -y rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer
 				echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
+				# Requirements
+				apt-get install -y python-software-properties pkg-config
+				apt-get install -y software-properties-common
+				apt-get install -y unrar
+				# KODI (media center)
 				add-apt-repository ppa:team-xbmc/ppa
 				apt-get update
 				apt-get install -y kodi
+
+				### Spotify official install process (https://www.spotify.com/lu-de/download/linux/)
+				# 1. Add the Spotify repository signing key to be able to verify downloaded packages
+				apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886
+				# 2. Add the Spotify repository
+				echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
+				# 3. Update list of available packages
+				apt-get update
+				# 4. Install Spotify
+				apt-get install -y spotify-client
+				#####
+
 				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
 				add-apt-repository ppa:stebbins/handbrake-releases
 				apt-get update
 				apt-get install -y handbrake-gtk handbrake-cli
 				;;
 
+			"Dock") 
+				echo -e "\n\n $YELLOW   >> Installing CAIRO dock $WHITE \n"
+				apt-get install -y cairo-dock cairo-dock-plug-ins cairo-dock-plug-ins-integration
+				;;
 			"Office")
 				echo -e "\n\n $YELLOW   >> Installing Libre Office and related dictionnaries + menu [EN, FR, SV, ZH] $WHITE \n"
 				apt-get install -y libreoffice libreoffice-calc libreoffice-draw  libreoffice-impress libreoffice-writer libreoffice-templates libreoffice-pdfimport
@@ -138,7 +172,7 @@ function setupUIPackages() {
 				apt-get install -y dia
 
 				echo -e "\n\n $YELLOW   >> Installing Mind Mapping (FreeMind) $WHITE \n"
-				apt-get install -y freemind freemind-plugins-svg freemind-plugins-help freemind-browser
+				apt-get install -y freeplane
 				;;
 
 			"Photo")
@@ -151,9 +185,16 @@ function setupUIPackages() {
 
 			"Wine")
 				echo -e "\n\n $YELLOW   >> Installing Windows Emulator and Windows libraries (WINE) $WHITE \n"
-				apt-get install -y wine
+				# wine repository offer a better version than the one in Ubuntu official repositories
+				add-apt-repository ppa:ubuntu-wine/ppa
+				apt-get update
+				apt-get install -y wine1.8
+				apt-get install -y winetricks 
+				apt-get install -y wine-mono
 				apt-get install -y q4wine
-				apt-get install -y winetricks
+
+				# Use "Play on linux" to create VM-like for each windows application
+				apt-get install -y playonlinux
 				;;
 
 			"Web-server")
