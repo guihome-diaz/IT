@@ -36,6 +36,10 @@
 #                  >> Add comments on all ports
 #   version 1.8 - March 2016 
 #                  >> Validation on Ubuntu 16.04
+#   version 1.9 - April 2016 
+#                  >> Add KODI + Deluge (P2P) rule
+#                  >> Add some comments on sourceIpFiltering method
+#                  >> Add some rule to avoid tracking of P2P packets
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 #
@@ -53,7 +57,7 @@ export DO_IPV6="1"
 
 ##### Advanced settings
 # Source IP filtering
-declare -a sourcesIpAllowed=("5.39.81.23" "172.16.100.0/26")
+declare -a sourcesIpAllowed=("5.39.81.23","172.16.100.0/26")
 declare -a sourcesIp6Allowed=("")
 
 
@@ -141,30 +145,30 @@ function incomingPortFiltering {
 
     ### Software quality
     #inputFiltering tcp 9000 "Sonarqube"
-    #sourceIpFilteringIpv4 9000 tcp $sourcesIpAllowed
+    #sourceIpFilteringIpv4 9000 tcp $sourcesIpAllowed "Sonarqube"
 
     #################
     # Database
     #################
     #inputFiltering tcp 3306 "MySQL"
     #inputFiltering tcp 5432 "PostgreSQL"
-    #sourceIpFilteringIpv4 3306 tcp $$sourcesIpAllowed
+    #sourceIpFilteringIpv4 3306 tcp $sourcesIpAllowed "MySQL"
 
     #################
     # IT
     #################
     # File-share
-    inputFiltering tcp 135 "Samba - DCE endpoint resolution"
-    inputFiltering tcp 137 "Samba - NetBIOS Name Service"
-    inputFiltering tcp 138 "Samba - NetBIOS Datagram"
-    inputFiltering tcp 139 "Samba - NetBIOS Session"
-    inputFiltering tcp 445 "Samba - over TCP"
+    #inputFiltering tcp 135 "Samba - DCE endpoint resolution"
+    #inputFiltering tcp 137 "Samba - NetBIOS Name Service"
+    #inputFiltering tcp 138 "Samba - NetBIOS Datagram"
+    #inputFiltering tcp 139 "Samba - NetBIOS Session"
+    #inputFiltering tcp 445 "Samba - over TCP"
 
-    #sourceIpFilteringIpv4 135 udp $$sourcesIpAllowed
-    #sourceIpFilteringIpv4 137 udp $$sourcesIpAllowed
-    #sourceIpFilteringIpv4 138 udp $$sourcesIpAllowed
-    #sourceIpFilteringIpv4 139 tcp $$sourcesIpAllowed
-    #sourceIpFilteringIpv4 445 tcp $$sourcesIpAllowed
+    sourceIpFilteringIpv4 135 udp $sourcesIpAllowed "Samba - DCE endpoint resolution"
+    sourceIpFilteringIpv4 137 udp $sourcesIpAllowed "Samba - NetBIOS Name Service"
+    sourceIpFilteringIpv4 138 udp $sourcesIpAllowed "Samba - NetBIOS Datagram"
+    sourceIpFilteringIpv4 139 tcp $sourcesIpAllowed "Samba - NetBIOS Session"
+    sourceIpFilteringIpv4 445 tcp $sourcesIpAllowed "Samba - over TCP"
 
     ### LDAP
     #inputFiltering tcp 389 "LDAP + LDAP startTLS"
@@ -217,6 +221,18 @@ function incomingPortFiltering {
     #inputFiltering tcp 27036:27037 "Steam in-home streaming"
 
     #inputFiltering tcp 6000:6063 "X11 streaming"
+
+
+    ####################################
+    # P2P 
+    ####################################
+    ## Deluge Torrent client (ports must be open on both UDP + TCP)
+    # source: https://wiki.archlinux.org/index.php/deluge
+    # 56881-56889 for incoming connections and 56890-57200 for outgoing connections. 
+    inputFiltering udp 56881:56889 "Deluge (torrent client) P2P"
+    inputFiltering tcp 56881:56889 "Deluge (torrent client) P2P"
+
+
 
     ##########################
     # Common input to reject
@@ -294,7 +310,8 @@ function outgoingPortFiltering {
     # Network Services
     outputFiltering tcp 43 "WhoIs"
     outputFiltering tcp 427 "Service Location Protocol"
-    outputFiltering udp 1900 "UPnP - Peripheriques reseau"
+    outputFiltering udp 1900 "DLNA / uPNP discovery (Simple Service Discovery Protocol) - Network discovery"
+    outputFiltering tcp 2869 "DLNA / uPNP discovery (Simple Service Discovery Protocol) - Network discovery"
     # Webmin 
     outputFiltering tcp 10000 "Services and configuration"
     outputFiltering tcp 20000 "Users management"
@@ -372,8 +389,35 @@ function outgoingPortFiltering {
     outputFiltering tcp 27015 "Steam SRCDS Rcon port"
     outputFiltering tcp 27036:27037 "Steam in-home streaming"
 
-
     outputFiltering tcp 6000:6063 "X11 streaming"
+
+
+
+    ####################################
+    # KODI 
+    ####################################
+    outputFiltering udp 1900 "DLNA / uPNP discovery (Simple Service Discovery Protocol) - Network discovery"
+    outputFiltering tcp 2869 "DLNA / uPNP discovery (Simple Service Discovery Protocol) - Network discovery"
+    outputFiltering tcp 9090 "Kodi async API"
+    outputFiltering udp 9090 "Kodi async API"
+    outputFiltering udp 9777 "Kodi main output (updates, subtitles)"
+    outputFiltering udp 12374 "Kodi output + remote control"
+
+
+    ####################################
+    # P2P 
+    ####################################
+    ## Deluge Torrent client (ports must be open on both UDP + TCP)
+    # source: https://wiki.archlinux.org/index.php/deluge
+    # 56881-56889 for incoming connections and 56890-57200 for outgoing connections. 
+    outputFiltering udp 56890:57200 "Deluge (torrent client) P2P"
+    outputFiltering tcp 56890:57200 "Deluge (torrent client) P2P"
+    # Trick to improve bandwidth
+    iptables -t raw -I PREROUTING -p udp --dport 56881:57200 -j NOTRACK
+    iptables -t raw -I OUTPUT -p udp --sport 56881:57200 -j NOTRACK
+    iptables -t raw -I PREROUTING -p tcp --dport 56881:57200 -j NOTRACK
+    iptables -t raw -I OUTPUT -p tcp --sport 56881:57200 -j NOTRACK
+ 
 
 
     ################################

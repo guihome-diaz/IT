@@ -40,6 +40,10 @@
 #                  >> Same behaviours for IPv4 and IPv6
 #   version 1.9 - March 2016
 #                  >> Validation on Ubuntu 16.04
+#   version 1.10- April 2016 
+#                  >> Remove RAW rules (tracking avoidance)
+#                  >> Add some comments on sourceIpFiltering method
+#                  >> Add NAT support on all input + on some input (new method)
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 
@@ -158,6 +162,9 @@ function clearPolicies {
     # delete NAT rules
     ipt4 -t nat -F
     ipt4 -t nat -X
+    # delete NO TRACK rules
+    ipt4 -t raw -F
+    ipt4 -t raw -F
 }
 
 function setDefaultPolicies {
@@ -371,8 +378,12 @@ function inputFiltering {
     log_progress_msg "Outside >> Host | allow input: $DEST_PROTOCOL $DEST_PORT - $RULE_COMMENT"
     if [[ ! -z "$LIMIT" ]]
     then
+        # Allow remote source port in case of NAT
+        ipt46 -A INPUT -p $DEST_PROTOCOL --sport $DEST_PORT -m limit --limit 3/min --limit-burst 10 -m comment --comment "$RULE_COMMENT" -j ACCEPT
         ipt46 -A INPUT -p $DEST_PROTOCOL --dport $DEST_PORT -m limit --limit 3/min --limit-burst 10 -m comment --comment "$RULE_COMMENT" -j ACCEPT
     else 
+        # Allow remote source port in case of NAT
+        ipt46 -A INPUT -p $DEST_PROTOCOL --sport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
         ipt46 -A INPUT -p $DEST_PROTOCOL --dport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
     fi
 }
@@ -396,6 +407,21 @@ function outputFiltering {
     ipt46 -A OUTPUT -p $DEST_PROTOCOL --dport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
 }
 
+
+# usage:   outputFiltering <protocol> <port> <comment>
+#
+#    ex:   outputFiltering tcp 22 "SSH"
+#          outputFiltering tcp 3306
+function outputFilteringWithSource {
+    DEST_PROTOCOL=$1
+    DEST_PORT=$2
+    RULE_COMMENT=$3
+
+    log_progress_msg "Outside << Host | allow output: $DEST_PROTOCOL $DEST_PORT - $RULE_COMMENT"
+    # Allow source port in case of NAT
+    ipt46 -A OUTPUT -p $DEST_PROTOCOL --dport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
+    ipt46 -A OUTPUT -p $DEST_PROTOCOL --sport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
+}
 
 # ------------------------------------------------------------------------------
 # Port forwarding
@@ -444,40 +470,46 @@ function forwardPortIpv4 {
 # Source IP filtering
 # ------------------------------------------------------------------------------
 
-# usage:   sourceIpFilteringIpv4 <portNumber> <protocol> <Array: list of allowed IPs>
+# usage:   sourceIpFilteringIpv4 <portNumber> <protocol> <Array: list of allowed IPs> <comment>
 #    ex:   sourceIpFilteringIpv4 8080 tcp ("5.39.81.23" "172.16.100.0/24")
 function sourceIpFilteringIpv4() {
     SOURCE_PORT=$1
     PROTOCOL=$2
     ALLOW_CLIENTS=$3
+    RULE_COMMENT=$4
 
     log_progress_msg " >|source IP@ filter|> $PROTOCOL $SOURCE_PORT"
     ### List of allowed IP @
     for allowClient in "${ALLOW_CLIENTS[@]}"
     do
-        ipt4 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $allowClient -m comment --comment "src IP filter, allow: $allowClient:$SOURCE_PORT" -j ACCEPT
+        # Allow remote source port in case of NAT
+        ipt4 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $allowClient -m comment --comment "$RULE_COMMENT | IP filter, allow: $allowClient:$SOURCE_PORT" -j ACCEPT
+        ipt4 -A INPUT -p $PROTOCOL --sport $SOURCE_PORT -s $allowClient -m comment --comment "$RULE_COMMENT | IP filter, allow: $allowClient:$SOURCE_PORT" -j ACCEPT
     done
 
     ### Drop all the rest
-    ipt4 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s 0.0.0.0/0 -m comment --comment "src IP filter, block access to: $SOURCE_PORT" -j DROP
+    ipt4 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s 0.0.0.0/0 -m comment --comment "$RULE_COMMENT | IP filter, block: $SOURCE_PORT" -j DROP
 }
 
 
-# usage:   sourceIpFilteringIpv6 <portNumber> <protocol> <Array: list of allowed IPs>
+# usage:   sourceIpFilteringIpv6 <portNumber> <protocol> <Array: list of allowed IPs> <comment>
 function sourceIpFilteringIpv6() {
     SOURCE_PORT=$1
     PROTOCOL=$2
     ALLOW_CLIENTS=$3
+    RULE_COMMENT=$4
 
     log_progress_msg " >|source IP@ filter|> $PROTOCOL $SOURCE_PORT"
     ### List of allowed IP @
     for allowClient in "${ALLOW_CLIENTS[@]}"
     do
-        ipt6 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $allowClient -m comment --comment "src IP filter, allow: $allowClient:$SOURCE_PORT" -j ACCEPT
+        # Allow remote source port in case of NAT
+        ipt6 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -s $allowClient -m comment --comment "$RULE_COMMENT | IP filter, allow: $allowClient:$SOURCE_PORT" -j ACCEPT
+        ipt6 -A INPUT -p $PROTOCOL --sport $SOURCE_PORT -s $allowClient -m comment --comment "$RULE_COMMENT | IP filter, allow: $allowClient:$SOURCE_PORT" -j ACCEPT
     done
 
     ### Drop all the rest
-    ipt6 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -m comment --comment "src IP filter, block access to: $SOURCE_PORT" -j DROP
+    ipt6 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -m comment --comment "$RULE_COMMENT | IP filter, block: $SOURCE_PORT" -j DROP
 }
 
 
