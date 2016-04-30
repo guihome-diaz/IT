@@ -378,12 +378,8 @@ function inputFiltering {
     log_progress_msg "Outside >> Host | allow input: $DEST_PROTOCOL $DEST_PORT - $RULE_COMMENT"
     if [[ ! -z "$LIMIT" ]]
     then
-        # Allow remote source port in case of NAT
-        ipt46 -A INPUT -p $DEST_PROTOCOL --sport $DEST_PORT -m limit --limit 3/min --limit-burst 10 -m comment --comment "$RULE_COMMENT" -j ACCEPT
         ipt46 -A INPUT -p $DEST_PROTOCOL --dport $DEST_PORT -m limit --limit 3/min --limit-burst 10 -m comment --comment "$RULE_COMMENT" -j ACCEPT
     else 
-        # Allow remote source port in case of NAT
-        ipt46 -A INPUT -p $DEST_PROTOCOL --sport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
         ipt46 -A INPUT -p $DEST_PROTOCOL --dport $DEST_PORT -m comment --comment "$RULE_COMMENT" -j ACCEPT
     fi
 }
