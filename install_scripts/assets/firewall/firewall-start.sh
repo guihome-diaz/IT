@@ -381,12 +381,17 @@ function outgoingPortFiltering {
     ####################################
     # STEAM 
     ####################################
+    # see https://support.steampowered.com/kb_article.php?ref=8571-GLVN-8711
+    outputFiltering udp 3478 "P2P networking and audio chat"
+    outputFiltering udp 4379 "P2P networking and audio chat"
+
     outputFiltering udp 4380 "Steam game client"
     outputFiltering udp 27000:27015 "Steam game client traffic"
     outputFiltering udp 27016:27030 "Steam game matchmaking and HLTV"
     outputFiltering udp 27031:27036 "Steam in-home streaming"
 
     outputFiltering tcp 27015 "Steam SRCDS Rcon port"
+    outputFiltering tcp 27014:27050 "Steam Downloads"
     outputFiltering tcp 27036:27037 "Steam in-home streaming"
 
     outputFiltering tcp 6000:6063 "X11 streaming"
