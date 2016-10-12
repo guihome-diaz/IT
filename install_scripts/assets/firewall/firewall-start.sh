@@ -40,6 +40,8 @@
 #                  >> Add KODI + Deluge (P2P) rule
 #                  >> Add some comments on sourceIpFiltering method
 #                  >> Add some rule to avoid tracking of P2P packets
+#   version 1.10- October 2016
+#                  >> Add NodeJS support
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 #
@@ -194,6 +196,12 @@ function incomingPortFiltering {
     #inputFiltering tcp 1099 "JMX"
 
     #################
+    # JavaScript
+    #################
+    #inputFiltering tcp 3000 "NodeJS TSC lite-server"
+	#inputFiltering tcp 3001 "NodeJS BrowserSync"
+
+    #################
     # Messaging
     #################
     ### Open MQ (bundled with Glassfish)
@@ -339,6 +347,9 @@ function outgoingPortFiltering {
     ##############    
     # Java
     outputFiltering tcp 1099 "JMX"
+    # JavaScript
+    outputFiltering tcp 3000 "NodeJS TSC lite-server"
+    outputFiltering tcp 3001 "NodeJS BrowserSync"
     # Version control
     outputFiltering tcp 3690 "SVN"
     outputFiltering tcp 9418 "GIT"
