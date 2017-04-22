@@ -44,6 +44,8 @@
 #                  >> Remove RAW rules (tracking avoidance)
 #                  >> Add some comments on sourceIpFiltering method
 #                  >> Add NAT support on all input + on some input (new method)
+#   version 1.11 - April 2017
+#                  >> Fixing FTP rules
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 
@@ -284,11 +286,17 @@ function allowBaseCommunications {
     ipt46 -A OUTPUT -p tcp --sport 53 -m comment --comment "DNS Sec TCP sPort" -j ACCEPT
     ipt46 -A OUTPUT -p tcp --dport 53 -m comment --comment "DNS Sec TCP dPort" -j ACCEPT
 
-    # FTP data transfer
-    ipt46 -A OUTPUT -p tcp --dport 20 -m comment --comment "FTP data" -j ACCEPT
-    ipt46 -A OUTPUT -p tcp --sport 20 -m comment --comment "FTP data" -j ACCEPT
-    # FTP control (command)
-    ipt46 -A OUTPUT -p tcp --dport 21 -m comment --comment "FTP command" -j ACCEPT
+    # FTP
+    # FTP INPUT (Client <--from-- Server)
+    ipt46 -A INPUT -p tcp --dport 21 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "FTP command: allow FTP connections" -j ACCEPT
+    ipt46 -A INPUT -p tcp --dport 20 -m conntrack --ctstate NEW,ESTABLISHED,RELATED -m comment --comment "FTP data (active)" -j ACCEPT
+    ipt46 -A INPUT -p tcp --sport 1024:65535 --dport 1024:65535 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "FTP data (passive)" -j ACCEPT
+    ipt46 -A INPUT -p tcp -m state --state ESTABLISHED -m comment --comment "FTP established connections" -j ACCEPT
+    
+    # FTP OUTPUT (Client --to--> Server) 
+    ipt46 -A OUTPUT -p tcp --dport 21 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "FTP command: allow FTP connections" -j ACCEPT
+    ipt46 -A OUTPUT -p tcp --dport 20 -m conntrack --ctstate NEW,ESTABLISHED -m comment --comment "FTP data (active)" -j ACCEPT
+    ipt46 -A OUTPUT -p tcp --sport 1024:65535 --dport 1024:65535 -m conntrack --ctstate NEW,ESTABLISHED,RELATED -m comment --comment "FTP data (passive)" -j ACCEPT
 
     # NTP
     ipt46 -A INPUT -p udp --sport 123 -m state --state ESTABLISHED -m comment --comment "NTP (UDP)" -j ACCEPT
