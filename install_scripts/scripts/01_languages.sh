@@ -49,10 +49,10 @@ function setupAdditionalLanguages() {
 	case $keyboardAnswer in
 	   0)	## [yes] button 							
 			#echo -e "\n\n $BLUE Setting-up IBUS and Chinese keyboard (ubuntu <16) $WHITE"
-			#apt-get install -y ibus
-			#apt-get install -y ibus-pinyin
-            #apt-get install -y ibus-sunpinyin
-            #apt-get install -y ibus-googlepinyin
+			apt-get install -y ibus
+			apt-get install -y ibus-pinyin
+            apt-get install -y ibus-sunpinyin
+            apt-get install -y ibus-googlepinyin
                         
 			echo -e "\n\n $BLUE Setting-up FCITX and Chinese keyboard (ubuntu 16+) $WHITE"
             apt-get install -y fcitx

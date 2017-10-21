@@ -282,15 +282,6 @@ function setupUIPackages() {
 				echo -e "\n\n $YELLOW   >> Installing VIBER DESKTOP $WHITE \n"
 				wget -O viber.deb http://download.cdn.viber.com/cdn/desktop/Linux/viber.deb
 				dpkg -i viber.deb
-
-				
-				
-				echo -e "SoGou PinYin: http://www.ubuntukylin.com/application/show.php?lang=en&id=292"
-				echo -e "WeChat: https://github.com/geeeeeeeeek/electronic-wechat/releases"
-				echo -e "PDF SAM:    !!KO!!  http://pdfsam.org/download-pdfsam-basic"
-				echo -e "            GitHub: https://github.com/torakiki/pdfsam"
-				echo -e "FoxItPDF: https://www.foxitsoftware.com/pdf-reader/
-
 				;;
 			*)
 				echo "Something else: $choice"
@@ -300,6 +291,11 @@ function setupUIPackages() {
 
 
 	echo -e "\n\n $GREEN ... UI packages installation complete! $WHITE"
+	echo -e " "
+	echo -e "Other applications:"
+	echo -e "  * SoGou PinYin: http://www.ubuntukylin.com/application/show.php?lang=en&id=292"
+	echo -e "  * FoxItPDF:     https://www.foxitsoftware.com/pdf-reader/"
+	echo -e "  * Teamviewer:   https://www.teamviewer.com/en/download/linux/"
 	echo -e " "
 }
 
