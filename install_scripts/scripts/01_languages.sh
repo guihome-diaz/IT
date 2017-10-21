@@ -66,11 +66,15 @@ function setupAdditionalLanguages() {
             # CheWing = MS Windows PinYin
             #apt-get install -y fcitx-pinyin fcitx-sunpinyin fcitx-googlepinyin fcitx-chewing
             apt-get install -y fcitx-pinyin fcitx-googlepinyin
+            apt-get install -y fcitx-table-wbpy
             # Japanese input
             apt-get install -y fcitx-anthy 
-            # Display pinyin input menu (list of characters) -> qimpanel does NOT work well on XCFE. Better remove it and switch to the 'classic' UI
-            apt-get remove -y --purge fcitx-ui-qimpanel
+            # Display pinyin input menu (list of characters) 
+            ##### XCFE #####
+            ## (i) qimpanel does NOT work well on XCFE. Better remove it and switch to the 'classic' UI
+            #apt-get remove -y --purge fcitx-ui-qimpanel
             #apt-get install -y fcitx-ui-classic fcitx-ui-light
+            
             # Keyboard support for Mozilla Firefox and other applications
             apt-get install -y fcitx-mozc
 
@@ -78,8 +82,8 @@ function setupAdditionalLanguages() {
             apt-get install -y language-selector-gnome
             apt-get install -y im-config
 
-			echo -e "\n\n $BLUE Reload FCITX $WHITE"
-            fcitx -r
+			#echo -e "\n\n $BLUE Reload FCITX $WHITE"
+            #fcitx -r
 			;;
 	   1)   # [no] button
 			echo -e "\n\n No additional keyboards, [NO] button" 

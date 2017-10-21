@@ -31,22 +31,22 @@ function setupSambaFileShare() {
 	if [ $? -eq 0 ]; then
 		echo "Samba user already exits!" 
 	else
-                ## Create a new system user 'smbUser' and add it to the list of SAMBA users
-                # 1. New system user
+        ## Create a new system user 'smbUser' and add it to the list of SAMBA users
+        # 1. New system user
 		echo -e "  Add new samba user" 
 		echo -e "     | "  
 		echo -e "     |- Login:    $smbUsername" 
 		echo -e " "
 		useradd -c "Samba user" -s /sbin/nologin -m $smbUsername
 		if [ $? -eq 0 ]; then
-                        passwd $smbUsername      
-                        # 2. Add system user to 'users'
+            passwd $smbUsername      
+            # 2. Add system user to 'users'
 			useradd -G users $smbUsername
 			echo -e "  $smbUsername has been added to system" 
-                        # 3. Add account to SAMBA                  
-                        smbpasswd -a $smbUsername
-                        # 4. Grant SAMBA access to account
-                        smbpasswd -e $smbUsername
+            # 3. Add account to SAMBA                  
+            smbpasswd -a $smbUsername
+            # 4. Grant SAMBA access to account
+            smbpasswd -e $smbUsername
 			echo -e "  $smbUsername has been added to SAMBA and granted access" 
 		else
 			echo -e "  Failed to add a $smbUsername ! :(" 

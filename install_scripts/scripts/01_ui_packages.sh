@@ -66,8 +66,11 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing scanner tools $WHITE \n"
 	apt-get install -y simple-scan xsane
 
+	echo -e "\n\n $YELLOW   >> Installing GNOME tweak $WHITE \n"
+	apt-get install -y gnome-tweak-tool
+
 	echo -e "\n\n $YELLOW   >> Installing Samba client $WHITE \n"
-	apt-get install system-config-samba
+	apt-get install -y system-config-samba
 
 	tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/testUIpackages$$
 	trap "rm -f $tempfile" 0 1 2 5 15
@@ -173,6 +176,17 @@ function setupUIPackages() {
 				# 4. Install Spotify
 				apt-get install -y spotify-client
 
+
+				#echo -e "\n\n $YELLOW   >> Musixmatch alternative: DeepIN Music (songs lyrics) $WHITE \n"
+				## Chinese alternative: deepin-music
+				#sudo snap install deepin-music
+				
+				### Musixmatch (i386 architecture !)
+				#wget -O musixmatch.deb https://adv.musixmatch.com/r/
+				#dpkg -i musixmatch.deb
+				#apt-get install -y -f
+
+
 				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
                 ## Handbrake repository
                 ## not required for UBUNTU 17.10 ARTFUL !
@@ -259,6 +273,24 @@ function setupUIPackages() {
 				echo "... Some configuration examples are available in /etc/apache2/vehco-samples" >> $logFile
 				echo "... Some websites examples are available in /var/www/vehco-samples" >> $logFile
 				echo " " >> $logFile
+				;;
+			"Communication")
+				echo -e "\n\n $YELLOW   >> Installing SKYPE for Linux BETA $WHITE \n"
+				wget -O skypeforlinux-64.deb https://go.skype.com/skypeforlinux-64.deb
+				dpkg -i skypeforlinux-64.deb
+
+				echo -e "\n\n $YELLOW   >> Installing VIBER DESKTOP $WHITE \n"
+				wget -O viber.deb http://download.cdn.viber.com/cdn/desktop/Linux/viber.deb
+				dpkg -i viber.deb
+
+				
+				
+				echo -e "SoGou PinYin: http://www.ubuntukylin.com/application/show.php?lang=en&id=292"
+				echo -e "WeChat: https://github.com/geeeeeeeeek/electronic-wechat/releases"
+				echo -e "PDF SAM:    !!KO!!  http://pdfsam.org/download-pdfsam-basic"
+				echo -e "            GitHub: https://github.com/torakiki/pdfsam"
+				echo -e "FoxItPDF: https://www.foxitsoftware.com/pdf-reader/
+
 				;;
 			*)
 				echo "Something else: $choice"
