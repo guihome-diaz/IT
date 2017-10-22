@@ -69,6 +69,9 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing GNOME tweak $WHITE \n"
 	apt-get install -y gnome-tweak-tool
 
+	echo -e "\n\n $YELLOW   >> Installing OPENVPN support $WHITE \n"
+	apt-get install -y network-manager-openvpn-gnome openvpn-systemd-resolved
+
 	echo -e "\n\n $YELLOW   >> Installing Samba client $WHITE \n"
 	apt-get install -y system-config-samba
 
@@ -296,6 +299,7 @@ function setupUIPackages() {
 	echo -e "  * SoGou PinYin: http://www.ubuntukylin.com/application/show.php?lang=en&id=292"
 	echo -e "  * FoxItPDF:     https://www.foxitsoftware.com/pdf-reader/"
 	echo -e "  * Teamviewer:   https://www.teamviewer.com/en/download/linux/"
+	echo -e "  * Hubic:        http://mir7.ovh.net/ovh-applications/hubic/hubiC-Linux/"
 	echo -e " "
 }
 
