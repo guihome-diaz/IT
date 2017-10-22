@@ -81,6 +81,9 @@ function setupCorePackages() {
 
 	echo -e "\n\n $YELLOW   >> Installing manual pages $WHITE \n"
 	apt-get install -y manpages
+	
+	echo -e "\n\n $YELLOW   >> Installing Android USB driver $WHITE \n"
+	apt-get install -y android-tools-adb
 
 	echo -e "\n\n $YELLOW   >> Auto-completion ignore case $WHITE \n"
 	echo "set completion-ignore-case On" >> ~/.inputrc

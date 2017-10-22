@@ -234,6 +234,9 @@ function setupUIPackages() {
 
 				echo -e "\n\n $YELLOW   >> Installing Mind Mapping (FreeMind) $WHITE \n"
 				apt-get install -y freeplane
+
+				echo -e "\n\n $YELLOW   >> Installing scanner drivers (SANE) $WHITE \n"
+				apt-get install -y sane
 				;;
 
 			"Photo")
