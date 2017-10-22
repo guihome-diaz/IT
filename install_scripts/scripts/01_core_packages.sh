@@ -31,6 +31,9 @@ function setupCorePackages() {
 	apt-get install -y openssh-server openssh-client
 	apt-get install -y fail2ban
 
+	echo -e "\n\n $YELLOW   >> Installing Network tools (including ifconfig)$WHITE \n"
+	apt-get install -y net-tools
+
 	echo -e "\n\n $YELLOW   >> Installing Archive managers $WHITE \n"
 	apt-get install -y flex libarchive-zip-perl libio-compress-perl m4 perl perl-modules unzip zip
 	apt-get install -y zoo bzip2 arj nomarch lzop cabextract
