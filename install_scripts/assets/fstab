@@ -1,0 +1,38 @@
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/sda1 during installation
+UUID=045641b5-e272-4921-9990-787563f77e5a /               ext4    errors=remount-ro 0       1
+# /home was on /dev/sda3 during installation
+UUID=ba2fa6b2-9233-453a-80e0-b48d19d6b99b /home           ext4    defaults        0       2
+# /mnt/divers was on /dev/sde1 during installation
+UUID=9686155986153B67 /mnt/divers     ntfs-3g    defaults,windows_names,umask=007,uid=1000,gid=1000 0       0
+# /mnt/divers2 was on /dev/sdc1 during installation
+UUID=02FA37C5FA37B42F /mnt/divers2    ntfs-3g    defaults,windows_names,umask=007,uid=1000,gid=1000 0       0
+# /mnt/docs was on /dev/sdd1 during installation
+UUID=7C920CE0920CA0AE /mnt/docs       ntfs-3g    defaults,windows_names,umask=007,uid=1000,gid=1000 0       0
+# /mnt/temp was on /dev/sdb1 during installation
+UUID=E4E01905E018E01A /mnt/temp       ntfs-3g    defaults,windows_names,umask=007,uid=1000,gid=1000 0       0
+# swap was on /dev/sda2 during installation
+UUID=bf386280-db52-463d-89d2-31bb9455cda7 none            swap    sw              0       0
+#
+# ==== NFS details ====
+# noatime - To speed up things by skipping the file access time registration. That will skip some write operations but it make it harder to know what has been accessed when. Only for /tmp
+# atime - Register every acces. MANDATORY for NAS
+# realtime - only update file timestamp if the file or directory has been modified since the last atime update. You might choose to use ‘noatime’ on most of your filesystems but leave /var/spool and /tmp as ‘relatime’
+# noexec - To prevent people from running executables in /tmp. Some rootkits do that. This flag might cause trouble for some legitimate applications so be sure to test everything properly after setting this flag.
+# nosuid - To prevent the setuid bit from being set on files in /tmp. 
+# auto - to mount the disk on each and every boot
+# rw - read / write rights
+# ===============
+#
+# SYNOLGY NAS DS218j - Hubic share
+172.16.100.40:/volume1/Hubic  /mnt/nas-hubic   nfs   nouser,rsize=8192,wsize=8192,atime,auto,rw,dev,exec,suid,iocharset=utf8 0        0
+# SYNOLGY NAS DS218j - Other share
+172.16.100.40:/volume1/DIVERS /mnt/nas-divers  nfs   nouser,rsize=8192,wsize=8192,atime,auto,rw,dev,exec,suid,iocharset=utf8 0        0
+
+
