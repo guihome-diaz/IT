@@ -497,10 +497,15 @@ outgoingPortFiltering
 ###### Forward
 #forwardConfiguration
 
+##### PeerToPeer 
+## Deluge Torrent client (ports must be open on both UDP + TCP)
+# source: https://wiki.archlinux.org/index.php/deluge
+# 56881-56889 for incoming connections 
+# 56881-57200 for outgoing connections. 
+peerToPeer 56881:56889 56881:57200 "Deluge (peer 2 peer)"
+
 ###### VPN 
 vpn "tun0" 8080 udp "eth0" "192.168.15.0/24" "2001:41d0:8:9318::/64"
-
-
 
 ###### Log and drop the rest!
 log_daemon_msg "Log and DROP packets"

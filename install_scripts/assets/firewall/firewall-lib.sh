@@ -46,6 +46,8 @@
 #                  >> Add NAT support on all input + on some input (new method)
 #   version 1.11 - April 2017
 #                  >> Fixing FTP rules
+#   version 1.12 - October 2017
+#                  >> Add peer-to-peer rules
 #####
 # Authors: Guillaume Diaz (all versions) + Julien Rialland (contributor to v1.4)
 
@@ -467,6 +469,28 @@ function forwardPortIpv4 {
     ipt4 -A OUTPUT -p $PROTOCOL --dport $TARGET_PORT -m comment --comment "$COMMENT" -j ACCEPT
     # Forward data: Source <-> Target
     ipt4 -A PREROUTING -t nat -p $PROTOCOL --dport $SOURCE_PORT -m comment --comment "$COMMENT" -j DNAT --to $TARGET_SERVER:$TARGET_PORT
+}
+
+
+# Use that to enable PEER-TO-PEER sharing (bitTorrent, aMule, etc.)
+function peerToPeer {
+     INCOMING_PORT=$1
+     OUTGOING_PORT=$2
+     RULE_COMMENT=$3
+ 
+     # INPUT
+     inputFiltering udp $INCOMING_PORT $RULE_COMMENT
+     inputFiltering tcp $INCOMING_PORT $RULE_COMMENT
+ 
+     # OUTPUT
+     outputFilteringWithSource udp $OUTGOING_PORT $RULE_COMMENT
+     outputFilteringWithSource tcp $OUTGOING_PORT $RULE_COMMENT
+ 
+     # Trick to fix some issues (only use when you have issues!!)
+     #ipt4 -t raw -I PREROUTING -p udp --dport $OUTGOING_PORT -j NOTRACK
+     #ipt4 -t raw -I OUTPUT -p udp --sport $OUTGOING_PORT -j NOTRACK
+     #ipt4 -t raw -I PREROUTING -p tcp --dport $OUTGOING_PORT -j NOTRACK
+     #ipt4 -t raw -I OUTPUT -p tcp --sport $OUTGOING_PORT -j NOTRACK
 }
 
 
