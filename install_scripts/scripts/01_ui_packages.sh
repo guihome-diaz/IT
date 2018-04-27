@@ -28,18 +28,12 @@ function setupUIPackages() {
 	echo -e "\n\n $BLUE UI Core libraries $WHITE \n"
 	echo -e " "
 
-	echo -e "\n\n $YELLOW   >> Icon status manager (missing in late UI) $WHITE \n"
-	apt install -y libgtk2-appindicator-perl
-
 	echo -e "\n\n $YELLOW   >> Installing Sublime Text editor $WHITE \n"
-        # Sublime repository
-        sublimeRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep webupd8team-ubuntu-sublime | cut -d ':' -f 2- | grep "deb ")
-        if [[ -z "$sublimeRepo" ]]; then
-            echo -e "\n\n $YELLOW Installation of SUBLIME TEXT repository $WHITE"
-        	add-apt-repository ppa:webupd8team/sublime-text-3 
-            apt update > /dev/null
-        fi
-	apt install -y sublime-text-installer
+        # 2018-04 No need of a repository anymore!! Use SNAP :)
+        snap install sublime-text --classic
+
+	echo -e "\n\n $YELLOW   >> Installing Notepad++ $WHITE \n"
+	snap install notepad-plus-plus
 
 	echo -e "\n\n $YELLOW   >> Installing hexadecimal editor (BLESS) $WHITE \n"
 	apt install -y bless
@@ -49,9 +43,6 @@ function setupUIPackages() {
 
 	echo -e "\n\n $YELLOW   >> Installing Guake $WHITE \n"
 	apt install -y guake
-
-	echo -e "\n\n $YELLOW   >> Installing unetbootin to create USB install disk $WHITE \n"
-	apt install -y unetbootin
 
 	echo -e "\n\n $YELLOW   >> Hardware detection $WHITE \n"
 	apt install -y sysinfo
@@ -124,7 +115,7 @@ function setupUIPackages() {
 				apt install -y filezilla
 				echo -e "\n\n $YELLOW   >> Installing RDP utility (Remmina rdesktop) $WHITE \n"
 				apt install -y rdesktop
-				apt install -y remmina remmina-plugin-vnc remmina-plugin-gnome remmina-plugin-rdp
+				apt install -y remmina remmina-plugin-vnc remmina-plugin-rdp
 				echo -e "\n\n $YELLOW   >> Installing OpenVPN client + UI tool $WHITE \n"
 				apt install -y openvpn
 				apt install -y network-manager-openvpn
@@ -146,8 +137,7 @@ function setupUIPackages() {
 				apt install -y vlc
 				apt install -y libquicktime2
 				echo -e "\n\n $YELLOW   >> Multimedia features (audio) $WHITE \n"
-				apt install -y rhythmbox 
-				apt install -y rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer
+				apt install -y rhythmbox
 
 				# KODI (media center)
                 ## Trick 2016-04-24 until KODI ppa is stable:
@@ -163,29 +153,17 @@ function setupUIPackages() {
                 # 2018-04: No need of the dedicated repository anymore
                 apt install -y kodi
 
-				# Spotify official install process (https://www.spotify.com/lu-de/download/linux/)
-                spotifyRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep spotify | cut -d ':' -f 2- | grep "deb ")
-                if [[ -z "$spotifyRepo" ]]; then
-                    echo -e "\n\n $YELLOW Installation of SPOTIFY repository $WHITE"
-		        # 1. Add the Spotify repository signing key to be able to verify downloaded packages
-		        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BBEBDCB318AD50EC6865090613B00F1FD2C19886
-		        # 2. Add the Spotify repository
-		        echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
-		        # 3. Update list of available packages
-                    apt update > /dev/null
-                fi
-				# 4. Install Spotify
-				apt install -y spotify-client
+                # 2018-04: no need of dedicated repository for Spotify! Use SNAP :)
+                snap install spotify
 
-
-				#echo -e "\n\n $YELLOW   >> Musixmatch alternative: DeepIN Music (songs lyrics) $WHITE \n"
-				## Chinese alternative: deepin-music
-				#sudo snap install deepin-music
-				
-				### Musixmatch (i386 architecture !)
-				#wget -O musixmatch.deb https://adv.musixmatch.com/r/
-				#dpkg -i musixmatch.deb
-				#apt install -y -f
+		#echo -e "\n\n $YELLOW   >> Musixmatch alternative: DeepIN Music (songs lyrics) $WHITE \n"
+		## Chinese alternative: deepin-music
+		#sudo snap install deepin-music
+		
+		### Musixmatch (i386 architecture !)
+		wget -O musixmatch.deb https://adv.musixmatch.com/r/
+		dpkg -i musixmatch.deb
+		apt install -y -f
 
 
 				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
@@ -214,7 +192,9 @@ function setupUIPackages() {
 				apt install -y libreoffice libreoffice-calc libreoffice-draw  libreoffice-impress libreoffice-writer libreoffice-templates libreoffice-pdfimport
 				apt install -y hunspell-en-us hyphen-en-us mythes-en-us
 				apt install -y hunspell-fr hyphen-fr mythes-fr
+                                apt install -y libreoffice-grammarcheck-fr
 				apt install -y hunspell-sv-se
+                                apt install -y hunspell-dictionary-sv
 				apt install -y libreoffice-l10n-fr libreoffice-help-fr
 				apt install -y libreoffice-l10n-sv libreoffice-help-sv
 
@@ -233,7 +213,8 @@ function setupUIPackages() {
 
 			"Photo")
 				echo -e "\n\n $YELLOW   >> Installing GIMP (Advanced image editor) $WHITE \n"
-				apt install -y gimp gimp-help-common
+				snap install gimp
+                                apt install -y gimp gimp-help-common
 				apt install -y gimp-data-extras gimp-gmic gimp-ufraw gnome-xcf-thumbnailer
 				echo -e "\n\n $YELLOW   >> Installing GThumb images gallery + easy editor $WHITE \n"
 				apt install -y gthumb
@@ -264,9 +245,9 @@ function setupUIPackages() {
 				echo " " >> $logFile
 				;;
 			"Communication")
-				echo -e "\n\n $YELLOW   >> Installing SKYPE for Linux BETA $WHITE \n"
-				wget -O skypeforlinux-64.deb https://go.skype.com/skypeforlinux-64.deb
-				dpkg -i skypeforlinux-64.deb
+                                # 2018-04 No need of repository anymore!! Use snap :)
+				echo -e "\n\n $YELLOW   >> Installing SKYPE $WHITE \n"
+                                snap install skype --classic
 
 				echo -e "\n\n $YELLOW   >> Installing VIBER DESKTOP $WHITE \n"
 				wget -O viber.deb http://download.cdn.viber.com/cdn/desktop/Linux/viber.deb

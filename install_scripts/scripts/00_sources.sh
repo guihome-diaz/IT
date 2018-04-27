@@ -52,10 +52,11 @@ function setupSourcesList() {
 		echo -e "\n\n $YELLOW Installation of Java repository $WHITE"
 		add-apt-repository ppa:webupd8team/java
 		apt update > /dev/null
-		apt install -y oracle-java8-installer oracle-java9-installer
+		apt install -y oracle-java8-installer
 		echo -e "\n\n $YELLOW  ... fixing dependencies $WHITE"
 		apt install -f 
-		apt install -y oracle-java8-installer oracel-java9-installer
+		echo -e "\n\n $YELLOW  ... Setup Oracle JDK 8 + latest OpenJRE and OpenJDK $WHITE"
+		apt install -y oracle-java8-installer default-jre default-jdk default-jdk-doc  
 	fi
 
 

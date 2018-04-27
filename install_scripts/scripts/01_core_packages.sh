@@ -36,7 +36,7 @@ function setupCorePackages() {
 
 	echo -e "\n\n $YELLOW   >> Installing Archive managers $WHITE \n"
 	apt install -y flex libarchive-zip-perl libio-compress-perl m4 perl perl-modules unzip zip
-	apt install -y zoo bzip2 arj nomarch lzop cabextract
+	apt install -y bzip2 arj nomarch lzop cabextract
 	apt install -y lzip ncompress rzip sharutils unace unalz unrar p7zip-rar
 
 	echo -e "\n\n $YELLOW   >> Installing Linux compilation tools $WHITE \n"
@@ -56,7 +56,7 @@ function setupCorePackages() {
 	apt install -y pkg-config
 	
 	echo -e "\n\n $YELLOW   >> Installing Advanced APT manager $WHITE \n"
-	apt install -y software-properties-common python-software-properties
+	apt install -y software-properties-common
 
 	echo -e "\n\n $YELLOW   >> Installing Processes manager $WHITE \n"
 	apt install -y htop
