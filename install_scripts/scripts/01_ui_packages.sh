@@ -78,6 +78,7 @@ function setupUIPackages() {
 	dialog --backtitle "Xiongmaos" \
 		--title "UI applications" \
 	    --checklist "Hi, what features do you want to install?" 20 75 5 \
+	        "Communication"  "Communication tools (Skype)" on \
 	        "Network"      "Network utilities such as Filezilla, RDP, OpenVPN client, etc." on \
 	        "Multimedia"   "Multimedia libraries and players (VLC, RythmBox, etc.)" on \
 			"Dock"         "Dock (OS X like) on the desktop. Only for Xfe, Mint, Cinnamon" off \
@@ -163,11 +164,11 @@ function setupUIPackages() {
 		## Chinese alternative: deepin-music
 		#sudo snap install deepin-music
 		
-		### Musixmatch (i386 architecture !)
+		### Musixmatch
+		echo -e "\n\n $YELLOW   >> Musixmatch $WHITE \n"
 		wget -O musixmatch.deb https://adv.musixmatch.com/r/
 		dpkg -i musixmatch.deb
 		apt install -y -f
-
 
 				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
                 ## Handbrake repository
@@ -250,11 +251,11 @@ function setupUIPackages() {
 			"Communication")
                                 # 2018-04 No need of repository anymore!! Use snap :)
 				echo -e "\n\n $YELLOW   >> Installing SKYPE $WHITE \n"
-                                snap install skype --classic
+                snap install skype --classic
 
-				echo -e "\n\n $YELLOW   >> Installing VIBER DESKTOP $WHITE \n"
-				wget -O viber.deb http://download.cdn.viber.com/cdn/desktop/Linux/viber.deb
-				dpkg -i viber.deb
+				#echo -e "\n\n $YELLOW   >> Installing VIBER DESKTOP $WHITE \n"
+				#wget -O viber.deb http://download.cdn.viber.com/cdn/desktop/Linux/viber.deb
+				#dpkg -i viber.deb
 				;;
 			*)
 				echo "Something else: $choice"
