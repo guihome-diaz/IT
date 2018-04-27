@@ -41,6 +41,9 @@ function setupUIPackages() {
 	echo -e "\n\n $YELLOW   >> Installing Web-Browser FIREFOX $WHITE \n"
 	apt install -y firefox
 
+	echo -e "\n\n $YELLOW   >> Installing xclip (paperclip) $WHITE \n"
+	apt install -y xclip
+
 	echo -e "\n\n $YELLOW   >> Installing Guake $WHITE \n"
 	apt install -y guake
 
