@@ -22,68 +22,68 @@ function setupCorePackages() {
 	echo -e " "
 
 	echo -e "\n\n $YELLOW   >> Installing RsysLog $WHITE \n" 
-	apt-get install -y rsyslog
+	apt install -y rsyslog
 	echo -e "\n\n $YELLOW   >> Installing Linux Editors $WHITE \n"
-	apt-get install -y vim vim-nox vim-scripts nano
+	apt install -y vim vim-nox vim-scripts nano
 
 	echo -e "\n\n $YELLOW   >> Installing Security applications $WHITE \n" 
-	apt-get install -y openssl
-	apt-get install -y openssh-server openssh-client
-	apt-get install -y fail2ban
+	apt install -y openssl
+	apt install -y openssh-server openssh-client
+	apt install -y fail2ban
 
 	echo -e "\n\n $YELLOW   >> Installing Network tools (including ifconfig)$WHITE \n"
-	apt-get install -y net-tools
+	apt install -y net-tools
 
 	echo -e "\n\n $YELLOW   >> Installing Archive managers $WHITE \n"
-	apt-get install -y flex libarchive-zip-perl libio-compress-perl m4 perl perl-modules unzip zip
-	apt-get install -y zoo bzip2 arj nomarch lzop cabextract
-	apt-get install -y lzip ncompress rzip sharutils unace unalz unrar p7zip-rar
+	apt install -y flex libarchive-zip-perl libio-compress-perl m4 perl perl-modules unzip zip
+	apt install -y zoo bzip2 arj nomarch lzop cabextract
+	apt install -y lzip ncompress rzip sharutils unace unalz unrar p7zip-rar
 
 	echo -e "\n\n $YELLOW   >> Installing Linux compilation tools $WHITE \n"
-	apt-get install -y make autoconf automake cpp gcc
-	apt-get install -y build-essential
+	apt install -y make autoconf automake cpp gcc
+	apt install -y build-essential
 
 	echo -e "\n\n $YELLOW   >> Installing SVN client$WHITE \n"
-	apt-get install -y subversion
+	apt install -y subversion
 
 	echo -e "\n\n $YELLOW   >> Installing Core libraries extensions $WHITE \n"
-	apt-get install -y libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl
-	apt-get install -y libnet-ident-perl libnet-dns-perl
+	apt install -y libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl
+	apt install -y libnet-ident-perl libnet-dns-perl
 
 	echo -e "\n\n $YELLOW   >> Installing Python $WHITE \n"
-	apt-get install -y python3 python3-doc
-	apt-get install -y python-pip
-	apt-get install -y pkg-config
+	apt install -y python3 python3-doc
+	apt install -y python-pip
+	apt install -y pkg-config
 	
 	echo -e "\n\n $YELLOW   >> Installing Advanced APT manager $WHITE \n"
-	apt-get install -y software-properties-common python-software-properties
+	apt install -y software-properties-common python-software-properties
 
 	echo -e "\n\n $YELLOW   >> Installing Processes manager $WHITE \n"
-	apt-get install -y htop
+	apt install -y htop
 
 	echo -e "\n\n $YELLOW   >> Installing Startup manager $WHITE \n"
-	apt-get install -y sysv-rc-conf
+	apt install -y sysv-rc-conf
 
 	echo -e "\n\n $YELLOW   >> Installing time sync $WHITE \n"
-	apt-get install -y ntp ntpdate
+	apt install -y ntp ntpdate
 
 	echo -e "\n\n $YELLOW   >> Installing Dos2unix converter and vice-versa $WHITE \n"
-	apt-get install -y dos2unix tofrodos
+	apt install -y dos2unix tofrodos
 
 	echo -e "\n\n $YELLOW   >> Installing midnight commander $WHITE \n" 
-	apt-get install -y mc
+	apt install -y mc
 
 	echo -e "\n\n $YELLOW   >> Installing Network utilities $WHITE \n"
-	apt-get install -y curl
+	apt install -y curl
 
 	echo -e "\n\n $YELLOW   >> Network clients (NFS, Samba) $WHITE \n"
-	apt-get install -y nfs-common smbclient
+	apt install -y nfs-common smbclient
 
 	echo -e "\n\n $YELLOW   >> Installing manual pages $WHITE \n"
-	apt-get install -y manpages
+	apt install -y manpages
 	
 	echo -e "\n\n $YELLOW   >> Installing Android USB driver $WHITE \n"
-	apt-get install -y android-tools-adb
+	apt install -y android-tools-adb
 
 	echo -e "\n\n $YELLOW   >> Auto-completion ignore case $WHITE \n"
 	echo "set completion-ignore-case On" >> ~/.inputrc

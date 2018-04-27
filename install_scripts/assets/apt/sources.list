@@ -3,41 +3,30 @@
 ## Ubuntu 14.04 LTS => trusty
 ## Ubuntu 16.04 LTS => xenial
 ## Ubuntu 17.10 ==> Artful
+## Ubuntu 18.04 ==> Bionic Beaver
 ##
 ## Last changes:
-##     April 2016, Guillaume Diaz
-##     October 2017, Guillaume Diaz
+##     April 2016, Guillaume Diaz (v17.04)
+##     October 2017, Guillaume Diaz (v17.10)
+##     April 2018, Guillaume Diaz (v18.04 LTS)
 ## 
 
 ###################################
-# UBUNTU 16.04 LTS
+# UBUNTU 18.04 LTS
 ###################################
 ##### Use the closest server automatically, based on your geographic location #####
 ## Ubuntu official repos
-#deb mirror://mirrors.ubuntu.com/mirrors.txt xenial main restricted universe multiverse
-#deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-updates main restricted universe multiverse
-#deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-security main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse
 ## Backports. Community repos approved by Canonical
-#deb mirror://mirrors.ubuntu.com/mirrors.txt xenial-backports main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse
 
 ## Canonical (Ubuntu) partners
-#deb http://archive.canonical.com/ubuntu xenial partner
+deb http://archive.canonical.com/ubuntu bionic partner
  
 ## 3rd parties libraries
-#deb http://extras.ubuntu.com/ubuntu xenial main
+#deb http://extras.ubuntu.com/ubuntu bionic main
 
 
-###################################
-# UBUNTU 17.10
-###################################
-##### Use the closest server automatically, based on your geographic location #####
-## Ubuntu official repos
-deb mirror://mirrors.ubuntu.com/mirrors.txt artful main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt artful-updates main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt artful-security main restricted universe multiverse
-## Backports. Community repos approved by Canonical
-deb mirror://mirrors.ubuntu.com/mirrors.txt artful-backports main restricted universe multiverse
-
-## Canonical (Ubuntu) partners
-deb http://archive.canonical.com/ubuntu artful partner
  

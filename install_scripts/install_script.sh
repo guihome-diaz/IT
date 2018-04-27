@@ -74,7 +74,7 @@ if [[ -n $(which dialog) ]]; then
 else
 	# Install dialog if not already there !
     echo "... installation of required application, please wait"
-	apt-get install -y dialog >> /bin/null
+	apt install -y dialog >> /bin/null
 fi
 DIALOG_OK=0
 DIALOG_CANCEL=1
@@ -212,10 +212,10 @@ do
 
 		"Subversion") 
 			echo "Installing SVN client" 
-			apt-get install subversion subversion-tools
+			apt install subversion subversion-tools
 
 			echo "Installing SVN server" 
-			apt-get install subversion subversion-tools >> $logFile
+			apt install subversion subversion-tools >> $logFile
 
 			;;
 

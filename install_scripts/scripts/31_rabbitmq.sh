@@ -31,11 +31,11 @@ function setupRabbitMQ() {
 
 		wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
 		apt-key add rabbitmq-signing-key-public.asc
-		apt-get update > /dev/null
+		apt update > /dev/null
 	fi
 
 	echo -e "\n\n $YELLOW   >> Installing RabbitMQ $WHITE \n"
-	apt-get install rabbitmq-server amqp-tools
+	apt install rabbitmq-server amqp-tools
 
 
 

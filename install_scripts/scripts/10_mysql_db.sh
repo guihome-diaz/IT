@@ -21,7 +21,7 @@ function setupMySQLserver() {
 	echo " "
 
 	echo -e "\n\n $YELLOW Installation MySQL server $WHITE \n\n" 
-	apt-get install -y mysql-server mysql-client
+	apt install -y mysql-server mysql-client
 
 	dialog --title "MySQL installation" \
 		   --yesno "Enable remote access?" 7 60

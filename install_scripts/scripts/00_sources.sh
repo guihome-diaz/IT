@@ -41,7 +41,7 @@ function setupSourcesList() {
 		esac
 				
             echo -e "\n\n $YELLOW Please wait... Repositories update in progress $WHITE"
-	    apt-get update > /dev/null
+	    apt update > /dev/null
 	else 
 		echo -e "\n\n $YELLOW ... Repositories list already seems to be up-to-date, nothing to do $WHITE" 
 	fi
@@ -51,11 +51,11 @@ function setupSourcesList() {
 	if [[ -z "$javaRepo" ]]; then
 		echo -e "\n\n $YELLOW Installation of Java repository $WHITE"
 		add-apt-repository ppa:webupd8team/java
-		apt-get update > /dev/null
-		apt-get install -y oracle-java8-installer oracle-java9-installer
+		apt update > /dev/null
+		apt install -y oracle-java8-installer oracle-java9-installer
 		echo -e "\n\n $YELLOW  ... fixing dependencies $WHITE"
-		apt-get install -f 
-		apt-get install -y oracle-java8-installer oracel-java9-installer
+		apt install -f 
+		apt install -y oracle-java8-installer oracel-java9-installer
 	fi
 
 
@@ -68,15 +68,15 @@ function setupSourcesList() {
 			echo -e "\n\n $BLUE Performing distribution upgrade $WHITE"
 			echo -e " "
 			echo -e "\n $YELLOW ... Fixing bugs, if any $WHITE"
-			apt-get install -f
+			apt install -f
 			echo -e "\n $YELLOW ... Updating list of repositories $WHITE"
-			apt-get update 
+			apt update 
 			echo -e "\n\n $YELLOW ... Performing distribution upgrade $WHITE"
-			apt-get dist-upgrade
+			apt dist-upgrade
 			echo -e "\n\n $YELLOW ... Removing old packages $WHITE"
-			apt-get autoremove
+			apt autoremove
 			echo -e "\n\n $YELLOW ... Cleaning repositories list $WHITE"
-			apt-get autoclean && apt-get clean 
+			apt autoclean && apt clean 
 			echo -e "\n\n $GREEN ... distribution upgrade complete! $WHITE"
 			;;
 	   1)   # [no] button

@@ -22,13 +22,13 @@ function setupAntivirus() {
 	echo -e " "
 
 	echo -e "\n\n $YELLOW   >> Installing package $WHITE \n"
-	apt-get install -y clamav clamav-freshclam clamav-docs
+	apt install -y clamav clamav-freshclam clamav-docs
 	# Daemon (auto-run and service management)
-	apt-get install -y clamav-daemon python3-clamav-daemon 
+	apt install -y clamav-daemon python3-clamav-daemon 
 	# Utilities (additional scans)
-	apt-get install -y libclamunrar7 clamassassin
+	apt install -y libclamunrar7 clamassassin
 	# Frontend (optional)
-	apt-get install -y clamtk
+	apt install -y clamtk
 	echo -e "\n\n $YELLOW   >> Updating anti-virus definitions $WHITE \n"
 	freshclam
 

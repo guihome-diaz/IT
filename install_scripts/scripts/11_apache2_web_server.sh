@@ -23,12 +23,12 @@ function setupApacheWebServer() {
 	echo -e "#################################### $WHITE"
 	echo -e "\n\n $YELLOW Installing Apache2 web-server $WHITE \n\n"
 
-	apt-get install -y apache2 apache2-mpm-prefork apache2-utils ssl-cert
-	apt-get install -y libapache2-mod-fcgid libruby
-	apt-get install -y apache2-doc
-	apt-get install -y libapache2-mod-perl2 libapache2-mod-perl2-doc
-	apt-get install -y libapache2-mod-ldap-userdir
-	apt-get install -y libapache2-mod-svn
+	apt install -y apache2 apache2-mpm-prefork apache2-utils ssl-cert
+	apt install -y libapache2-mod-fcgid libruby
+	apt install -y apache2-doc
+	apt install -y libapache2-mod-perl2 libapache2-mod-perl2-doc
+	apt install -y libapache2-mod-ldap-userdir
+	apt install -y libapache2-mod-svn
 
 	##### Apache2 modules 
 	# Ask user
@@ -99,25 +99,25 @@ function setupApacheWebServer() {
 	case $phpAnswer in
 	   0)	# [yes] button						
 			echo -e "\n\n $YELLOW Installing PHP 5 support for Apache2 web-support $WHITE" 
-			apt-get install -y libapache2-mod-php5 php5 php5-common
-			apt-get install -y php5-cli php5-cgi
-			apt-get install -y php5-curl php5-xmlrpc php5-xsl php5-dev php-pear 
-			apt-get install -y php5-mysql
-			apt-get install -y php5-memcache php5-xcache
-			apt-get install -y php5-mhash php-auth php5-mcrypt mcrypt
-			apt-get install -y php5-imap
-			apt-get install -y php5-snmp
-			apt-get install -y php5-gd php5-imagick imagemagick
+			apt install -y libapache2-mod-php5 php5 php5-common
+			apt install -y php5-cli php5-cgi
+			apt install -y php5-curl php5-xmlrpc php5-xsl php5-dev php-pear 
+			apt install -y php5-mysql
+			apt install -y php5-memcache php5-xcache
+			apt install -y php5-mhash php-auth php5-mcrypt mcrypt
+			apt install -y php5-imap
+			apt install -y php5-snmp
+			apt install -y php5-gd php5-imagick imagemagick
 
 			echo -e "\n\n $YELLOW Installing PHP 7 support for Apache2 web-support $WHITE" 
-			apt-get install -y libapache2-mod-php7.0 php7.0 php7.0-common
-			apt-get install -y php7.0-cli php7.0-cgi
-			apt-get install -y php7.0-curl php7.0-xsl php7.0-dev 
-			apt-get install -y php7.0-mysql
-			apt-get install -y php7.0-mcrypt
-			apt-get install -y php7.0-imap
-			apt-get install -y php7.0-snmp
-			apt-get install -y php7.0-gd
+			apt install -y libapache2-mod-php7.0 php7.0 php7.0-common
+			apt install -y php7.0-cli php7.0-cgi
+			apt install -y php7.0-curl php7.0-xsl php7.0-dev 
+			apt install -y php7.0-mysql
+			apt install -y php7.0-mcrypt
+			apt install -y php7.0-imap
+			apt install -y php7.0-snmp
+			apt install -y php7.0-gd
 
 			echo -e "\n\n $YELLOW Enabling PHP module $WHITE"
 			a2enmod php5

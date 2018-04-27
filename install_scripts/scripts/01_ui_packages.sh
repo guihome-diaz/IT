@@ -29,7 +29,7 @@ function setupUIPackages() {
 	echo -e " "
 
 	echo -e "\n\n $YELLOW   >> Icon status manager (missing in late UI) $WHITE \n"
-	apt-get install -y libgtk2-appindicator-perl
+	apt install -y libgtk2-appindicator-perl
 
 	echo -e "\n\n $YELLOW   >> Installing Sublime Text editor $WHITE \n"
         # Sublime repository
@@ -37,43 +37,46 @@ function setupUIPackages() {
         if [[ -z "$sublimeRepo" ]]; then
             echo -e "\n\n $YELLOW Installation of SUBLIME TEXT repository $WHITE"
         	add-apt-repository ppa:webupd8team/sublime-text-3 
-            apt-get update > /dev/null
+            apt update > /dev/null
         fi
-	apt-get install -y sublime-text-installer
+	apt install -y sublime-text-installer
 
 	echo -e "\n\n $YELLOW   >> Installing hexadecimal editor (BLESS) $WHITE \n"
-	apt-get install -y bless
+	apt install -y bless
 
 	echo -e "\n\n $YELLOW   >> Installing Web-Browser FIREFOX $WHITE \n"
-	apt-get install -y firefox
+	apt install -y firefox
 
 	echo -e "\n\n $YELLOW   >> Installing Guake $WHITE \n"
-	apt-get install -y guake
+	apt install -y guake
 
 	echo -e "\n\n $YELLOW   >> Installing unetbootin to create USB install disk $WHITE \n"
-	apt-get install -y unetbootin
+	apt install -y unetbootin
 
 	echo -e "\n\n $YELLOW   >> Hardware detection $WHITE \n"
-	apt-get install -y sysinfo
-	apt-get install -y hardinfo
+	apt install -y sysinfo
+	apt install -y hardinfo
 
 	echo -e "\n\n $YELLOW   >> Power management (to disable the screen saver) $WHITE \n"
-	apt-get install -y caffeine
+	apt install -y caffeine
 
 	echo -e "\n\n $YELLOW   >> Installing gparted to manage disks $WHITE \n"
-	apt-get install -y gparted
+	apt install -y gparted
 
 	echo -e "\n\n $YELLOW   >> Installing scanner tools $WHITE \n"
-	apt-get install -y simple-scan xsane
+	apt install -y simple-scan xsane
 
 	echo -e "\n\n $YELLOW   >> Installing GNOME tweak $WHITE \n"
-	apt-get install -y gnome-tweak-tool
+	apt install -y gnome-tweak-tool
+
+	echo -e "\n\n $YELLOW   >> Installing ADOBE flash player $WHITE \n"
+	apt install -y adobe-flashplugin
 
 	echo -e "\n\n $YELLOW   >> Installing OPENVPN support $WHITE \n"
-	apt-get install -y network-manager-openvpn-gnome openvpn-systemd-resolved
+	apt install -y network-manager-openvpn-gnome openvpn-systemd-resolved
 
 	echo -e "\n\n $YELLOW   >> Installing Samba client $WHITE \n"
-	apt-get install -y system-config-samba
+	apt install -y system-config-samba
 
 	tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/testUIpackages$$
 	trap "rm -f $tempfile" 0 1 2 5 15
@@ -115,16 +118,16 @@ function setupUIPackages() {
 
 			"Network")		
 				echo -e "\n\n $YELLOW   >> Installing Network scanners (Wireshark, tShark, Nmap, Zenmap) $WHITE \n"
-				apt-get install -y tshark wireshark wireshark-doc
-				apt-get install -y nmap zenmap
+				apt install -y tshark wireshark wireshark-doc
+				apt install -y nmap zenmap
 				echo -e "\n\n $YELLOW   >> Installing Filezilla $WHITE \n"
-				apt-get install -y filezilla
+				apt install -y filezilla
 				echo -e "\n\n $YELLOW   >> Installing RDP utility (Remmina rdesktop) $WHITE \n"
-				apt-get install -y rdesktop
-				apt-get install -y remmina remmina-plugin-vnc remmina-plugin-gnome remmina-plugin-rdp
+				apt install -y rdesktop
+				apt install -y remmina remmina-plugin-vnc remmina-plugin-gnome remmina-plugin-rdp
 				echo -e "\n\n $YELLOW   >> Installing OpenVPN client + UI tool $WHITE \n"
-				apt-get install -y openvpn
-				apt-get install -y network-manager-openvpn
+				apt install -y openvpn
+				apt install -y network-manager-openvpn
 				echo -e "\n\n $YELLOW   >> Installing Deluge (Torrent client, very good!) $WHITE \n"
                 ## Deluge repository
                 ## not required for UBUNTU 17.10 ARTFUL !
@@ -132,38 +135,33 @@ function setupUIPackages() {
                 #if [[ -z "$delugeRepo" ]]; then
                 #    echo -e "\n\n $YELLOW Installation of DELUGE repository $WHITE"
                 #    add-apt-repository ppa:deluge-team/ppa
-                #    apt-get update > /dev/null
+                #    apt update > /dev/null
                 #fi
-                apt-get install -y deluge
+                apt install -y deluge
 				;;
 
 			"Multimedia") 
 				echo -e "\n\n $YELLOW   >> Multimedia features (video) $WHITE \n"
-				apt-get install -y ubuntu-restricted-extras
-				apt-get install -y vlc
-				apt-get install -y libquicktime2
+				apt install -y ubuntu-restricted-extras
+				apt install -y vlc
+				apt install -y libquicktime2
 				echo -e "\n\n $YELLOW   >> Multimedia features (audio) $WHITE \n"
-				apt-get install -y rhythmbox 
-				apt-get install -y rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer
+				apt install -y rhythmbox 
+				apt install -y rhythmbox-mozilla rhythmbox-doc rhythmbox-plugin-visualizer
 
 				# KODI (media center)
                 ## Trick 2016-04-24 until KODI ppa is stable:
                 ##  - install KODI version packaged with ubuntu repository (it is stable);
                 ##  - add team-xbmc repo and wait for stable upgrade.  
-                apt-get install -y kodi
+                apt install -y kodi
 				echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
 				# Requirements
-				apt-get install -y python-software-properties pkg-config
-				apt-get install -y software-properties-common
-				apt-get install -y unrar
+				apt install -y python-software-properties pkg-config
+				apt install -y software-properties-common
+				apt install -y unrar
                 # Kodi repository
-                kodiRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep team-xbmc | cut -d ':' -f 2- | grep "deb ")
-                if [[ -z "$kodiRepo" ]]; then
-                    echo -e "\n\n $YELLOW Installation of KODI repository $WHITE"
-                    add-apt-repository ppa:team-xbmc/ppa
-                    apt-get update > /dev/null
-                fi
-				apt-get install -y kodi
+                # 2018-04: No need of the dedicated repository anymore
+                apt install -y kodi
 
 				# Spotify official install process (https://www.spotify.com/lu-de/download/linux/)
                 spotifyRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep spotify | cut -d ':' -f 2- | grep "deb ")
@@ -174,10 +172,10 @@ function setupUIPackages() {
 		        # 2. Add the Spotify repository
 		        echo deb http://repository.spotify.com stable non-free | sudo tee /etc/apt/sources.list.d/spotify.list
 		        # 3. Update list of available packages
-                    apt-get update > /dev/null
+                    apt update > /dev/null
                 fi
 				# 4. Install Spotify
-				apt-get install -y spotify-client
+				apt install -y spotify-client
 
 
 				#echo -e "\n\n $YELLOW   >> Musixmatch alternative: DeepIN Music (songs lyrics) $WHITE \n"
@@ -187,7 +185,7 @@ function setupUIPackages() {
 				### Musixmatch (i386 architecture !)
 				#wget -O musixmatch.deb https://adv.musixmatch.com/r/
 				#dpkg -i musixmatch.deb
-				#apt-get install -y -f
+				#apt install -y -f
 
 
 				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
@@ -197,75 +195,60 @@ function setupUIPackages() {
                 #if [[ -z "$handbreakRepo" ]]; then
                 #    echo -e "\n\n $YELLOW Installation of Hand-Brake repository $WHITE"
 				#	add-apt-repository ppa:stebbins/handbrake-releases
-                #	apt-get update > /dev/null
+                #	apt update > /dev/null
                 #fi
-				apt-get install -y handbrake-gtk handbrake-cli
+				apt install -y handbrake-gtk handbrake-cli
 
 				echo -e "\n\n $YELLOW   >> FFMPEG (command line video tool) $WHITE \n"
-                ## FFMEPG repository
-                ## not required for UBUNTU 17.10 ARTFUL !
-                #ffmpegRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep mc3man | cut -d ':' -f 2- | grep "deb ")
-                #if [[ -z "$ffmpegRepo" ]]; then
-				#	add-apt-repository ppa:mc3man/trusty-media  
-				#	apt-get update > /dev/null
-				#fi
-				apt-get install -y ffmpeg  
-				apt-get install -y frei0r-plugins  
+                ## FFMEPG
+                apt install -y ffmpeg  
+				apt install -y frei0r-plugins  
 				;;
 
 			"Dock") 
 				echo -e "\n\n $YELLOW   >> Installing CAIRO dock $WHITE \n"
-				apt-get install -y cairo-dock cairo-dock-plug-ins cairo-dock-plug-ins-integration
+				apt install -y cairo-dock cairo-dock-plug-ins cairo-dock-plug-ins-integration
 				;;
 			"Office")
 				echo -e "\n\n $YELLOW   >> Installing Libre Office and related dictionnaries + menu [EN, FR, SV, ZH] $WHITE \n"
-				apt-get install -y libreoffice libreoffice-calc libreoffice-draw  libreoffice-impress libreoffice-writer libreoffice-templates libreoffice-pdfimport
-				apt-get install -y hunspell-en-us hyphen-en-us mythes-en-us
-				apt-get install -y hunspell-fr hyphen-fr mythes-fr
-				apt-get install -y hunspell-sv-se
-				apt-get install -y libreoffice-l10n-fr libreoffice-help-fr
-				apt-get install -y libreoffice-l10n-sv libreoffice-help-sv
+				apt install -y libreoffice libreoffice-calc libreoffice-draw  libreoffice-impress libreoffice-writer libreoffice-templates libreoffice-pdfimport
+				apt install -y hunspell-en-us hyphen-en-us mythes-en-us
+				apt install -y hunspell-fr hyphen-fr mythes-fr
+				apt install -y hunspell-sv-se
+				apt install -y libreoffice-l10n-fr libreoffice-help-fr
+				apt install -y libreoffice-l10n-sv libreoffice-help-sv
 
 				echo -e "\n\n $YELLOW   >> Installing eBooks library (Calibre) $WHITE \n"
-				apt-get install -y calibre
+				apt install -y calibre
 
 				echo -e "\n\n $YELLOW   >> Installing diagram tool (DIA) $WHITE \n"
-				apt-get install -y dia
+				apt install -y dia
 
 				echo -e "\n\n $YELLOW   >> Installing Mind Mapping (FreeMind) $WHITE \n"
-				apt-get install -y freeplane
+				apt install -y freeplane
 
 				echo -e "\n\n $YELLOW   >> Installing scanner drivers (SANE) $WHITE \n"
-				apt-get install -y sane
+				apt install -y sane
 				;;
 
 			"Photo")
 				echo -e "\n\n $YELLOW   >> Installing GIMP (Advanced image editor) $WHITE \n"
-				apt-get install -y gimp gimp-help-common
-				apt-get install -y gimp-data-extras gimp-gmic gimp-ufraw gnome-xcf-thumbnailer
+				apt install -y gimp gimp-help-common
+				apt install -y gimp-data-extras gimp-gmic gimp-ufraw gnome-xcf-thumbnailer
 				echo -e "\n\n $YELLOW   >> Installing GThumb images gallery + easy editor $WHITE \n"
-				apt-get install -y gthumb
+				apt install -y gthumb
 				;;
 
 			"Wine")
 				echo -e "\n\n $YELLOW   >> Installing Windows Emulator and Windows libraries (WINE) $WHITE \n"
-				# wine repository offer a better version than the one in Ubuntu official repositories
-                wineRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep ubuntu-wine | cut -d ':' -f 2- | grep "deb ")
-                if [[ -z "$wineRepo" ]]; then
-                    echo -e "\n\n $YELLOW Installation of WINE repository $WHITE"
-					add-apt-repository ppa:ubuntu-wine/ppa
-					wget -nc https://dl.winehq.org/wine-builds/Release.key
-					apt-key add Release.key
-					apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/
-                    apt-get update > /dev/null
-                fi
-				apt-get install -y --install-recommends winehq-devel
-				apt-get install -y winetricks 
-				apt-get install -y wine-mono
-				apt-get install -y q4wine
+				# 2018-04: we can rely on the version inside the 18.04 LTS repository
+                apt install -y --install-recommends winehq-devel
+				apt install -y winetricks 
+				apt install -y wine-mono
+				apt install -y q4wine
 
 				# Use "Play on linux" to create VM-like for each windows application
-				apt-get install -y playonlinux
+				apt install -y playonlinux
 				;;
 
 			"Web-server")
