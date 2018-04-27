@@ -56,8 +56,25 @@ function setupSourcesList() {
 		echo -e "\n\n $YELLOW  ... fixing dependencies $WHITE"
 		apt install -f 
 		echo -e "\n\n $YELLOW  ... Setup Oracle JDK 8 + latest OpenJRE and OpenJDK $WHITE"
-		apt install -y oracle-java8-installer default-jre default-jdk default-jdk-doc  
+		apt install -y oracle-java8-installer
 	fi
+
+
+	# Java repository for ORACLE 9+
+	# Only use that one if the OpenJDK isn't enough for you!
+#	newJavaRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep linuxuprising-ubuntu-java | cut -d ':' -f 2- | grep "deb ")
+#	if [[ -z "$newJavaRepo" ]]; then
+#		echo -e "\n\n $YELLOW Installation of NEW Java repository for Oracle 9+ $WHITE"
+#		add-apt-repository ppa:linuxuprising/java
+#		apt update > /dev/null
+#		echo -e "\n\n $YELLOW  ... fixing dependencies $WHITE"
+#		apt install -f 
+#		echo -e "\n\n $YELLOW  ... Setup Oracle JDK 10 $WHITE"
+#		apt install oracle-java10-installer
+#	fi
+
+	echo -e "\n\n $YELLOW  ... Setup latest OpenJRE and OpenJDK $WHITE"
+	apt install -y default-jre default-jdk default-jdk-doc  
 
 
 	# Install all updates? 
