@@ -10,12 +10,12 @@
  
 ##### Use the closest server automatically, based on your geographic location #####
 ## Ubuntu official repos
-deb http://ubuntu.mirrors.ovh.net/ubuntu/ bionic main restricted universe multiverse
-deb http://ubuntu.mirrors.ovh.net/ubuntu/ bionic-updates main restricted universe multiverse
-deb http://ubuntu.mirrors.ovh.net/ubuntu/ bionic-security main restricted universe multiverse
+deb http://ubuntu.mirrors.ovh.net/ubuntu bionic main restricted universe multiverse
+deb http://ubuntu.mirrors.ovh.net/ubuntu bionic-updates main restricted universe multiverse
+deb http://ubuntu.mirrors.ovh.net/ubuntu bionic-security main restricted universe multiverse
 ## Backports. Community repos approved by Canonical
-deb http://ubuntu.mirrors.ovh.net/ubuntu/ bionic-backports main restricted universe multiverse
-
+deb http://ubuntu.mirrors.ovh.net/ubuntu bionic-backports main restricted universe multiverse
+ 
 
 ## FTP version
 #deb ftp://mirror.ovh.net/ubuntu bionic main restricted universe multiverse
