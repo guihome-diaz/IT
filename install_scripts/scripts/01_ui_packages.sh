@@ -217,7 +217,8 @@ function setupUIPackages() {
 
 			"Photo")
 				echo -e "\n\n $YELLOW   >> Installing GIMP (Advanced image editor) $WHITE \n"
-				snap install gimp
+				#2018-04 don't use snap yet: it doesn't install all features
+				#snap install gimp
                                 apt install -y gimp gimp-help-common
 				apt install -y gimp-data-extras gimp-gmic gimp-ufraw gnome-xcf-thumbnailer
 				echo -e "\n\n $YELLOW   >> Installing GThumb images gallery + easy editor $WHITE \n"
