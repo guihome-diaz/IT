@@ -4,26 +4,47 @@
 ## Ubuntu 16.04 LTS => xenial
 ## Ubuntu 17.10 ==> Artful
 ## Ubuntu 18.04 ==> Bionic Beaver
+## Ubuntu 18.10 ==> Cosmic
 ##
 ## Last changes:
 ##     April 2016, Guillaume Diaz (v17.04)
 ##     October 2017, Guillaume Diaz (v17.10)
 ##     April 2018, Guillaume Diaz (v18.04 LTS)
+##     October 2018, Guillaume Diaz (v18.10 LTS)
 ## 
+
+###################################
+# UBUNTU 18.10
+###################################
+##### Use the closest server automatically, based on your geographic location #####
+## Ubuntu official repos
+deb mirror://mirrors.ubuntu.com/mirrors.txt cosmic main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt cosmic-updates main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt cosmic-security main restricted universe multiverse
+## Backports. Community repos approved by Canonical
+deb mirror://mirrors.ubuntu.com/mirrors.txt cosmic-backports main restricted universe multiverse
+
+## Canonical (Ubuntu) partners
+deb http://archive.canonical.com/ubuntu cosmic partner
+ 
+## 3rd parties libraries
+#deb http://extras.ubuntu.com/ubuntu bionic main
+
+
 
 ###################################
 # UBUNTU 18.04 LTS
 ###################################
 ##### Use the closest server automatically, based on your geographic location #####
 ## Ubuntu official repos
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-security main restricted universe multiverse
 ## Backports. Community repos approved by Canonical
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse
+#deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse
 
 ## Canonical (Ubuntu) partners
-deb http://archive.canonical.com/ubuntu bionic partner
+#deb http://archive.canonical.com/ubuntu bionic partner
  
 ## 3rd parties libraries
 #deb http://extras.ubuntu.com/ubuntu bionic main
