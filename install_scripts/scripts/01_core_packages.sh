@@ -34,21 +34,27 @@ function setupCorePackages() {
 	echo -e "\n\n $YELLOW   >> Installing Network tools (including ifconfig)$WHITE \n"
 	apt install -y net-tools
 
+	echo -e "\n\n $YELLOW   >> Installing PERL $WHITE \n"
+	apt install -y perl perl-modules
+	apt install -y libarchive-zip-perl libio-compress-perl
+	echo -e "\n\n $YELLOW   >> Installing PERL libraries $WHITE \n"
+	apt install -y libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl libnet-ident-perl libnet-dns-perl
+	
 	echo -e "\n\n $YELLOW   >> Installing Archive managers $WHITE \n"
-	apt install -y flex libarchive-zip-perl libio-compress-perl m4 perl perl-modules unzip zip
-	apt install -y bzip2 arj nomarch lzop cabextract
-	apt install -y lzip ncompress rzip sharutils unace unalz unrar p7zip-rar
+	apt install -y unzip zip
+	apt install -y bzip2 arj unrar unace
+	#apt install -y nomarch lzop cabextract
+	#apt install -y lzip ncompress rzip sharutils unalz p7zip-rar
 
 	echo -e "\n\n $YELLOW   >> Installing Linux compilation tools $WHITE \n"
-	apt install -y make autoconf automake cpp gcc
+	apt install -y make autoconf automake cpp gcc g++
 	apt install -y build-essential
 
 	echo -e "\n\n $YELLOW   >> Installing SVN client$WHITE \n"
 	apt install -y subversion
-
-	echo -e "\n\n $YELLOW   >> Installing Core libraries extensions $WHITE \n"
-	apt install -y libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl
-	apt install -y libnet-ident-perl libnet-dns-perl
+	
+	echo -e "\n\n $YELLOW   >> Installing GIT client$WHITE \n"
+	apt install git
 
 	echo -e "\n\n $YELLOW   >> Installing Python $WHITE \n"
 	apt install -y python3 python3-doc

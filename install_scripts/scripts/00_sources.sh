@@ -26,20 +26,10 @@ function setupSourcesList() {
 	echo -e "\n\n $YELLOW Attempt to update /etc/apt/sources.list $WHITE" 
 	if [ ! -f /etc/apt/sources.list.backup ]; then
 	    echo -e "\n\n $YELLOW ... Updating repositories list $WHITE"
+	    # Backup
 	    cp /etc/apt/sources.list /etc/apt/sources.list.backup
-		
-		dialog --title "List of repositories" --yesno "Is that an OVH server?" 7 60
-		ovhServerAnswer=$?
-		case $ovhServerAnswer in
-		   0)	# [yes] button
-				cp $ASSETS_PATH/apt/sources_ovh.list /etc/apt/sources.list ;;
-		   1)   # [no] button
-				cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list ;;
-		   255) # [esc] button
-				echo -e "\n\n Skipping choice, using not OVH as default"
-				cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list ;;
-		esac
-				
+	    # Put new sources
+	    cp $ASSETS_PATH/apt/sources.list /etc/apt/sources.list
             echo -e "\n\n $YELLOW Please wait... Repositories update in progress $WHITE"
 	    apt update > /dev/null
 	else 
@@ -48,8 +38,9 @@ function setupSourcesList() {
 
 	# Java repository
 	# 2018-10: Not required anymore because JDK 11 from Oracle is not free
-
 	echo -e "\n\n $YELLOW  ... Setup OpenJRE and OpenJDK $WHITE"
+	# Java 8 - For legacy compatibility
+	apt install openjdk-8-jdk
 	# Latest JDK
 	apt install -y default-jre default-jdk default-jdk-doc 
         # Install JDK 11 LTS	
