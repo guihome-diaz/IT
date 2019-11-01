@@ -1,132 +1,153 @@
-#################################################
-# OpenVPN 2.0 config file                       #
-# --------------------------------------------- #
-# version 1.0 - April 2011 - Guillaume Diaz
-# version 1.2 - June 2013 - Guillaume Diaz
-#                           conf update + chroot
-# version 1.3 - August 2015 - Guillaume Diaz
-#                            IPv6 support + new DNS
-#################################################
- 
- 
-# OpenVPN configuration
-##########################
-# Which local IP address should OpenVPN listen on? (optional)
-#local 5.39.81.23
- 
-# VPN interface
-# Which TCP/UDP port should OpenVPN listen on?
-dev tun
-# Enable IP v6 server
-tun-ipv6
-# UDP6 listen to both UDP v4 and v6
+##################################################
+# OpenVPN 2.4 config file                        #
+# ---------------------------------------------- #
+# version 1.0 - April 2011 - Guillaume Diaz      #
+# version 1.2 - June 2013 - Guillaume Diaz       #
+#                           conf update + chroot #
+# version 1.3 - April 2016 - Guillaume Diaz      #
+#                           security increase    #
+# version 1.4 - Nov. 2019 - Guillaume Diaz       #
+#                           IPv4 + IPv6          #
+#                           ciphers update       #
+##################################################
+
+# OpenVPN binding
+#########################
+# Which local IP address should OpenVPN listen on?
+# >> Put nothing to listen on ALL interfaces and IPs (v4 + v6).. Or you have to put 1 line per IP to listen to
+;local 217.182.168.213
+
+# To support both IPv4 + IPv6
 proto udp6
 port 8080
- 
- 
-# SECURITY - Crypto
-########################
-# SSL/TLS root certificate (ca)
-# Server certificate and private key
-# Diffie hellman parameters
+
+# Network interface to use
+dev tun
+
+
+
+# Security details (certificates)
+#####################################
+
+# Tell TLS that we are building a SERVER configuration
+tls-server
+
+# Certification authority (= root certificate): ca
 ca /etc/openvpn/ca.crt
+
+# OpenVPN server's certificate and private key
 cert /etc/openvpn/server.crt
 key /etc/openvpn/server.key
+
+# Diffie hellman secret key
 dh /etc/openvpn/dh2048.pem
- 
-# Shared secret key by both server and clients
-;tls-auth /etc/openvpn/ta.key 0
- 
-# Crypto settings
-cipher AES-128-CBC
-auth MD5
- 
-# Reduce OpenVPN daemon rights after application start
-# To chroot OpenVPN to its own folder
+
+
+# Security details (cryptography and communication settings)
+##############################################################
+
+# Keep alive communication
+keepalive 10 120
+
+# Encryption of data exchange
+cipher AES-256-CBC
+
+# Integrity check
+auth SHA512
+
+# Enable compression on the VPN link
+# (i) for OpenVPN v2.4+ only
+compress lz4-v2
+push "compress lz4-v2"
+
+# Reduce OpenVPN rights
 user nobody
 group nogroup
-chroot /etc/openvpn/
- 
- 
- 
-# SERVER CONF
-##########################
-# Server mode and VPN subset
-server 192.168.15.0 255.255.255.0
-server-ipv6 2001:41d0:8:9318::1/64
-# Maintain a record of client <-> virtual IP address associations in this file.  
-ifconfig-pool-persist ipp.txt
-# Keepalive (ping-like) 
-# 1 ping every 10s. 120s timeout = disconnect client
-keepalive 10 120
-# Keep server connection up and running
+
 persist-key
 persist-tun
-# Compression of data exchange
-comp-lzo
- 
- 
- 
- 
-# CLIENTS CONF
-##########################
-# Maximum number of concurrently connected clients
-;max-clients 100
- 
-# Allow different clients to be able to "see" each other.
-client-to-client
-# One certificate, multiple clients
-#  Do not use 'duplicate-cn' with 'ifconfig-pool-persist'
-;duplicate-cn
-# Fix for Microsoft Windows clients
-mssfix
-# Server security level
-script-security 2
- 
- 
-# Push routes to the client
-#  >> VPN route. required to allow connections
-push "route 192.168.15.0 255.255.255.0"
-push "route-ipv6 2001:41d0:8:9318::/64"
-#  >> Set the VPN server as global gateway
-push "redirect-gateway def1"
-# The following line is mandatory!! 
-# Set openvpn the default route for ipv6 connectivity
-push "route-ipv6 2000::/3"
 
-# Set the client DNS Server (optional)
-## OpenDNS
-#push "dhcp-option DNS 208.67.222.222"
-#push "dhcp-option DNS 208.67.220.220"
-#push "dhcp-option DNS 2620:0:ccc::2"
-#push "dhcp-option DNS 2620:0:ccd::2"
-## Google
-#push "dhcp-option DNS 8.8.8.8"
-#push "dhcp-option DNS 8.8.4.4"
-#push "dhcp-option DNS 2001:4860:4860::8888"
-#push "dhcp-option DNS 2001:4860:4860::8844"
- 
- 
- 
- 
-# LOGS
-##########################
-# Short status file showing current connections
-# this is truncated and rewritten every minute.
-status /etc/openvpn/openvpn-status.log
- 
-# Log in a dedicated file instead of /var/log/messages
-log         /etc/openvpn/openvpn.log
-log-append  /etc/openvpn/openvpn.log
- 
-# Log level
+
+
+# IP V4 configuration
+###################################
+# Virtual network IPv4
+server 192.168.15.0 255.255.255.0
+
+
+
+# IP V6 configuration
+###################################
+# Virtual network IPv6
+# >> Use root similar to "private network" / "local-loop" addresses
+server-ipv6 fd42:feed:feed:feed::/64
+
+# Create virtual network interface to support IP v6
+tun-ipv6
+
+# Ask clients to create a virtual interface for IP v6
+push tun-ipv6
+
+# Tell client to add an IPv6 route to the VPN network
+server-ipv6 2001:41d0:2:bb7:800::/64
+
+
+
+# Clients management
+#########################
+# Notify the client when the server restarts so it can automatically reconnect
+explicit-exit-notify 1
+
+# Set fix IP@ to client
+# >> every time a client connects it will always have the same IPv4 and IPv6 addresses
+ifconfig-pool-persist /var/log/openvpn/ipp.txt
+
+# Allow clients to reach OpenVPN network
+push "route 192.168.15.0 255.255.255.0"
+
+# Let clients talk to each-other
+client-to-client
+
+
+
+# Traffic redirection
+############################
+
+# Tell client to re-route ALL IPv6 Internet trafic to VPN
+# this override the "default" OpenVPN route, by hijacking the route that all IPv6 packets use by default: 2000::/3
+#push "route-ipv6 2000::/3"
+
+# Redirect all internet traffic to VPN server
+push "redirect-gateway def1 bypass-dhcp"
+push "redirect-gateway ipv6"            # for iOS
+
+
+# Once connected to the VPN the clients cannot use their default DNS provider: you must new DNS links
+# OpenDNS
+push "dhcp-option DNS 208.67.222.222"
+push "dhcp-option DNS 208.67.220.220"
+# for latest versions of OpenVPN, DNS v6
+push "dhcp-option DNS6 2620:0:0:ccd::2"
+
+
+
+# Logs
+########################
+
+# Output a short status file showing current connections,
+# truncated and rewritten every minute.
+status /var/log/openvpn/openvpn-status.log
+
+# File log
+log         /etc/openvpn/logs/openvpn.log
+
+# Set the appropriate level of log file verbosity.
+#
 # 0 is silent, except for fatal errors
 # 4 is reasonable for general usage
 # 5 and 6 can help to debug connection problems
 # 9 is extremely verbose
-verb 6
- 
-# Silence repeating messages.  
-# At most xx sequential same messages will be output to the log file.
-mute 10
+verb 3
 
+# Silence repeating messages.
+;mute 20
