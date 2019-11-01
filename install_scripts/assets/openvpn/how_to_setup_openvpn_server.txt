@@ -1,0 +1,453 @@
+[[Category:Linux]]
+
+
+
+This page describes how to configure OpenVPN server for '''IPv4 and IPv6'''.
+
+
+=Requirements=
+
+Your server must have a network interface that supports both IPv4 and IPv6.
+
+* OVH servers require some configuration, see dedicated section
+
+
+
+
+==OVH server IP V6 configuration==
+
+By default OVH gives you an IPv6 but it does not enable it!!
+you must enable it by yourself.
+
+
+===Get OVH server IPv6 settings===
+
+Connect to OVH manager
+* Go to '''Server''' section > '''VPS''' > *my server*
+* Copy the settings that are under IP
+
+
+===Add DNS entry===
+
+
+You must create new DNS link to reach your server:
+* A 	-> IPv4
+* AAAA 	-> IPv6
+
+
+===Configure server===
+
+Now that you know which settings to apply, let's configure the server.
+* Connect in SSH to the server
+* Backup and edit network configuration
+* Make settings persistent - if OK
+
+
+====Adjust network configuration====
+
+<syntaxhighlight lang="bash">
+cd/etc/netplan
+
+# backup current config
+sudo mkdir backup
+sudo cp 50-cloud-init.yaml backup/50-cloud-init.yaml.backup-ovh-ipv4
+
+# edit config
+vim 50-cloud-init.yaml
+</syntaxhighlight>
+
+
+Adjust content to your own need:
+
+
+<syntaxhighlight lang="yaml">
+network:
+    version: 2
+    ethernets:
+        ens3:
+            dhcp4: true
+            dhcp6: false
+            addresses:
+                - "OVH_IP_V6/64"
+            gateway6: "OVH_IP_V6_GATEWAY"
+            routes:
+                - to: "OVH_IP_V6/64"
+                  via: "OVH_IP_V6_GATEWAY"
+            match:
+                macaddress: fa:16:3e:96:b9:66
+            set-name: ens3
+</syntaxhighlight>
+
+(i) note that DHCP6 must NOT be enabled.
+
+
+
+Example:
+
+<syntaxhighlight lang="yaml">
+network:
+    version: 2
+    ethernets:
+        ens3:
+            dhcp4: true
+            dhcp6: false
+            addresses:
+                - "2007:81f1:0502:2200:0:0:0:c55/64"
+            gateway6: "2007:81f1:0502:2200:0000:0000:0000:0001"
+            routes:
+                - to: "2007:81f1:0502:2200:0:0:0:c55/64"
+                  via: "2007:81f1:0502:2200:0000:0000:0000:0001"
+            match:
+                macaddress: fa:16:3e:96:b9:66
+            set-name: ens3
+</syntaxhighlight>
+
+
+
+Try the configuration:
+
+<syntaxhighlight lang="bash">
+sudo netplan try
+</syntaxhighlight>
+
+
+
+Test the new configuration from another computer
+
+<syntaxhighlight lang="bash">
+# windows
+ping -6 2007:81f1:0502:2200:0:0:0:c55
+</syntaxhighlight>
+
+
+
+====Let configuration persistent====
+
+<syntaxhighlight lang="bash">
+# Create new config file
+echo "network: {config: disabled}" > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg
+</syntaxhighlight>
+
+Reboot server and try to ping it again. 
+
+
+
+
+==Server network configuration==
+
+
+===Enable port forwarding===
+
+You must enable FORWARDING somewhere else: 
+
+<syntaxhighlight lang="bash">
+vim /etc/sysctl.conf
+</syntaxhighlight>
+
+
+
+<syntaxhighlight lang="apache">
+# Uncomment the next line to enable packet forwarding for IPv4
+net.ipv4.ip_forward=1
+
+
+# Uncomment the next line to enable packet forwarding for IPv6
+#  Enabling this option disables Stateless Address Autoconfiguration
+#  based on Router Advertisements for this host
+net.ipv6.conf.all.forwarding=1
+</syntaxhighlight>
+
+
+===Firewall===
+
+You have to:
+* allow INPUT UDP 8080 ipv4/ipv6
+* allow ESTABLISHED / RELATED ipv4/ipv6
+* allow FORWARDING tun0 <> ethernet 
+* allow PRE-ROUTING 
+
+
+
+
+=OpenVPN setup=
+
+==Installation==
+
+<syntaxhighlight lang="bash">
+sudo apt install openvpn 
+sudo apt install easy-rsa
+</syntaxhighlight>
+
+
+==Prepare files==
+
+You can use an existing example or start from scratch, as you like. If you want to reuse one of the OpenVPN examples: 
+
+<syntaxhighlight lang="bash">
+sudo cp /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz /etc/openvpn
+cd /etc/openvpn/
+sudo gzip -d server.conf.gz
+
+# create temp folder, required for the CHROOT
+sudo mkdir -p /etc/openvpn/tmp
+</syntaxhighlight>
+
+
+
+==Security algorithms and hash==
+
+Depending on your server and distribution you might not always have the same encryption and|or hash algorithms available. Choose your algorithms!
+
+'''Cryptographic algorithms'''
+<syntaxhighlight lang="bash">
+openvpn --show-ciphers
+</syntaxhighlight>
+
+Search for: '''AES-256-CBC'''
+
+
+(i) Still ok in 2019-11
+
+
+
+'''Hash algorithms''' 
+<syntaxhighlight lang="bash">
+openvpn --show-digests
+</syntaxhighlight>
+
+Search for: SHA512
+
+(i) use the 512 version in 2019-11
+
+
+'''Handshake algorithms'''
+<syntaxhighlight lang="bash">
+openvpn --show-tls
+</syntaxhighlight>
+
+use the default one, from openVpn v2.4+ it is TLS 1.2 
+
+
+
+==Create CA==
+
+See [http://www.daxiongmao.eu/wiki/index.php?title=VPN_certificates_management#PKI_initialization Previous step]
+
+=Server configuration=
+
+
+This is how you configuration should look like (more or less, depending on your settings): 
+
+<syntaxhighlight lang="bash">
+vim /etc/openvpn/server.conf
+</syntaxhighlight>
+
+
+<syntaxhighlight lang="bash">
+##################################################
+# OpenVPN 2.0 config file                        #
+# ---------------------------------------------- #
+# version 1.0 - April 2011 - Guillaume Diaz      #
+# version 1.2 - June 2013 - Guillaume Diaz       #
+#                           conf update + chroot #
+# version 1.3 - April 2016 - Guillaume Diaz      #
+#                           security increase    #
+# version 1.4 - Nov. 2019 - Guillaume Diaz       #
+#                           IPv4 + IPv6          #
+#                           ciphers update       #
+##################################################
+
+# OpenVPN binding
+#########################
+# Which local IP address should OpenVPN listen on?
+# >> Put nothing to listen on ALL interfaces and IPs (v4 + v6).. Or you have to put 1 line per IP to listen to
+;local 217.182.168.213
+
+# To support both IPv4 + IPv6
+proto udp6
+port 8080
+
+# Network interface to use
+dev tun
+
+
+
+# Security details (certificates)
+#####################################
+
+# Tell TLS that we are building a SERVER configuration
+tls-server
+
+# Certification authority (= root certificate): ca
+ca /etc/openvpn/ca.crt
+
+# OpenVPN server's certificate and private key
+cert /etc/openvpn/server.crt
+key /etc/openvpn/server.key
+
+# Diffie hellman secret key
+dh /etc/openvpn/dh2048.pem
+
+
+# Security details (cryptography and communication settings)
+##############################################################
+
+# Keep alive communication
+keepalive 10 120
+
+# Encryption of data exchange
+cipher AES-256-CBC
+
+# Integrity check
+auth SHA512
+
+# Enable compression on the VPN link
+# (i) for OpenVPN v2.4+ only
+compress lz4-v2
+push "compress lz4-v2"
+
+# Reduce OpenVPN rights
+user nobody
+group nogroup
+
+persist-key
+persist-tun
+
+
+
+# IP V4 configuration
+###################################
+# Virtual network IPv4
+server 192.168.15.0 255.255.255.0
+
+
+
+# IP V6 configuration
+###################################
+# Virtual network IPv6
+# >> Use root similar to "private network" / "local-loop" addresses
+server-ipv6 fd42:feed:feed:feed::/64
+
+# Create virtual network interface to support IP v6
+tun-ipv6
+
+# Ask clients to create a virtual interface for IP v6
+push tun-ipv6
+
+# Tell client to add an IPv6 route to the VPN network
+server-ipv6 2001:41d0:2:bb7:800::/64
+
+
+
+# Clients management
+#########################
+# Notify the client when the server restarts so it can automatically reconnect
+explicit-exit-notify 1
+
+# Set fix IP@ to client
+# >> every time a client connects it will always have the same IPv4 and IPv6 addresses
+ifconfig-pool-persist /var/log/openvpn/ipp.txt
+
+# Allow clients to reach OpenVPN network
+push "route 192.168.15.0 255.255.255.0"
+
+# Let clients talk to each-other
+client-to-client
+
+
+
+# Traffic redirection
+############################
+
+# Tell client to re-route ALL IPv6 Internet trafic to VPN
+# this override the "default" OpenVPN route, by hijacking the route that all IPv6 packets use by default: 2000::/3
+#push "route-ipv6 2000::/3"
+
+# Redirect all internet traffic to VPN server
+push "redirect-gateway def1 bypass-dhcp"
+push "redirect-gateway ipv6"            # for iOS
+
+
+# Once connected to the VPN the clients cannot use their default DNS provider: you must new DNS links
+# OpenDNS
+push "dhcp-option DNS 208.67.222.222"
+push "dhcp-option DNS 208.67.220.220"
+# for latest versions of OpenVPN, DNS v6
+push "dhcp-option DNS6 2620:0:0:ccd::2"
+
+
+
+# Logs
+########################
+
+# Output a short status file showing current connections,
+# truncated and rewritten every minute.
+status /var/log/openvpn/openvpn-status.log
+
+# File log
+log         /etc/openvpn/logs/openvpn.log
+
+# Set the appropriate level of log file verbosity.
+#
+# 0 is silent, except for fatal errors
+# 4 is reasonable for general usage
+# 5 and 6 can help to debug connection problems
+# 9 is extremely verbose
+verb 3
+
+# Silence repeating messages.
+;mute 20
+</syntaxhighlight>
+
+
+
+
+
+
+==See if it works==
+
+Start the service
+
+<syntaxhighlight lang="bash">
+service openvpn restart
+</syntaxhighlight>
+
+
+
+Check that OpenVPN listen to port 8080
+
+<syntaxhighlight lang="bash">
+netstat -pl --numeric | grep 8080
+</syntaxhighlight>
+
+You should have 1 entry per protocol
+
+
+Check the OpenVPN logs
+
+<syntaxhighlight lang="bash">
+cat /var/log/openvpn.log
+</syntaxhighlight>
+
+
+
+
+==General notes==
+
+You can either use TCP or UDP. Performances are the same, UDP is a bit easier to install. 
+
+Be careful when you choose the port number! 
+Common open ports:
+* 80 (http) 
+* 443 (HTTPS)
+* 8080 (Proxy / JEE servers)
+
+
+
+'''[!] Reminder''': for every network that you want to make it accessible through your VPN you must push a new route to it.
+
+=Sources=
+
+* [https://www.alibabacloud.com/blog/how-to-create-a-vpn-server-with-openvpn_594047  Alibaba cloud tutorial]
+* [https://blog.angenieux.info/linux/serveur/openvpn-ipv4-ipv6-nat-sans-ndp/ OpenVPN server configuration IPv4 / IPv6]
+* [http://blog.remibergsma.com/2013/01/13/howto-connect-to-hosts-on-a-remote-network-using-openvpn-and-some-routing/ firewall configuration]
