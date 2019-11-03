@@ -464,7 +464,7 @@ function forwardPortIpv4 {
     log_progress_msg "Forward incoming $PROTOCOL $SOURCE_PORT to $TARGET_SERVER:$TARGET_PORT - $COMMENT"
 
     # Allow incoming on SOURCE port
-    ipt4 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -m comment --comment "$COMMENT"-j ACCEPT
+    ipt4 -A INPUT -p $PROTOCOL --dport $SOURCE_PORT -m comment --comment "$COMMENT" -j ACCEPT
     # Allow outgoing on TARGET port
     ipt4 -A OUTPUT -p $PROTOCOL --dport $TARGET_PORT -m comment --comment "$COMMENT" -j ACCEPT
     # Forward data: Source <-> Target
