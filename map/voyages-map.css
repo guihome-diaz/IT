@@ -17,11 +17,10 @@ h2 {
 
 }
 
-.container {
+.container, footer {
 	width: 90%;
 	overflow: hidden;
-	min-width: 700px;
-	max-width: 1200px;
+	min-width: 500px;
 	margin-left: auto;
 	margin-right: auto;
 }
