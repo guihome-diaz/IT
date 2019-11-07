@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Travel summary</title>
+    <link rel="icon" type="image/png" href="./resources/favicon.ico">
+	<meta name="description" content="Travel summary">
+		
+	<!-- CSS -->
+	<link rel="stylesheet" type="text/css" href="./voyages-map.css" />
+
+	<!-- ************************************************************ -->
+	<!-- *                   JAVASCRIPT LIBRARIES                   * -->
+	<!-- ************************************************************ -->
+	<!-- jQuery core == see https://cdnjs.com/libraries/jquery -->
+    <script src="./resources/jquery.min.js"></script>
+	
+	<!-- To handle mousewheel (zoom in / zoom out) == see https://cdnjs.com/libraries/jquery-mousewheel -->
+    <script src="./resources/jquery.mousewheel.min.js"></script>
+	
+	<!-- To perform vectorial drawings == See https://cdnjs.com/libraries/raphael --> 
+    <script src="./resources/raphael.min.js"></script>
+	
+	<!-- To handle time wheel == see http://anthonyterrien.com/knob/ -->
+    <script src="./resources/jquery.knob.min.js"></script>
+	
+	<!-- Map library
+	      see official website (get last version over there): https://www.vincentbroute.fr/mapael/ 
+		  source code: https://github.com/neveldo/mapael-maps 
+	-->
+    <script src="./resources/jquery.mapael.min.js"></script>
+    <script src="./resources/maps/world_countries.min.js"></script>
+    <script src="./resources/maps/european_union.min.js"></script>
+
+
+	<!-- ************************************************************ -->
+	<!-- *                      DATA TO DISPLAY                     * -->
+	<!-- ************************************************************ -->
+	<script src="./voyages.js"></script>
+    <script>
+        $(function () {
+			map_mapel();
+        });
+    </script>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Xiongmaos travel history</h1>
+    
+    <div class="world">        
+        <div class="map"></div>
+        <div style="clear: both;"></div>
+		<div class="rightPanel">
+            <h2>Select a year</h2>
+
+            <div class="knobContainer">
+                <input class="knob" data-width="80" data-height="80" data-min="2007" data-max="2013" data-cursor=true
+                       data-fgColor="#454545" data-thickness=.45 value="2007" data-bgColor="#c7e8ff"/>
+            </div>
+            <div class="areaLegend"></div>
+            <div class="plotLegend"></div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>Copyright <a href="https://daxiongmao.eu/wiki">Daxiongmao.eu</a>© 2019 | Built with <a href="https://www.vincentbroute.fr/mapael/">Mapael</a> and <a href="http://anthonyterrien.com/knob/">Knob</a></p>
+</footer>
+
+</body>
+</html>
