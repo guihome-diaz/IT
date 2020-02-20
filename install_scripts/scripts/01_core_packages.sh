@@ -76,8 +76,8 @@ function setupCorePackages() {
 	echo -e "\n\n $YELLOW   >> Installing Dos2unix converter and vice-versa $WHITE \n"
 	apt install -y dos2unix tofrodos
 
-	echo -e "\n\n $YELLOW   >> Installing midnight commander $WHITE \n" 
-	apt install -y mc
+	#echo -e "\n\n $YELLOW   >> Installing midnight commander $WHITE \n"
+	#apt install -y mc
 
 	echo -e "\n\n $YELLOW   >> Installing Network utilities $WHITE \n"
 	apt install -y curl

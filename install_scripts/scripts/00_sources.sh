@@ -43,7 +43,7 @@ function setupSourcesList() {
 	apt install openjdk-8-jdk
 	# Latest JDK
 	apt install -y default-jre default-jdk default-jdk-doc 
-        # Install JDK 11 LTS	
+  # Install JDK 11 LTS
 	apt install -y openjdk-11-doc openjdk-11-jdk openjdk-11-jre	
 
 	# Install all updates? 
