@@ -7,22 +7,21 @@ rem ===========================================================
 echo  ########################################################
 echo  #                                                      #
 echo  #                    CONNECTION                        #
-echo  #           GongZuoXiongMao [172.16.100.40]            #
+echo  #           nuc-media-center [172.16.100.35]           #
 echo  #                                                      #
 echo  ########################################################
 echo.
 
 rem ===========================================================
 echo --)  Remove previous network disks association
-net use s: /d /y
-net use t: /d /y
+net use q: /d /y
 echo.
 
 rem ===========================================================
 echo --)  connection check
 
 REM Put all ping results in temp directory for analysis
-ping -n 4 172.16.100.40 > %temp%\pingg.txt
+ping -n 4 172.16.100.35 > %temp%\pingg.txt
 
 REM tests if server is available or not
 find "Perdu = 4" %temp%\pingg.txt > nul
@@ -43,12 +42,10 @@ rem ===========================================================
 :CONNECTION_OK
 echo.
 echo --)  Server is UP
-echo      (S) = NAS-HUBIC
-echo      (T) = NAS-DIVERS
+echo      (Q) = NUC-PUBLIC
 echo.
 echo.
-net use s: \\172.16.100.40\Hubic s1s1-@lexis /user:xiongmao /persistent:no
-net use t: \\172.16.100.40\Divers s1s1-@lexis /user:xiongmao /persistent:no
+net use q: \\172.16.100.35\Public xiongmaos /user:smbuser /persistent:no
 echo.
 pause
 goto EXIT
