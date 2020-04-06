@@ -41,10 +41,10 @@ function setupSourcesList() {
 	echo -e "\n\n $YELLOW  ... Setup OpenJRE and OpenJDK $WHITE"
 	# Java 8 - For legacy compatibility
 	apt install openjdk-8-jdk
+  # Install JDK 11 LTS - for legacy reasons
+	apt install -y openjdk-11-doc openjdk-11-jdk openjdk-11-jre
 	# Latest JDK
-	apt install -y default-jre default-jdk default-jdk-doc 
-  # Install JDK 11 LTS
-	apt install -y openjdk-11-doc openjdk-11-jdk openjdk-11-jre	
+	apt install -y default-jre default-jdk default-jdk-doc
 
 	# Install all updates? 
 	dialog --title "Perform upgrade?" \

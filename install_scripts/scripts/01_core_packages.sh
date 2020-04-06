@@ -50,8 +50,8 @@ function setupCorePackages() {
 	apt install -y make autoconf automake cpp gcc g++
 	apt install -y build-essential
 
-	echo -e "\n\n $YELLOW   >> Installing SVN client$WHITE \n"
-	apt install -y subversion
+	#echo -e "\n\n $YELLOW   >> Installing SVN client$WHITE \n"
+	#apt install -y subversion
 	
 	echo -e "\n\n $YELLOW   >> Installing GIT client$WHITE \n"
 	apt install git

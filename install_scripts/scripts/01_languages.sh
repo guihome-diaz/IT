@@ -31,15 +31,15 @@ function setupAdditionalLanguages() {
 
 	echo -e "\n\n $YELLOW   >> Installing Chinese fonts $WHITE \n"
 	apt install -y xfonts-intl-asian xfonts-intl-chinese xfonts-intl-chinese-big
-    apt install -y pinyin-database sunpinyin-utils libpinyin-utils
+  apt install -y pinyin-database sunpinyin-utils libpinyin-utils
 	apt install -y fonts-arphic-ukai fonts-arphic-uming
-    apt install -y fonts-arphic-*
-    # See https://en.wikipedia.org/wiki/WenQuanYi
-    apt install -y fonts-wqy-zenhei fonts-wqy-microhei xfonts-wqy
+  apt install -y fonts-arphic-*
+  # See https://en.wikipedia.org/wiki/WenQuanYi
+  apt install -y fonts-wqy-zenhei fonts-wqy-microhei xfonts-wqy
 
 
 	echo -e "\n\n $YELLOW   >> Installing Android fonts $WHITE \n"
-    apt install -y fonts-droid-fallback fonts-roboto fonts-roboto-hinted
+  apt install -y fonts-droid-fallback fonts-roboto fonts-roboto-hinted
 
 
 	# Install alternate Input ? UI only !
@@ -51,39 +51,39 @@ function setupAdditionalLanguages() {
 			#echo -e "\n\n $BLUE Setting-up IBUS and Chinese keyboard (ubuntu <16) $WHITE"
 			apt install -y ibus
 			apt install -y ibus-pinyin
-            apt install -y ibus-sunpinyin
-            apt install -y ibus-googlepinyin
+      apt install -y ibus-sunpinyin
+      apt install -y ibus-googlepinyin
                         
 			echo -e "\n\n $BLUE Setting-up FCITX and Chinese keyboard (ubuntu 16+) $WHITE"
-            apt install -y fcitx
-            apt install -y fcitx-libs fcitx-table-emoji fcitx-table-easy-big
-            # Frontend keyboard selection
-            #apt install -y fcitx-frontend-qt4 qt4-qtconfig
+      apt install -y fcitx
+      apt install -y fcitx-libs fcitx-table-emoji fcitx-table-easy-big
+      # Frontend keyboard selection
+      #apt install -y fcitx-frontend-qt4 qt4-qtconfig
 
-            # Pinyin = chinese chars. encoded in standard GB
-            # SunPinYin = OpenSource project, official pinyin support for Linux
-            # Google PinYin = Same PinYin as Android 
-            # CheWing = MS Windows PinYin
-            #apt install -y fcitx-pinyin fcitx-sunpinyin fcitx-googlepinyin fcitx-chewing
-            apt install -y fcitx-pinyin fcitx-googlepinyin
-            apt install -y fcitx-table-wbpy
-            # Japanese input
-            apt install -y fcitx-anthy 
-            # Display pinyin input menu (list of characters) 
-            ##### XCFE #####
-            ## (i) qimpanel does NOT work well on XCFE. Better remove it and switch to the 'classic' UI
-            #apt remove -y --purge fcitx-ui-qimpanel
-            #apt install -y fcitx-ui-classic fcitx-ui-light
+      # Pinyin = chinese chars. encoded in standard GB
+      # SunPinYin = OpenSource project, official pinyin support for Linux
+      # Google PinYin = Same PinYin as Android
+      # CheWing = MS Windows PinYin
+      #apt install -y fcitx-pinyin fcitx-sunpinyin fcitx-googlepinyin fcitx-chewing
+      apt install -y fcitx-pinyin fcitx-googlepinyin
+      #apt install -y fcitx-table-wbpy
+      # Japanese input
+      #apt install -y fcitx-anthy
+      # Display pinyin input menu (list of characters)
+      ##### XCFE #####
+      ## (i) qimpanel does NOT work well on XCFE. Better remove it and switch to the 'classic' UI
+      #apt remove -y --purge fcitx-ui-qimpanel
+      #apt install -y fcitx-ui-classic fcitx-ui-light
             
-            # Keyboard support for Mozilla Firefox and other applications
-            apt install -y fcitx-mozc
+      # Keyboard support for Mozilla Firefox and other applications
+      apt install -y fcitx-mozc
 
 			echo -e "\n\n $BLUE Setup language selector $WHITE"
-            apt install -y language-selector-gnome
-            apt install -y im-config
+      apt install -y language-selector-gnome
+      apt install -y im-config
 
 			#echo -e "\n\n $BLUE Reload FCITX $WHITE"
-            #fcitx -r
+      #fcitx -r
 			;;
 	   1)   # [no] button
 			echo -e "\n\n No additional keyboards, [NO] button" 

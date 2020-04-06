@@ -29,11 +29,11 @@ function setupUIPackages() {
 	echo -e " "
 
 	echo -e "\n\n $YELLOW   >> Installing Sublime Text editor $WHITE \n"
-        # 2018-04 No need of a repository anymore!! Use SNAP :)
-        snap install sublime-text --classic
+  # 2018-04 No need of a repository anymore!! Use SNAP :)
+  #snap install sublime-text --classic
 
-	echo -e "\n\n $YELLOW   >> Installing Notepad++ $WHITE \n"
-	snap install notepad-plus-plus
+	#echo -e "\n\n $YELLOW   >> Installing Notepad++ $WHITE \n"
+	#snap install notepad-plus-plus
 
 	echo -e "\n\n $YELLOW   >> Installing hexadecimal editor (BLESS) $WHITE \n"
 	apt install -y bless
@@ -81,7 +81,7 @@ function setupUIPackages() {
 	        "Communication"  "Communication tools (Skype)" on \
 	        "Network"      "Network utilities such as Filezilla, RDP, OpenVPN client, etc." on \
 	        "Multimedia"   "Multimedia libraries and players (VLC, RythmBox, etc.)" on \
-			"Dock"         "Dock (OS X like) on the desktop. Only for Xfe, Mint, Cinnamon" off \
+	    		"Dock"         "Dock (OS X like) on the desktop. Only for Xfe, Mint, Cinnamon" off \
 	        "Office"       "Libre office + diagrams + eBook tools" on \
 	        "Photo"        "Image editor (Gimp) and photo library (GThumb)" on \
 	        "Wine"         "Windows emulator" off 2> $tempfile
@@ -144,21 +144,17 @@ function setupUIPackages() {
 				apt install -y rhythmbox
 
 				# KODI (media center)
-                ## Trick 2016-04-24 until KODI ppa is stable:
-                ##  - install KODI version packaged with ubuntu repository (it is stable);
-                ##  - add team-xbmc repo and wait for stable upgrade.  
-                apt install -y kodi
-				echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
+        ## Trick 2016-04-24 until KODI ppa is stable:
+        ##  - install KODI version packaged with ubuntu repository (it is stable);
+        ##  - add team-xbmc repo and wait for stable upgrade.
+        apt install -y kodi
+				#echo -e "\n\n $YELLOW   >> Multimedia features (media center) $WHITE \n"
 				# Requirements
 				apt install -y python-software-properties pkg-config
 				apt install -y software-properties-common
-				apt install -y unrar
-                # Kodi repository
-                # 2018-04: No need of the dedicated repository anymore
-                apt install -y kodi
 
-                # 2018-04: no need of dedicated repository for Spotify! Use SNAP :)
-                snap install spotify
+        # 2018-04: no need of dedicated repository for Spotify! Use SNAP :)
+        #snap install spotify
 
 		#echo -e "\n\n $YELLOW   >> Musixmatch alternative: DeepIN Music (songs lyrics) $WHITE \n"
 		## Chinese alternative: deepin-music
@@ -170,22 +166,22 @@ function setupUIPackages() {
 		dpkg -i musixmatch.deb
 		apt install -y -f
 
-				echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
-                ## Handbrake repository
-                ## not required for UBUNTU 17.10 ARTFUL !
-                #handbreakRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep stebbins | cut -d ':' -f 2- | grep "deb ")
-                #if [[ -z "$handbreakRepo" ]]; then
-                #    echo -e "\n\n $YELLOW Installation of Hand-Brake repository $WHITE"
-				#	add-apt-repository ppa:stebbins/handbrake-releases
-                #	apt update > /dev/null
-                #fi
-				apt install -y handbrake-gtk handbrake-cli
+		echo -e "\n\n $YELLOW   >> Handbrake video (crop and convert) $WHITE \n"
+    ## Handbrake repository
+    ## not required for UBUNTU 17.10 ARTFUL !
+    #handbreakRepo=$(grep ^ /etc/apt/sources.list /etc/apt/sources.list.d/* | grep stebbins | cut -d ':' -f 2- | grep "deb ")
+    #if [[ -z "$handbreakRepo" ]]; then
+    #    echo -e "\n\n $YELLOW Installation of Hand-Brake repository $WHITE"
+		#	add-apt-repository ppa:stebbins/handbrake-releases
+    #	apt update > /dev/null
+    #fi
+		apt install -y handbrake-gtk handbrake-cli
 
-				echo -e "\n\n $YELLOW   >> FFMPEG (command line video tool) $WHITE \n"
-                ## FFMEPG
-                apt install -y ffmpeg  
-				apt install -y frei0r-plugins  
-				;;
+		echo -e "\n\n $YELLOW   >> FFMPEG (command line video tool) $WHITE \n"
+    ## FFMEPG
+    apt install -y ffmpeg
+		apt install -y frei0r-plugins
+		;;
 
 			"Dock") 
 				echo -e "\n\n $YELLOW   >> Installing CAIRO dock $WHITE \n"
