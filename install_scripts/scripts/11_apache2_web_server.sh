@@ -99,7 +99,21 @@ function setupApacheWebServer() {
 	case $phpAnswer in
 	   0)	# [yes] button						
 			echo -e "\n\n $YELLOW Installing PHP support for Apache2 web-support $WHITE" 
+			# PHP engine
 			apt install -y libapache2-mod-php php php-common
+
+			######################################
+			# PHP standalone deamon, it will have its own thread (not managed by Apache2)			
+			apt install -y php-fpm
+			# Add Apache2 module to communicate with PHP standalone
+			a2enmod proxy_fcgi
+			# Apply Apache2 changes
+			systemctl restart apache2
+			# Tell Apache2 to forward all PHP request to standalone engine
+			a2enconf php7.4-fpm
+			systemctl restart apache2
+			######################################
+
 			# script execution
 			apt install -y php-cli php-cgi
 			# Support encoding and streams
@@ -140,6 +154,9 @@ function setupApacheWebServer() {
 
 			echo -e "\n\n $YELLOW Enabling PHP 7.4 extensions $WHITE"
 			cp /etc/php/7.4/apache2/php.ini /etc/php/7.4/apache2/php.ini.backup
+			# increase POST and uplooad size
+			sed -i "s/post_max_size = 8M/post_max_size = 32M/g" /etc/php/7.4/apache2/php.ini
+			sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 64M/g" /etc/php/7.4/apache2/php.ini
 			# URLs
 			sed -i "s/;extension=curl/extension=curl/g" /etc/php/7.4/apache2/php.ini
 			# FTP
