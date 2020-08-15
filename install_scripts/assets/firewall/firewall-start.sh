@@ -59,7 +59,7 @@ export DO_IPV6="1"
 
 ##### Advanced settings
 # Source IP filtering
-declare -a sourcesIpAllowed=("5.39.81.23","172.16.100.0/26")
+declare -a sourcesIpAllowed=("5.39.81.23","172.16.100.0/24")
 declare -a sourcesIp6Allowed=("")
 
 
@@ -82,7 +82,7 @@ function firewallSetup {
         # IPv4
         # ----------------------------------------------------
         #filterNetworksIpv4
-        allowIpv4LAN "172.16.100.0/26"
+        allowIpv4LAN "172.16.100.0/24"
 
 
         # ----------------------------------------------------
@@ -103,7 +103,7 @@ function forwardConfiguration {
     log_daemon_msg "Forward rules"
 
         ### IPv4
-        declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/26")
+        declare -a forwardIpAllowed=("5.39.81.23" "172.16.100.0/24")
         # Allow forward for specific sources
         for forwardIP in "${forwardIpAllowed[@]}"
         do

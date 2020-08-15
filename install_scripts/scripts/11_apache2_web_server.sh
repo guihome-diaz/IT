@@ -23,12 +23,12 @@ function setupApacheWebServer() {
 	echo -e "#################################### $WHITE"
 	echo -e "\n\n $YELLOW Installing Apache2 web-server $WHITE \n\n"
 
-	apt install -y apache2 apache2-mpm-prefork apache2-utils ssl-cert
+	apt install -y apache2 apache2-utils ssl-cert
 	apt install -y libapache2-mod-fcgid libruby
 	apt install -y apache2-doc
 	apt install -y libapache2-mod-perl2 libapache2-mod-perl2-doc
-	apt install -y libapache2-mod-ldap-userdir
-	apt install -y libapache2-mod-svn
+	#apt install -y libapache2-mod-ldap-userdir
+	#apt install -y libapache2-mod-svn
 
 	##### Apache2 modules 
 	# Ask user
@@ -40,9 +40,9 @@ function setupApacheWebServer() {
 	        "proxy"     "Proxy (http, ajp, html)" on \
 	        "rewrite"   "Redirection and rewrite" on \
 	        "ssl"       "SSL" on \
-	        "deflate"   "Deflate" Off \
-	        "dav_svn"   "SVN HTTP proxy" Off \
-	        "ldap"      "LDAP authentication" off 2> $tempfile
+	        "deflate"   "Deflate" Off 2> $tempfile
+	        #"dav_svn"   "SVN HTTP proxy" Off \
+	        #"ldap"      "LDAP authentication" off 2> $tempfile
 	retval=$?
 	apache2modulesChoices=`cat $tempfile`
 	case $retval in
@@ -98,30 +98,68 @@ function setupApacheWebServer() {
 	phpAnswer=$?
 	case $phpAnswer in
 	   0)	# [yes] button						
-			echo -e "\n\n $YELLOW Installing PHP 5 support for Apache2 web-support $WHITE" 
-			apt install -y libapache2-mod-php5 php5 php5-common
-			apt install -y php5-cli php5-cgi
-			apt install -y php5-curl php5-xmlrpc php5-xsl php5-dev php-pear 
-			apt install -y php5-mysql
-			apt install -y php5-memcache php5-xcache
-			apt install -y php5-mhash php-auth php5-mcrypt mcrypt
-			apt install -y php5-imap
-			apt install -y php5-snmp
-			apt install -y php5-gd php5-imagick imagemagick
+			echo -e "\n\n $YELLOW Installing PHP support for Apache2 web-support $WHITE" 
+			apt install -y libapache2-mod-php php php-common
+			# script execution
+			apt install -y php-cli php-cgi
+			# Support encoding and streams
+			apt install -y php-mbstring
+			# php utilities
+			apt install -y php-dev 
+			apt install -y php-pear 
+			# XML rpc (required for wordpress)
+			apt install -y php-xmlrpc php-xsl
+			# SOAP web services support
+			apt install -y php-soap
+			# URLs
+			apt install -y php-curl
+			# databases
+			apt install -y php-mysql
+			apt install -y php-odbc
+			# PDO: abstraction layer for object mapping (ORM)
+			apt install -y php-pdo
+			# Memory and performances
+			apt install -y php-memcache
+			# Emails
+			apt install -y php-imap
+			# Monitoring
+			apt install -y php-snmp
+			# Images
+			apt install -y php-gd php-imagick imagemagick
+			# Zip file handling
+			apt install -y php-zip
+			# Crypto
+			apt install -y mcrypt
 
-			echo -e "\n\n $YELLOW Installing PHP 7 support for Apache2 web-support $WHITE" 
-			apt install -y libapache2-mod-php7.0 php7.0 php7.0-common
-			apt install -y php7.0-cli php7.0-cgi
-			apt install -y php7.0-curl php7.0-xsl php7.0-dev 
-			apt install -y php7.0-mysql
-			apt install -y php7.0-mcrypt
-			apt install -y php7.0-imap
-			apt install -y php7.0-snmp
-			apt install -y php7.0-gd
+			echo -e "\n\n $YELLOW create phpinfo page $WHITE "
+			echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+			chown www-data:www-data /var/www/html/phpinfo.php
 
-			echo -e "\n\n $YELLOW Enabling PHP module $WHITE"
-			a2enmod php5
-			a2enmod php7
+			echo -e "\n\n $YELLOW Enabling Apache PHP module $WHITE"
+			a2enmod php7*
+
+			echo -e "\n\n $YELLOW Enabling PHP 7.4 extensions $WHITE"
+			cp /etc/php/7.4/apache2/php.ini /etc/php/7.4/apache2/php.ini.backup
+			# URLs
+			sed -i "s/;extension=curl/extension=curl/g" /etc/php/7.4/apache2/php.ini
+			# FTP
+			sed -i "s/;extension=ftp/extension=ftp/g" /etc/php/7.4/apache2/php.ini
+			# File access
+			sed -i "s/;extension=fileinfo/extension=fileinfo/g" /etc/php/7.4/apache2/php.ini
+			# Graphics
+			sed -i "s/;extension=gd2/extension=gd2/g" /etc/php/7.4/apache2/php.ini
+			# international
+			sed -i "s/;extension=intl/extension=intl/g" /etc/php/7.4/apache2/php.ini
+			sed -i "s/;extension=mbstring/extension=mbstring/g" /etc/php/7.4/apache2/php.ini
+			# MySQL and MariaDB
+			sed -i "s/;extension=mysqli/extension=mysqli/g" /etc/php/7.4/apache2/php.ini
+			sed -i "s/;extension=pdo_mysql/extension=pdo_mysql/g" /etc/php/7.4/apache2/php.ini
+			# Security
+			sed -i "s/;extension=openssl/extension=openssl/g" /etc/php/7.4/apache2/php.ini
+
+			echo -e "\n\n $YELLOW Setup phpmyadmin $WHITE"
+			apt install -y phpmyadmin
+
 			;;
 	   1)   # [no] button
 			echo -e "\n\n Skipping PHP installation, [NO] button" 

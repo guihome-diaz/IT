@@ -15,60 +15,46 @@ function setupMySQLserver() {
 
 	echo -e "$BLUE "
 	echo -e "####################################"
-	echo -e "           MySQL database" 
+	echo -e "           MariaDB database" 
+	echo -e "            (MySQL fork)"
 	echo -e "#################################### $WHITE"
 	echo " "
 	echo " "
 
-	echo -e "\n\n $YELLOW Installation MySQL server $WHITE \n\n" 
-	apt install -y mysql-server mysql-client
+	echo -e "\n\n $YELLOW add repo MariaDB $WHITE \n\n"
+	sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
+        sudo add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.globo.tech/repo/10.5/ubuntu focal main'
+	sudo apt update
 
-	dialog --title "MySQL installation" \
-		   --yesno "Enable remote access?" 7 60
-	mysqlAnswer=$?
-	case $mysqlAnswer in
-	   0)	# [yes] button
-			
-			# We need to know the MySQL root password
-			# Ask user for the root password (in ClearText)
-			rootPassword=""
-			tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/testRootPassword$$
-			trap "rm -f $tempfile" 0 1 2 5 15
-			dialog --title "MySQL installation" --clear \
-			        --inputbox "Type your MySQL root password" 16 75 2> $tempfile
-			retval=$?
-			case $retval in
-			  0)
-				rootPassword=`cat $tempfile`
-			    ;;
-			  1)
-			    echo -e "\n\n Cancel pressed." ;;
-			  255)
-			      echo -e "\n\n ESC pressed." ;;
-			esac
-			rm $tempfile
+	echo -e "\n\n $YELLOW Installation MariaDB server $WHITE \n\n" 
+	apt install -y mariadb-server mariadb-client
 
-			localHostname=`hostname`
+	echo -e "\n\n $YELLOW secure server setup $WHITE "
+	echo -e "answers - 2020-08: "
+	echo -e " $WHITE     Switch to unix_socket authentication [Y/n] $YELLOW n $WHITE "
+	echo -e " $WHITE     Change the root password? [Y/n]  $YELLOW Y $WHITE "
+	echo -e " $WHITE     New password: $YELLOW toor $WHITE "
+	echo -e " $WHITE     Re-enter new password: $YELLOW toor $WHITE "
+	echo -e " $WHITE     Remove anonymous users? [Y/n] $YELLOW n $WHITE "
+	echo -e " $WHITE     Disallow root login remotely? [Y/n] $YELLOW n $WHITE "
+	echo -e " $WHITE     Remove test database and access to it? [Y/n]  $YELLOW n $WHITE "
+	echo -e " $WHITE     Reload privilege tables now? [Y/n] $YELLOW Y $WHITE "
+	echo -e "---------------------------------------- \n\n\n "
+	mysql_secure_installation
 
 
-			# Performing actions
-			echo -e "\n\n $YELLOW Listening on all interfaces $WHITE"
-			sed -i "s/bind-address           = 127.0.0.1/#bind-address           = 127.0.0.1/g" /etc/mysql/my.cnf
+	localHostname=`hostname`
+	echo -e "\n\n $YELLOW Listening on all interfaces $WHITE"
+	cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
+	sed -i "s/bind-address            = 127.0.0.1/#bind-address            = 127.0.0.1/g" /etc/mysql/mariadb.conf.d/50-server.cnf
 
-			echo -e "\n\n $YELLOW Allow root access from all locations $WHITE"
-			mysql -uroot -p$rootPassword mysql -e "update user set host='%' where user='root' and host='$localHostname'; flush privileges;";
-			;;
-	   1)   # [no] button
-			echo -e "\n\n Skipping remote access, [NO] button" ;;
-	   255) 
-			echo -e "\n\n Skipping remote access, [ESC] key pressed." ;;
-	esac
+	#echo -e "\n\n $YELLOW Allow root access from all locations $WHITE"
+	#mysql -uroot -p$rootPassword mysql -e "update user set host='%' where user='root' and host='$localHostname'; flush privileges;";
 
-	echo -e "\n\n $YELLOW Restarting MySQL server $WHITE \n\n" 
-	service mysql restart
+	echo -e "\n\n $YELLOW Restarting MariaDB server $WHITE \n\n" 
+	service mariadb restart
 
-
-	echo -e "\n\n $GREEN ... MySQL server OK ! $WHITE"
+	echo -e "\n\n $GREEN ... MariaDB server OK ! $WHITE"
 	echo -e " "
 }
 
