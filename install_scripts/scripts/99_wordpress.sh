@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+export DEBIAN_FRONTEND=dialog
 
 ###############################################################################
 # Utility script to setup a wordpress website and its database in minutes
@@ -260,20 +261,57 @@ function wordpressConfiguration() {
 # Outputs:   None
 ########################################
 function wordpressPlugins() {
-  echo -e "Adding Wordpress plugins"
+  echo -e "Remove default plugin 'Hello Dolly'"
+  sudo -u www-data wp plugin delete hello-dolly
 
-  echo -e "        * akismet anti-spam (akismet)"
+  echo -e "Adding Wordpress plugins"
+  echo -e "  (i) Since Wordpress 5.5 Gutenberg [block editor] + Site Health are included in the default bundle"
+  echo -e " "
+
+  echo -e "        * akismet comments anti-spam"
   sudo -u www-data wp plugin install akismet
   sudo -u www-data wp option add wordpress_api_key ce78662c899c
   sudo -u www-data wp plugin activate akismet
 
-  echo -e "        * Better Notifications for WP (bnfw)"
+  echo -e "        * Better Notifications for WP [bnfw]"
   sudo -u www-data wp plugin install bnfw
   sudo -u www-data wp plugin activate bnfw
 
-  echo -e "        * Old text editor (before Gutenberg project)"
+  echo -e "        * Classic text editor (before Gutenberg project)"
+  echo -e "          Default editor stays 'block' but user can choose to use the classic editor instead"
   sudo -u www-data wp plugin install classic-editor
   sudo -u www-data wp plugin activate classic-editor
+  # Let user choose the editor
+  sudo -u www-data wp option add classic-editor-allow-users allow
+  sudo -u www-data wp option add classic-editor-replace block
+
+  echo -e "        * TinyMC Advanced (extended features for both classic and block editors)"
+  echo -e "          Use block 'classic paragraph' to enjoy TinyMCE"
+  sudo -u www-data wp plugin install tinymce-advanced
+  sudo -u www-data wp plugin activate tinymce-advanced
+
+  echo -e "        * Contact Form 7"
+  sudo -u www-data wp plugin install contact-form-7
+  sudo -u www-data wp plugin activate contact-form-7
+  # Contact form depends on *_POST.post_type = 'wpcf7_contact_form'
+
+  echo -e "        * Disable User Gravatar"
+  # Removing a call to 3rd party service makes the website more resistant + it also avoid timeouts and long waiting time (for ex. in China)
+  sudo -u www-data wp plugin install disable-user-gravatar
+  sudo -u www-data wp plugin activate disable-user-gravatar
+
+  echo -e "        *  WordPress Media Library Folders (to scan folders for new medias)"
+  sudo -u www-data wp plugin install media-library-plus
+  sudo -u www-data wp plugin activate media-library-plus
+
+  echo -e "        * Simple page ordering"
+  sudo -u www-data wp plugin install simple-page-ordering
+  sudo -u www-data wp plugin activate simple-page-ordering
+
+  echo -e "        * WP Add Custom CSS (to use your own CSS on a post, page or the whole website)"
+  sudo -u www-data wp plugin install wp-add-custom-css
+  sudo -u www-data wp plugin activate wp-add-custom-css
+
 }
 
 ########################################
@@ -301,12 +339,6 @@ function wordpressThemes() {
 # Outputs:   None
 ########################################
 function doWordpressInstallation() {
-  ASSETS_PATH="./../assets"
-  if [ $# -eq 1 ]; then
-    ASSETS_PATH="$1/assets"
-  fi
-  export DEBIAN_FRONTEND=dialog
-
   createWordpressDatabase
   downloadWordpress
   createWordpressApache2configuration
