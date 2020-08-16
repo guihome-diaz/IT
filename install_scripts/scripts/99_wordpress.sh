@@ -1,183 +1,372 @@
+#!/usr/bin/env bash
+set -e
 
-#!/bin/bash
+###############################################################################
+# Utility script to setup a wordpress website and its database in minutes
 #
-# To setup wordpress website
+# I created that script to backup and restore my own blog and to be able to experiment new extensions/configuration without damaging production database.
+# Also this helps to create standalone installation and give it to family members for offline use.
 #
+################################################################################
+# Configuration
+# -------------
+#
+# Before using it 'as is' please review and adjust the configuration section
+# at the beginning of the script. Set your own settings to apply
+#
+################################################################################
+# Technical notes
+# ---------------
+# /!\ This script uses DEVELOPER SETTINGS as default
+# For production you might need to review it and comment some lines such as remote DB access
+#
+# Requirements:
+#   * Current server uses Apache2 (the script creates a ".conf" + it reloads Apache2)
+#   * Current server has PHP 7.4 or later installed
+#   * Current server has a MariaDB with a "root" user
+#   * Internet connection is available to download wordpress, wp-cli, plugins and themes
+#
+# Principle:
+#   * Create Wordpress database: new schema and user, according to configuration.
+#     We allow remote connection for maintenance purposes.
+#   * Create a new web-folder and download wordpress
+#     Folder is owned by 'www-data'
+#   * Download and install Wordpress command line client: "WP-CLI"
+#   * Create Apache2 configuration and apply changes
+#   * Setup wordpress:
+#      * Create database
+#      * Create users
+#      * Setup core configuration
+#      * Download key plugins + apply corresponding configuration
+#      * Download theme
+#
+# Thanks to 'set -e' the script will exit if a command fails (exit code different from 0)
+#
+# Last but not least, use https://www.shellcheck.net/ to verify the ShellScript syntax + 'bash -n script.sh'
+###############################################################################
+# Author:   Guillaume Diaz
+# Version:  1.0 - 2020/08 - script creation
+#
+# Thanks to Greg Parker for its excellent article (https://medium.com/@beBrllnt/from-30-minutes-to-10-seconds-automating-wordpress-setup-5ff7526942c0)
+# Thanks to WP-CLI team for writing such a convenient and efficient tool (https://wp-cli.org/)
+#
+###############################################################################
+
 RED="\\033[0;31m"
 RED_BOLD="\\033[1;31m"
 BLUE="\\033[1;34m"
 GREEN="\\033[0;32m"
 WHITE="\\033[0;37m"
 YELLOW="\\033[1;33m"
+# Get current IP @, do not change that line
+CURRENT_IP_ADDRESS=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
 
+# ********************************************* #
+# ***              CONFIGURATION            *** #
+# ********************************************* #
+# Slug: wordpress short name to use in URL and for installation folder
+WP_INSTALLATION_SLUG="blog"
 
+# Installation folder (this folder will be created)
+WEBSITE_ROOT="/var/www/${WP_INSTALLATION_SLUG}"
 
-WEBSITE_ROOT=/var/www/blog
-WEBSITE_URL=http://localhost/blog
-WP_DB_SCHEMA=wordpress
-WP_DB_USER=wordpress
-WP_DB_PASSWORD=wordpress
-WP_ADMIN_USER=admin
-WP_ADMIN_PASSWORD=admin
+# Wordpress website URL (feel free to set your own DNS name)
+WEBSITE_URL="http://$CURRENT_IP_ADDRESS/${WP_INSTALLATION_SLUG}"
 
+# Database (Maria DB) settings
+WP_DB_SCHEMA="wordpress"
+WP_DB_USER="wordpress"
+WP_DB_PASSWORD="wordpress"
+
+# Wordpress configuration (admin user)
+WP_ADMIN_USER="admin"
+WP_ADMIN_PASSWORD="admin"
+WP_ADMIN_EMAIL="guillaume@qin-diaz.com"
+
+# Wordpress content
+WP_TITLE="MiniXiongMao"
+WP_DESCRIPTION="Every day is a wonder"
+
+# ********************************************* #
+# ***              /CONFIGURATION            *** #
+# ********************************************* #
 
 function setupWordpressWebsite() {
-	ASSETS_PATH="./../assets"
-	if [ $# -eq 1 ]; then
-	    ASSETS_PATH="$1/assets"
-	fi
-	export DEBIAN_FRONTEND=dialog
+  ASSETS_PATH="./../assets"
+  if [ $# -eq 1 ]; then
+    ASSETS_PATH="$1/assets"
+  fi
+  export DEBIAN_FRONTEND=dialog
 
+  echo -e " "
+  echo -e "####################################"
+  echo -e "${BLUE}         Wordpress website setup${WHITE}"
+  echo -e " "
+  echo -e " URL:      You can access it at${YELLOW} ${WEBSITE_URL}${WHITE}"
+  echo -e " Database: A new MariaDB user will be created for wordpress"
+  echo -e "             * schema:${YELLOW} ${WP_DB_SCHEMA}${WHITE}"
+  echo -e "             * user:${YELLOW} ${WP_DB_USER}${WHITE}"
+  echo -e "             * pwd:${YELLOW}  ${WP_DB_PASSWORD}${WHITE}"
+  echo -e "             * access:${YELLOW} localhost + remote ${WHITE}"
+  echo -e " WP client accessible with${YELLOW} wp${WHITE} command"
+  echo -e " "
+  echo -e "To access the blog${YELLOW} ${WEBSITE_URL}${WHITE}"
+  echo -e "             * user:${YELLOW} ${WP_ADMIN_USER}${WHITE}"
+  echo -e "             * password:${YELLOW} ${WP_ADMIN_PASSWORD}${WHITE}"
+  echo -e "#################################### ${WHITE}"
+  echo -e " "
+}
 
-	CURRENT_IP_ADDRESS=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'`
+#######################################
+# Create wordpress database in Maria DB
+# Arguments: None
+# Outputs:   None
+#######################################
+function createWordpressDatabase() {
+  echo -e "Create new DB schema and new DB user"
+  # Create database
+  mysql -u root -e "create database ${WP_DB_SCHEMA}"
+  # Create user
+  mysql -u root -e "create user '${WP_DB_USER}' identified by '${WP_DB_PASSWORD}'"
+  # Allow localhost connection
+  mysql -u root -e "GRANT USAGE ON *.* TO '${WP_DB_USER}'@localhost IDENTIFIED BY '${WP_DB_PASSWORD}'"
+  # Allow remote connection
+  mysql -u root -e "GRANT USAGE ON *.* TO '${WP_DB_USER}'@'%' IDENTIFIED BY '${WP_DB_PASSWORD}'"
+  # Grant rights
+  mysql -u root -e "GRANT ALL privileges ON ${WP_DB_SCHEMA}.* TO '${WP_DB_USER}'@localhost"
+  mysql -u root -e "GRANT ALL privileges ON ${WP_DB_SCHEMA}.* TO '${WP_DB_USER}'@'%'"
+  # Apply changes
+  mysql -u root -e "FLUSH PRIVILEGES"
 
-	echo -e ""
-	echo -e "####################################"
-	echo -e "$BLUE         Wordpress website setup$WHITE" 
-	echo -e " " 
-	echo -e " Files:    Wordpress will be available in$YELLOW $WEBSITE_ROOT$WHITE"
-	echo -e " URL:      You can access it at$YELLOW $WEBSITE_URL$WHITE"
-	echo -e " Database: A new MariaDB user will be created for worpress"
-	echo -e "             * schema:$YELLOW wordpress$WHITE"
-	echo -e "             * user:$YELLOW wordpress$WHITE"
-	echo -e "             * pwd:$YELLOW  wordpress$WHITE"
-	echo -e "             * access:$YELLOW localhost + remote $WHITE"
-	echo -e " WP client accessible with$YELLOW wp$WHITE command"
-	echo -e " "
-	echo -e "To access the blog$YELLOW http://localhost/blog$WHITE"
-	echo -e "             * user:$YELLOW admin$WHITE"
-	echo -e "             * password:$YELLOW admin$WHITE"
+  # Show configuration
+  echo -e "    >>> DB checks: new user '${WP_DB_USER}' rights will appear (expect 2 times 2 results in 2 tables)"
+  mysql -u root -e "SHOW GRANTS FOR '${WP_DB_USER}'@localhost"
+  mysql -u root -e "SHOW GRANTS FOR '${WP_DB_USER}'@'%'"
 
-	echo -e "#################################### $WHITE"
+  # Summary
+  echo -e "${BLUE}************************************${WHITE}"
+  echo -e "Wordpress database settings"
+  echo -e "  * schema:${YELLOW}   ${WP_DB_SCHEMA}${WHITE}"
+  echo -e "  * user:${YELLOW}     ${WP_DB_USER}${WHITE}"
+  echo -e "  * password:${YELLOW} ${WP_DB_PASSWORD}${WHITE}"
+  echo -e "  * access:${YELLOW}   localhost + remote ${WHITE}"
+  echo -e "${BLUE}************************************${WHITE}"
+}
 
-	
-	###########################################
-	# Database
-	###########################################
-	echo -e "\n\n $YELLOW Create new schema and DB user 'wordpress' $WHITE \n\n"
-	# Create database
-	mysql -u root -e "create database wordpress";
-	# Create user
-        mysql -u root -e "create user 'wordpress' identified by 'wordpress'";
-	# Allow localhost connection
-        mysql -u root -e "GRANT USAGE ON *.* TO 'wordpress'@localhost IDENTIFIED BY 'wordpress'";
-	# Allow remote connection
-	mysql -u root -e "GRANT USAGE ON *.* TO 'wordpress'@'%' IDENTIFIED BY 'wordpress'";
-	# Grant rights
-        mysql -u root -e "GRANT ALL privileges ON wordpress.* TO 'wordpress'@localhost";
-        mysql -u root -e "GRANT ALL privileges ON wordpress.* TO 'wordpress'@'%'";
-	# Apply changes
-        mysql -u root -e "FLUSH PRIVILEGES";
-	# Show configuration
-	echo -e "\n\n $YELLOW    >>> new user 'wordpress' database rights$WHITE, expect 2 times 2 results in 2 tables\n\n"
-	mysql -u root -e "SHOW GRANTS FOR 'wordpress'@localhost";
-	mysql -u root -e "SHOW GRANTS FOR 'wordpress'@'%'";
+#######################################
+# To download latest version of Wordpress
+# Arguments: None
+# Outputs:   None
+#######################################
+function downloadWordpress() {
+  # Setup folders
+  echo -e "Create wordpress folder"
+  sudo mkdir -p ${WEBSITE_ROOT}
+  cd ${WEBSITE_ROOT}
 
-	
-        ###############################################
-        # Wordpress startup
-        ###############################################	
-	echo -e "\n\n $YELLOW Get latest version of wordpress $WHITE \n\n"
-	# Setup folders
-	sudo mkdir -p /var/www/blog
-	cd /var/www/blog
-	# Get worpdress
-	sudo wget http://wordpress.org/latest.tar.gz
-	sudo tar xzvf latest.tar.gz
-	sudo rm latest.tar.gz
-	sudo mv worpress/* .
-	sudo rm -r wordpress/
-	# Set privileges
-	sudo chown -R www-data:www-data /var/www/blog
-	
-	echo -e "\n\n $YELLOW Setup Wordpress command line client$WHITE (in /opt/wp-client/ ; command shortcut: wp)\n\n"
-	echo -e "See https://wp-cli.org/ "
-	# Download WP client
-	sudo mkdir -p /opt/wp-client
-	sudo cd /opt/wp-client
-        sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-	# Grant execution right and list current configuration
-	sudo chmod +x wp-cli.phar
-	php wp-cli.phar --info
-	# create symlink
-	sudo ln -s /opt/wp-client/wp-cli.phar /usr/bin/wp-cli
-	# Create working folder
-	sudo mkdir -p /var/www/.wp-cli/cache/
-        sudo chown -R www-data:www-data /var/www/.wp-cli/cache/
+  # Get worpdress
+  echo -e "Get latest version of wordpress"
+  sudo wget http://wordpress.org/latest.tar.gz
+  echo -e "Unpack archive and set rights"
+  sudo tar xzvf latest.tar.gz
+  sudo rm latest.tar.gz
+  sudo mv worpress/* .
+  sudo rm -r wordpress/
+  # Set privileges
+  sudo chown -R www-data:www-data ${WEBSITE_ROOT}
 
-	echo -e "\n\n $YELLOW Wordpress boot$WHITE\n\n"
-	cd /var/www/blog
-	# Create configuration
-	sudo -u www-data wp core config --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --dbhost=localhost
-	# Initialize tables + admin user 
-	sudo -u www-data wp core install --url=http://$CURRENT_IP_ADDRESS/blog --title=Daxiongmao_blog --admin_user=admin --admin_password=admin --admin_email=postmaster@daxiongmao.eu --skip-email
+  # Summary
+  echo -e "${BLUE}************************************${WHITE}"
+  echo -e "Wordpress files are available at:${YELLOW} ${WEBSITE_ROOT}${WHITE}"
+  echo -e "${BLUE}************************************${WHITE}"
+}
 
+########################################
+# Apache 2 config
+# this configuration replaces the .htaccess file
+# Arguments: None
+# Outputs:   None
+#######################################
+function createWordpressApache2configuration() {
+  echo -e "Apache2 configuration"
+  # Create configuration
+  echo "# Wordpress Apache configuration" >/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "Alias ${WP_INSTALLATION_SLUG} ${WEBSITE_ROOT}" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo " " >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "RewriteEngine On" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "<Directory ${WEBSITE_ROOT}>" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "    Options Indexes FollowSymLinks" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "    #Options Indexes SymLinksIfOwnerMatch" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "    AllowOverride All" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "    Require all granted" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "    DirectoryIndex index.php" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "</Directory>" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo " " >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  # Enable configuration
+  a2enconf ${WP_INSTALLATION_SLUG}
+  systemctl reload apache2
 
-	########################################
-	# Apache 2 config
-	# this replace the .htaccess file
-	########################################
-	echo -e "\n\n $YELLOW Apache2 configuration$WHITE \n\n"
-	# Create configuration
-        echo "# Wordpress Apache configuration" > /etc/apache2/conf-available/blog.conf
-        echo "Alias /blog /var/www/blog" >> /etc/apache2/conf-available/blog.conf
-        echo " " >> /etc/apache2/conf-available/blog.conf
-        echo "RewriteEngine On" >> /etc/apache2/conf-available/blog.conf
-        echo "<Directory /var/www/blog>" >> /etc/apache2/conf-available/blog.conf
-        echo "    Options Indexes FollowSymLinks" >> /etc/apache2/conf-available/blog.conf
-        echo "    #Options Indexes SymLinksIfOwnerMatch" >> /etc/apache2/conf-available/blog.conf
-        echo "    AllowOverride All" >> /etc/apache2/conf-available/blog.conf
-        echo "    Require all granted" >> /etc/apache2/conf-available/blog.conf
-        echo "    DirectoryIndex index.php" >> /etc/apache2/conf-available/blog.conf
-        echo "</Directory>" >> /etc/apache2/conf-available/blog.conf
-        echo " " >> /etc/apache2/conf-available/blog.conf
-	# Enable configuration
-	a2enconf blog
-	systemctl reload apache2
+  # Summary
+  echo -e "${BLUE}************************************${WHITE}"
+  echo -e "Wordpress is accessible at${YELLOW} ${WEBSITE_ROOT}${WHITE}"
+  echo -e "${BLUE}************************************${WHITE}"
+}
 
+#######################################
+# To download and setup WP-CLI (wordpress command line utility)
+# see https://wp-cli.org/
+# Arguments: None
+# Outputs:   None
+#######################################
+function installWpCli() {
+  echo -e "Setup Wordpress command line client"
+  # Download WP client
+  sudo mkdir -p /opt/wp-client
+  cd /opt/wp-client
+  sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
-	### new blog is accessible at http://serverIP@/blog/
+  echo -e "Dry run"
+  # Grant execution right and list current configuration
+  sudo chmod +x wp-cli.phar
+  php wp-cli.phar --info
 
-	########################################
-	# Configure nice URLs
-	########################################
-	echo -e "\n\n $YELLOW Wordpress configuration$WHITE\n\n"
-	sudo -u www-data wp option update permalink_structure /%postname%/
-	sudo -u www-data wp option update time_format H:i
-	sudo -u www-data wp option update date_format Y-m-d
-	
-	########################################
-	# Install plugins (public ones)
-	########################################
-	echo -e "\n\n $YELLOW Wordpress plugins$WHITE\n\n"
+  echo -e "Create symlink 'wp'"
+  # create symlink
+  sudo ln -s /opt/wp-client/wp-cli.phar /usr/bin/wp-cli
+  # Create working folder
+  sudo mkdir -p /var/www/.wp-cli/cache/
+  sudo chown -R www-data:www-data /var/www/.wp-cli/cache/
 
-	echo -e "        * akismet anti-spam (akismet)"
-	sudo -u www-data wp plugin install akismet
-	sudo -u www-data wp option add wordpress_api_key ce78662c899c
-	sudo -u www-data wp plugin activate akismet
+  # Summary
+  echo -e "${BLUE}************************************${WHITE}"
+  echo -e "WP-CLI is available.Use${YELLOW} wp${WHITE} command to use it"
+  echo -e "${BLUE}************************************${WHITE}"
+}
 
-	echo -e "        * Better Notifications for WP (bnfw)"
-	sudo -u www-data wp plugin install bnfw
-	sudo -u www-data wp plugin activate bnfw
+#######################################
+# To start wordpress: this will populate database and initialize the main settings
+# Arguments: None
+# Outputs:   None
+#######################################
+function startWordpress() {
+  echo -e "Starting up wordpress for the first time..."
+  cd ${WEBSITE_ROOT}
+  # Create configuration
+  sudo -u www-data wp core config --dbname=${WP_DB_SCHEMA} --dbuser=${WP_DB_USER} --dbpass=${WP_DB_PASSWORD} --dbhost=localhost
+  # Initialize tables + admin user
+  sudo -u www-data wp core install --url="${WEBSITE_URL}" --title="${WP_TITLE}" --admin_user=${WP_ADMIN_USER} --admin_password=${WP_ADMIN_PASSWORD} --admin_email=${WP_ADMIN_EMAIL} --skip-email
+}
 
-	echo -e "        * Old text editor (before Gutenberg project)"
-	sudo -u www-data wp plugin install classic-editor
-	sudo -u www-data wp plugin activate classic-editor
+#######################################
+# To configure wordpress
+# Arguments: None
+# Outputs:   None
+#######################################
+function wordpressConfiguration() {
+  echo -e "Applying wordpress core configuration + URL format"
+  # Configure nice URLs
+  sudo -u www-data wp option update permalink_structure /%postname%/
+  # Date time
+  sudo -u www-data wp option update time_format H:i
+  sudo -u www-data wp option update date_format Y-m-d
+  # Titles
+  sudo -u www-data wp option update blogdescription "${WP_DESCRIPTION}"
+}
 
+########################################
+# Install plugins (public ones)
+# Arguments: None
+# Outputs:   None
+########################################
+function wordpressPlugins() {
+  echo -e "Adding Wordpress plugins"
 
-	########################################
-	# Content
-	########################################
-	sudo -u www-data wp option update blogdescription 'Every day is a wonder'
+  echo -e "        * akismet anti-spam (akismet)"
+  sudo -u www-data wp plugin install akismet
+  sudo -u www-data wp option add wordpress_api_key ce78662c899c
+  sudo -u www-data wp plugin activate akismet
 
+  echo -e "        * Better Notifications for WP (bnfw)"
+  sudo -u www-data wp plugin install bnfw
+  sudo -u www-data wp plugin activate bnfw
 
-	#Remove default themes
+  echo -e "        * Old text editor (before Gutenberg project)"
+  sudo -u www-data wp plugin install classic-editor
+  sudo -u www-data wp plugin activate classic-editor
+}
 
-	rm -rf /var/www/blog/wp-content/twentyseventeen/
-	rm -rf /var/www/blog/wp-content/twentyeighteen/
-	rm -rf /var/www/blog/wp-content/twentynineteen/
-	#rm -rf /var/www/blog/wp-content/twentytwenty/
+########################################
+# Install themes (public ones)
+# Arguments: None
+# Outputs:   None
+########################################
+function wordpressThemes() {
+  echo -e "Managing Wordpress themes"
 
+  echo -e "   * remove old themes"
+  rm -rf /var/www/blog/wp-content/twentyseventeen/
+  rm -rf /var/www/blog/wp-content/twentyeighteen/
+  rm -rf /var/www/blog/wp-content/twentynineteen/
+  #rm -rf /var/www/blog/wp-content/twentytwenty/
 
+  echo -e "   * add new theme"
+}
 
+#***************************************************************************#
+#***************************************************************************#
+#****************                ROLLBACK                   ****************#
+#***************************************************************************#
+#***************************************************************************#
 
+#######################################
+# To delete wordpress user and database
+# Arguments: None
+# Outputs:   None
+#######################################
+function rollbackDatabase() {
+  echo -e "Remove wordpress user and database"
+  # Revoke rights
+  mysql -u root -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${WP_DB_USER}'@'localhost'"
+  mysql -u root -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${WP_DB_USER}'@'%'"
+  # Remove user
+  mysql -u root -e "DROP USER IF EXISTS '${WP_DB_USER}'"
+  # Remove database
+  mysql -u root -e "DROP database ${WP_DB_SCHEMA}"
+  # Apply changes
+  mysql -u root -e "FLUSH PRIVILEGES"
+}
+
+#######################################
+# To delete wordpress Apache2 configuration
+# Arguments: None
+# Outputs:   None
+#######################################
+function rollbackApache2Configuration() {
+  echo -e "Remove Apache2 configuration"
+  # Disable configuration
+  a2disconf ${WP_INSTALLATION_SLUG}
+  systemctl reload apache2
+  # Delete configuration
+  rm /etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+}
+
+#######################################
+# To remove wordpress files
+# Arguments: None
+# Outputs:   None
+#######################################
+function rollbackInstallation() {
+  echo -e "Remove wordpress files"
+  rm --recursive --force ${WEBSITE_ROOT}
+}
+
+#######################################
+# To perform rollback
+# Arguments: None
+# Outputs:   None
+#######################################
+function doRollback() {
+  rollbackDatabase
+  rollbackApache2Configuration
+  rollbackInstallation
+}
