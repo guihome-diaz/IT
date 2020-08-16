@@ -146,13 +146,13 @@ function downloadWordpress() {
   cd ${WEBSITE_ROOT}
 
   # Get worpdress
-  echo -e "Get latest version of wordpress"
-  sudo wget http://wordpress.org/latest.tar.gz
+  echo -e "Get latest version of wordpress and save it to: ${WEBSITE_ROOT}"
+  sudo wget https://wordpress.org/latest.tar.gz
   echo -e "Unpack archive and set rights"
-  sudo tar xzvf latest.tar.gz
-  sudo rm latest.tar.gz
-  sudo mv worpress/* .
-  sudo rm -r wordpress/
+  sudo tar xzvf ${WEBSITE_ROOT}/latest.tar.gz
+  sudo rm ${WEBSITE_ROOT}/latest.tar.gz
+  sudo mv ${WEBSITE_ROOT}/wordpress/* ${WEBSITE_ROOT}/
+  sudo rm --recursive --force ${WEBSITE_ROOT}/wordpress/
   # Set privileges
   sudo chown -R www-data:www-data ${WEBSITE_ROOT}
 
@@ -172,7 +172,7 @@ function createWordpressApache2configuration() {
   echo -e "Apache2 configuration"
   # Create configuration
   echo "# Wordpress Apache configuration" >/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
-  echo "Alias ${WP_INSTALLATION_SLUG} ${WEBSITE_ROOT}" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
+  echo "Alias /${WP_INSTALLATION_SLUG} ${WEBSITE_ROOT}" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
   echo " " >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
   echo "RewriteEngine On" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
   echo "<Directory ${WEBSITE_ROOT}>" >>/etc/apache2/conf-available/${WP_INSTALLATION_SLUG}.conf
@@ -189,7 +189,7 @@ function createWordpressApache2configuration() {
 
   # Summary
   echo -e "${BLUE}************************************${WHITE}"
-  echo -e "Wordpress is accessible at${YELLOW} ${WEBSITE_ROOT}${WHITE}"
+  echo -e "Wordpress is accessible at${YELLOW} ${WEBSITE_URL}${WHITE}"
   echo -e "${BLUE}************************************${WHITE}"
 }
 
@@ -285,10 +285,10 @@ function wordpressThemes() {
   echo -e "Managing Wordpress themes"
 
   echo -e "   * remove old themes"
-  rm -rf /var/www/blog/wp-content/twentyseventeen/
-  rm -rf /var/www/blog/wp-content/twentyeighteen/
-  rm -rf /var/www/blog/wp-content/twentynineteen/
-  #rm -rf /var/www/blog/wp-content/twentytwenty/
+  rm -rf ${WEBSITE_ROOT}/wp-content/twentyseventeen/
+  rm -rf ${WEBSITE_ROOT}/wp-content/twentyeighteen/
+  rm -rf ${WEBSITE_ROOT}/wp-content/twentynineteen/
+  #rm -rf ${WEBSITE_ROOT}/wp-content/twentytwenty/
 
   echo -e "   * add new theme"
 }
@@ -372,9 +372,9 @@ function rollbackInstallation() {
 # Outputs:   None
 #######################################
 function doRollback() {
+  rollbackInstallation
   rollbackDatabase
   rollbackApache2Configuration
-  rollbackInstallation
 }
 
 
@@ -382,4 +382,5 @@ function doRollback() {
 ###### To test the script, just uncomment the following lines
 source ./check_root_rights.sh
 checkRootRights
-doRollback
+doWordpressInstallation
+#doRollback
