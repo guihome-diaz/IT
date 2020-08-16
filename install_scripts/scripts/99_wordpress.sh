@@ -91,31 +91,12 @@ WP_DESCRIPTION="Every day is a wonder"
 # ***              /CONFIGURATION            *** #
 # ********************************************* #
 
-function setupWordpressWebsite() {
-  ASSETS_PATH="./../assets"
-  if [ $# -eq 1 ]; then
-    ASSETS_PATH="$1/assets"
-  fi
-  export DEBIAN_FRONTEND=dialog
 
-  echo -e " "
-  echo -e "####################################"
-  echo -e "${BLUE}         Wordpress website setup${WHITE}"
-  echo -e " "
-  echo -e " URL:      You can access it at${YELLOW} ${WEBSITE_URL}${WHITE}"
-  echo -e " Database: A new MariaDB user will be created for wordpress"
-  echo -e "             * schema:${YELLOW} ${WP_DB_SCHEMA}${WHITE}"
-  echo -e "             * user:${YELLOW} ${WP_DB_USER}${WHITE}"
-  echo -e "             * pwd:${YELLOW}  ${WP_DB_PASSWORD}${WHITE}"
-  echo -e "             * access:${YELLOW} localhost + remote ${WHITE}"
-  echo -e " WP client accessible with${YELLOW} wp${WHITE} command"
-  echo -e " "
-  echo -e "To access the blog${YELLOW} ${WEBSITE_URL}${WHITE}"
-  echo -e "             * user:${YELLOW} ${WP_ADMIN_USER}${WHITE}"
-  echo -e "             * password:${YELLOW} ${WP_ADMIN_PASSWORD}${WHITE}"
-  echo -e "#################################### ${WHITE}"
-  echo -e " "
-}
+#***************************************************************************#
+#***************************************************************************#
+#****************              INSTALLATION                 ****************#
+#***************************************************************************#
+#***************************************************************************#
 
 #######################################
 # Create wordpress database in Maria DB
@@ -312,6 +293,31 @@ function wordpressThemes() {
   echo -e "   * add new theme"
 }
 
+
+########################################
+# Installation workflow
+# >>>> METHOD TO EXECUTE <<<<
+# Arguments: None
+# Outputs:   None
+########################################
+function doWordpressInstallation() {
+  ASSETS_PATH="./../assets"
+  if [ $# -eq 1 ]; then
+    ASSETS_PATH="$1/assets"
+  fi
+  export DEBIAN_FRONTEND=dialog
+
+  createWordpressDatabase
+  downloadWordpress
+  createWordpressApache2configuration
+  startWordpress
+  wordpressConfiguration
+  wordpressPlugins
+  wordpressThemes
+}
+
+
+
 #***************************************************************************#
 #***************************************************************************#
 #****************                ROLLBACK                   ****************#
@@ -370,3 +376,10 @@ function doRollback() {
   rollbackApache2Configuration
   rollbackInstallation
 }
+
+
+
+###### To test the script, just uncomment the following lines
+source ./check_root_rights.sh
+checkRootRights
+doRollback
