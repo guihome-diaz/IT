@@ -11,6 +11,16 @@ WHITE="\\033[0;37m"
 YELLOW="\\033[1;33m"
 
 
+
+WEBSITE_ROOT=/var/www/blog
+WEBSITE_URL=http://localhost/blog
+WP_DB_SCHEMA=wordpress
+WP_DB_USER=wordpress
+WP_DB_PASSWORD=wordpress
+WP_ADMIN_USER=admin
+WP_ADMIN_PASSWORD=admin
+
+
 function setupWordpressWebsite() {
 	ASSETS_PATH="./../assets"
 	if [ $# -eq 1 ]; then
@@ -25,8 +35,8 @@ function setupWordpressWebsite() {
 	echo -e "####################################"
 	echo -e "$BLUE         Wordpress website setup$WHITE" 
 	echo -e " " 
-	echo -e " Files:    Wordpress will be available in$YELLOW /var/www/blog"$WHITE
-	echo -e " URL:      You can access it at$YELLOW http://localhost/blog$WHITE"
+	echo -e " Files:    Wordpress will be available in$YELLOW $WEBSITE_ROOT$WHITE"
+	echo -e " URL:      You can access it at$YELLOW $WEBSITE_URL$WHITE"
 	echo -e " Database: A new MariaDB user will be created for worpress"
 	echo -e "             * schema:$YELLOW wordpress$WHITE"
 	echo -e "             * user:$YELLOW wordpress$WHITE"
