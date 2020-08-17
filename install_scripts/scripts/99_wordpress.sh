@@ -84,9 +84,21 @@ WP_ADMIN_USER="admin"
 WP_ADMIN_PASSWORD="admin"
 WP_ADMIN_EMAIL="guillaume@qin-diaz.com"
 
+# Anti-spam Akismet
+WP_AKISMET_KEY="ce78662c899c"
+
 # Wordpress content
 WP_TITLE="MiniXiongMao"
 WP_DESCRIPTION="Every day is a wonder"
+
+WP_HIDE_MY_SITE_PAGE_TITLE="Private website"
+WP_HIDE_MY_SITE_BANNER="This site is a private site. You must enter the access password"
+WP_HIDE_MY_SITE_DURATION="360"
+WP_HIDE_MY_SITE_BACKGROUND_IMAGE="https://www.qin-diaz.com/family/wp-content/uploads/2017/08/Teddy-bear-family-HD-wallpaper.jpg"
+WP_HIDE_MY_SITE_PASSWORD="password"
+WP_HIDE_MY_SITE_PASSWORD_HINT="Like us, but smaller"
+WP_HIDE_MY_SITE_THEME="hmsbinder"
+
 
 # ********************************************* #
 # ***              /CONFIGURATION            *** #
@@ -268,15 +280,39 @@ function wordpressPlugins() {
   echo -e "  (i) Since Wordpress 5.5 Gutenberg [block editor] + Site Health are included in the default bundle"
   echo -e " "
 
+  ############# Security
   echo -e "        * akismet comments anti-spam"
   sudo -u www-data wp plugin install akismet
-  sudo -u www-data wp option add wordpress_api_key ce78662c899c
+  sudo -u www-data wp option add wordpress_api_key ${WP_AKISMET_KEY}
   sudo -u www-data wp plugin activate akismet
 
+  echo -e "        * Hide my site"
+  sudo -u www-data wp plugin install hide-my-site
+  sudo -u www-data wp plugin activate hide-my-site
+  sudo -u www-data wp option add hide_my_site_pagetitle "${WP_HIDE_MY_SITE_PAGE_TITLE}"
+  sudo -u www-data wp option add hide_my_site_custom_messaging_banner "${WP_HIDE_MY_SITE_BANNER}"
+  sudo -u www-data wp option add hide_my_site_password "${WP_HIDE_MY_SITE_PASSWORD}"
+  sudo -u www-data wp option add hide_my_site_password_hint "${WP_HIDE_MY_SITE_PASSWORD_HINT}"
+  sudo -u www-data wp option add hide_my_site_enabled 1
+  sudo -u www-data wp option add hide_my_site_mobile_friendly_check 1
+  sudo -u www-data wp option add hide_my_site_bruteforce 1
+  sudo -u www-data wp option add hide_my_site_allow_admin 1
+  sudo -u www-data wp option add hide_my_site_duration "${WP_HIDE_MY_SITE_DURATION}"
+  sudo -u www-data wp option add hide_my_site_custom_background_image_upload "${WP_HIDE_MY_SITE_BACKGROUND_IMAGE}"
+  sudo -u www-data wp option add hide_my_site_current_theme "${WP_HIDE_MY_SITE_THEME}"
+  sudo -u www-data wp option add hide_my_site_ihmsa "hmsia"
+
+  ############# User communication
   echo -e "        * Better Notifications for WP [bnfw]"
   sudo -u www-data wp plugin install bnfw
   sudo -u www-data wp plugin activate bnfw
 
+  echo -e "        * Contact Form 7"
+  sudo -u www-data wp plugin install contact-form-7
+  sudo -u www-data wp plugin activate contact-form-7
+  # Contact form depends on *_POST.post_type = 'wpcf7_contact_form'
+
+  ############# Content
   echo -e "        * Classic text editor (before Gutenberg project)"
   echo -e "          Default editor stays 'block' but user can choose to use the classic editor instead"
   sudo -u www-data wp plugin install classic-editor
@@ -290,19 +326,18 @@ function wordpressPlugins() {
   sudo -u www-data wp plugin install tinymce-advanced
   sudo -u www-data wp plugin activate tinymce-advanced
 
-  echo -e "        * Contact Form 7"
-  sudo -u www-data wp plugin install contact-form-7
-  sudo -u www-data wp plugin activate contact-form-7
-  # Contact form depends on *_POST.post_type = 'wpcf7_contact_form'
-
-  echo -e "        * Disable User Gravatar"
-  # Removing a call to 3rd party service makes the website more resistant + it also avoid timeouts and long waiting time (for ex. in China)
-  sudo -u www-data wp plugin install disable-user-gravatar
-  sudo -u www-data wp plugin activate disable-user-gravatar
+  echo -e "        * Timeline Express"
+  sudo -u www-data wp plugin install timeline-express
+  sudo -u www-data wp plugin activate timeline-express
 
   echo -e "        *  WordPress Media Library Folders (to scan folders for new medias)"
   sudo -u www-data wp plugin install media-library-plus
   sudo -u www-data wp plugin activate media-library-plus
+
+  echo -e "        * NextGEN Gallery"
+  sudo -u www-data wp plugin install nextgen-gallery
+  sudo -u www-data wp plugin activate nextgen-gallery
+  # TODO add configuration over here
 
   echo -e "        * Simple page ordering"
   sudo -u www-data wp plugin install simple-page-ordering
@@ -311,6 +346,13 @@ function wordpressPlugins() {
   echo -e "        * WP Add Custom CSS (to use your own CSS on a post, page or the whole website)"
   sudo -u www-data wp plugin install wp-add-custom-css
   sudo -u www-data wp plugin activate wp-add-custom-css
+
+
+  ############### Performances
+  echo -e "        * Disable User Gravatar"
+  # Removing a call to 3rd party service makes the website more resistant + it also avoid timeouts and long waiting time (for ex. in China)
+  sudo -u www-data wp plugin install disable-user-gravatar
+  sudo -u www-data wp plugin activate disable-user-gravatar
 
 }
 
@@ -416,3 +458,4 @@ source ./check_root_rights.sh
 checkRootRights
 doWordpressInstallation
 #doRollback
+
