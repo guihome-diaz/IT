@@ -147,6 +147,23 @@ function createWordpressDatabase() {
   echo -e "${BLUE}************************************${WHITE}"
 }
 
+
+
+
+#######################################
+# To download latest version of Wordpress
+# Arguments: None
+# Outputs:   /tmp/wp-plugins/  << folder with premium files
+#######################################
+function preparePremiumPlugins() {
+  # Copy zip files
+  echo -e "        * Copy premium plugins"
+  mkdir -p /tmp/wp-plugins
+  cp ../wordpress/pdf-embedder-premium.zip /tmp/wp-plugins
+  cp ../wordpress/pdf-thumbnails-premium.zip /tmp/wp-plugins
+  cp ../wordpress/nextgen-gallery-pro.zip /tmp/wp-plugins
+}
+
 #######################################
 # To download latest version of Wordpress
 # Arguments: None
@@ -353,12 +370,6 @@ function wordpressPlugins() {
 
 
   ############# Premium plugins
-  # Copy zip files
-  mkdir -p /tmp/wp-plugins
-  cp ../wordpress/pdf-embedder-premium.zip /tmp/wp-plugins
-  cp ../wordpress/pdf-thumbnails-premium.zip /tmp/wp-plugins
-  cp ../wordpress/nextgen-gallery-pro.zip /tmp/wp-plugins
-  cd /tmp/wp-plugins/
   # Unzip
   unzip pdf-embedder-premium.zip
   unzip pdf-thumbnails-premium.zip
@@ -403,6 +414,7 @@ function wordpressThemes() {
 # Outputs:   None
 ########################################
 function doWordpressInstallation() {
+  preparePremiumPlugins
   createWordpressDatabase
   downloadWordpress
   createWordpressApache2configuration
