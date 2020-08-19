@@ -169,7 +169,7 @@ function preparePremiumPlugins() {
   cd /tmp/wp-plugins
   unzip pdf-embedder-premium.zip
   unzip pdf-thumbnails-premium.zip
-  unzip next-gallery-pro.zip
+  unzip nextgen-gallery-pro.zip
 }
 
 #######################################
@@ -303,7 +303,7 @@ function wordpressConfiguration() {
 ########################################
 function wordpressPlugins() {
   echo -e "Remove default plugin 'Hello Dolly'"
-  sudo -u www-data wp plugin delete hello-dolly
+  sudo -u www-data wp plugin delete hello
 
   echo -e "Adding Wordpress plugins"
   echo -e "  (i) Since Wordpress 5.5 Gutenberg [block editor] + Site Health are included in the default bundle"
@@ -379,9 +379,13 @@ function wordpressPlugins() {
 
   ############# Premium plugins
   #### PDF premium
-  cd ${WEBSITE_ROOT}
+  echo -e "        * PDF embedder premium"
   sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-embedder-premium/pdf-embedder-premium.zip
+  sudo -u www-data wp plugin activate PDFEmbedder-premium
+
+  echo -e "        * PDF thumbnails premium"
   sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-thumbnails-premium/pdf-thumbnails-premium.zip
+  sudo -u www-data wp plugin activate PDFThumbnails-premium
 
 
 
