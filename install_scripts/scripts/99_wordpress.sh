@@ -162,6 +162,13 @@ function preparePremiumPlugins() {
   cp ../wordpress/pdf-embedder-premium.zip /tmp/wp-plugins
   cp ../wordpress/pdf-thumbnails-premium.zip /tmp/wp-plugins
   cp ../wordpress/nextgen-gallery-pro.zip /tmp/wp-plugins
+  # Unzip
+  echo -e "        * Unzip premium plugins"
+  echo -e "            ... Like us_year.country ..."
+  cd /tmp/wp-plugins
+  unzip pdf-embedder-premium.zip
+  unzip pdf-thumbnails-premium.zip
+  unzip next-gallery-pro.zip
 }
 
 #######################################
@@ -370,10 +377,6 @@ function wordpressPlugins() {
 
 
   ############# Premium plugins
-  # Unzip
-  unzip pdf-embedder-premium.zip
-  unzip pdf-thumbnails-premium.zip
-
   #### PDF premium
   cd ${WEBSITE_ROOT}
   sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-embedder-premium/pdf-embedder-premium.zip
