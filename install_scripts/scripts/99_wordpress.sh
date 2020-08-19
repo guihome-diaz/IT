@@ -156,6 +156,7 @@ function createWordpressDatabase() {
 # Outputs:   /tmp/wp-plugins/  << folder with premium files
 #######################################
 function preparePremiumPlugins() {
+  rm -rf /tmp/wp-plugins
   # Copy zip files
   echo -e "        * Copy premium plugins"
   mkdir -p /tmp/wp-plugins
