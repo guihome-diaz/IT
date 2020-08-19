@@ -218,6 +218,10 @@ function installWpCli() {
   sudo mkdir -p /opt/wp-client
   cd /opt/wp-client
   sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+  sudo curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.4.0/utils/wp-completion.bash
+  sudo chmod 755 /opt/wp-client/wp-completion.bash
+  echo "source /opt/wp-client/wp-completion.bash" >> ~/.bash_profile
+  source ~/.bash_profile
 
   echo -e "Dry run"
   # Grant execution right and list current configuration
@@ -346,6 +350,23 @@ function wordpressPlugins() {
   echo -e "        * WP Add Custom CSS (to use your own CSS on a post, page or the whole website)"
   sudo -u www-data wp plugin install wp-add-custom-css
   sudo -u www-data wp plugin activate wp-add-custom-css
+
+
+  ############# Premium plugins
+  # Copy zip files
+  mkdir -p /tmp/wp-plugins
+  cp ../wordpress/pdf-embedder-premium.zip /tmp/wp-plugins
+  cp ../wordpress/pdf-thumbnails-premium.zip /tmp/wp-plugins
+  cp ../wordpress/nextgen-gallery-pro.zip /tmp/wp-plugins
+  cd /tmp/wp-plugins/
+  # Unzip
+  unzip pdf-embedder-premium.zip
+  unzip pdf-thumbnails-premium.zip
+
+  #### PDF premium
+  sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-embedder-premium/pdf-embedder-premium.zip
+  sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-thumbnails-premium/pdf-thumbnails-premium.zip
+
 
 
   ############### Performances
