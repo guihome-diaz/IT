@@ -364,6 +364,7 @@ function wordpressPlugins() {
   unzip pdf-thumbnails-premium.zip
 
   #### PDF premium
+  cd ${WEBSITE_ROOT}
   sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-embedder-premium/pdf-embedder-premium.zip
   sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-thumbnails-premium/pdf-thumbnails-premium.zip
 
@@ -477,6 +478,7 @@ function doRollback() {
 ###### To test the script, just uncomment the following lines
 source ./check_root_rights.sh
 checkRootRights
+doRollback
 doWordpressInstallation
-#doRollback
+
 
