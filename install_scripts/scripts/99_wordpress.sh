@@ -133,11 +133,9 @@ WP_NGG_WATERMARK_AT_UPLOAD="1"
 WP_NGG_STUDIO_NAME="Qin Diaz"
 WP_NGG_THUMB_EFFECT="photocrati-nextgen_pro_lightbox"
 
-
 # ********************************************* #
 # ***              /CONFIGURATION            *** #
 # ********************************************* #
-
 
 #***************************************************************************#
 #***************************************************************************#
@@ -180,9 +178,6 @@ function createWordpressDatabase() {
   echo -e "  * access:${YELLOW}   localhost + remote ${WHITE}"
   echo -e "${BLUE}************************************${WHITE}"
 }
-
-
-
 
 #######################################
 # To download latest version of Wordpress
@@ -265,15 +260,13 @@ function createWordpressApache2configuration() {
   echo -e "${BLUE}************************************${WHITE}"
 }
 
-
 #######################################
 # To check if WP CLI is installed or not ; install WP CLI if required ; then update
 # Arguments: None
 # Outputs:   None
 #######################################
 function checkAndInstallWpCli() {
-  if ! command -v wp &> /dev/null
-  then
+  if ! command -v wp &>/dev/null; then
     echo "WP CLI is not installed"
     installWpCli
   fi
@@ -296,7 +289,7 @@ function installWpCli() {
   sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
   sudo curl -O https://raw.githubusercontent.com/wp-cli/wp-cli/v2.4.0/utils/wp-completion.bash
   sudo chmod 755 /opt/wp-client/wp-completion.bash
-  echo "source /opt/wp-client/wp-completion.bash" >> ~/.bash_profile
+  echo "source /opt/wp-client/wp-completion.bash" >>~/.bash_profile
   source ~/.bash_profile
 
   echo -e "Dry run"
@@ -441,7 +434,6 @@ function wordpressPlugins() {
   sudo -u www-data wp ngg settings edit galSort "${WP_NGG_GALLERY_SORT_BY}"
   sudo -u www-data wp ngg settings edit galSortDir "${WP_NGG_GALLERY_SORT_DIRECTION}"
 
-
   echo -e "        * Simple page ordering"
   sudo -u www-data wp plugin install simple-page-ordering
   sudo -u www-data wp plugin activate simple-page-ordering
@@ -450,13 +442,11 @@ function wordpressPlugins() {
   sudo -u www-data wp plugin install wp-add-custom-css
   sudo -u www-data wp plugin activate wp-add-custom-css
 
-
   ############### Performances
   echo -e "        * Disable User Gravatar"
   # Removing a call to 3rd party service makes the website more resistant + it also avoid timeouts and long waiting time (for ex. in China)
   sudo -u www-data wp plugin install disable-user-gravatar
   sudo -u www-data wp plugin activate disable-user-gravatar
-
 
   ############# Premium plugins
   #### PDF premium
@@ -481,7 +471,7 @@ function wordpressPlugins() {
   sudo -u www-data wp ngg settings edit ecommerce_studio_city "${WP_ADMIN_ADDRESS_CITY}"
   sudo -u www-data wp ngg settings edit ecommerce_home_zip "${WP_ADMIN_ADDRESS_POSTCODE}"
   sudo -u www-data wp ngg settings edit ecommerce_home_country "${WP_ADMIN_ADDRESS_COUNTRY}"
-
+}
 
 ########################################
 # Install themes (public ones)
@@ -500,7 +490,6 @@ function wordpressThemes() {
   echo -e "   * add new theme"
 }
 
-
 ########################################
 # Installation workflow
 # >>>> METHOD TO EXECUTE <<<<
@@ -517,8 +506,6 @@ function doWordpressInstallation() {
   wordpressPlugins
   wordpressThemes
 }
-
-
 
 #***************************************************************************#
 #***************************************************************************#
@@ -579,13 +566,9 @@ function doRollback() {
   rollbackApache2Configuration
 }
 
-
-
 ###### To test the script, just uncomment the following lines
 source ./check_root_rights.sh
 checkRootRights
 checkAndInstallWpCli
 doRollback
 doWordpressInstallation
-
-
