@@ -129,6 +129,10 @@ WP_NGG_WATERMARK_TEXT="© Daxiongmao.eu | 秦-diaz"
 WP_NGG_WATERMARK_COLOR="ffffff"
 WP_NGG_WATERMARK_OPAQUE="100"
 WP_NGG_WATERMARK_AT_UPLOAD="1"
+## Protection
+## (i) Global protection will remove right click
+WP_NGG_PROTECT_IMAGES="1"
+WP_NGG_PROTECT_IMAGES_GLOBALLY="0"
 # Pro settings
 WP_NGG_STUDIO_NAME="Qin Diaz"
 WP_NGG_THUMB_EFFECT="photocrati-nextgen_pro_lightbox"
@@ -430,6 +434,10 @@ function wordpressPlugins() {
   sudo -u www-data wp ngg settings edit imgQuality "${WP_NGG_IMG_QUALITY}"
   sudo -u www-data wp ngg settings edit imgBackup "${WP_NGG_IMG_BACKUP_ORIGINAL}"
   sudo -u www-data wp ngg settings edit imgAutoResize "${WP_NGG_IMG_AUTO_RESIZE}"
+  # Protection
+  sudo -u www-data wp ngg settings edit protect_images "${WP_NGG_PROTECT_IMAGES}"
+  sudo -u www-data wp ngg settings edit protect_images_globally "${WP_NGG_PROTECT_IMAGES_GLOBALLY}"
+
   # Gallery ordering
   sudo -u www-data wp ngg settings edit galSort "${WP_NGG_GALLERY_SORT_BY}"
   sudo -u www-data wp ngg settings edit galSortDir "${WP_NGG_GALLERY_SORT_DIRECTION}"
