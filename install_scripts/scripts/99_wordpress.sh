@@ -428,6 +428,8 @@ function wordpressPlugins() {
   sudo -u www-data wp ngg settings edit thumbwidth "${WP_NGG_THUMB_WIDTH}"
   sudo -u www-data wp ngg settings edit thumbheight "${WP_NGG_THUMB_HEIGHT}"
   sudo -u www-data wp ngg settings edit thumbquality "${WP_NGG_THUMB_QUALITY}"
+  sudo -u www-data wp ngg settings edit thumbfix "0"
+
   # Images
   sudo -u www-data wp ngg settings edit imgWidth "${WP_NGG_IMG_SIZE_WIDTH}"
   sudo -u www-data wp ngg settings edit imgHeight "${WP_NGG_IMG_SIZE_HEIGHT}"
