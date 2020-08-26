@@ -83,6 +83,10 @@ WP_DB_PASSWORD="wordpress"
 WP_ADMIN_USER="admin"
 WP_ADMIN_PASSWORD="admin"
 WP_ADMIN_EMAIL="guillaume@qin-diaz.com"
+WP_ADMIN_ADDRESS_STREET="82 route d'Arlon"
+WP_ADMIN_ADDRESS_POSTCODE="1150"
+WP_ADMIN_ADDRESS_CITY="Luxembourg"
+WP_ADMIN_ADDRESS_COUNTRY="LU"
 
 # Anti-spam Akismet
 WP_AKISMET_KEY="ce78662c899c"
@@ -91,6 +95,7 @@ WP_AKISMET_KEY="ce78662c899c"
 WP_TITLE="MiniXiongMao"
 WP_DESCRIPTION="Every day is a wonder"
 
+# Hide my site
 WP_HIDE_MY_SITE_PAGE_TITLE="Private website"
 WP_HIDE_MY_SITE_BANNER="This site is a private site. You must enter the access password"
 WP_HIDE_MY_SITE_DURATION="360"
@@ -98,6 +103,35 @@ WP_HIDE_MY_SITE_BACKGROUND_IMAGE="https://www.qin-diaz.com/family/wp-content/upl
 WP_HIDE_MY_SITE_PASSWORD="password"
 WP_HIDE_MY_SITE_PASSWORD_HINT="Like us, but smaller"
 WP_HIDE_MY_SITE_THEME="hmsbinder"
+
+# NextGen Gallery
+## Thumbnails
+WP_NGG_THUMB_WIDTH="480"
+WP_NGG_THUMB_HEIGHT="320"
+WP_NGG_THUMB_QUALITY="100"
+## Images
+## Alternative setting: (in production up to 2020-09) width=1024, height=768)
+WP_NGG_IMG_SIZE_WIDTH="1800"
+WP_NGG_IMG_SIZE_HEIGHT="1200"
+WP_NGG_IMG_QUALITY="100"
+WP_NGG_IMG_BACKUP_ORIGINAL="1"
+WP_NGG_IMG_AUTO_RESIZE="1"
+# Ordering photos in gallery
+WP_NGG_GALLERY_SORT_BY="imagedate"
+WP_NGG_GALLERY_SORT_DIRECTION="ASC"
+## Watermark
+WP_NGG_WATERMARK_POS="botRight"
+WP_NGG_WATERMARK_XPOS="5"
+WP_NGG_WATERMARK_YPOS="5"
+WP_NGG_WATERMARK_TYPE="text"
+WP_NGG_WATERMARK_SIZE="10"
+WP_NGG_WATERMARK_TEXT="© Daxiongmao.eu | 秦-diaz"
+WP_NGG_WATERMARK_COLOR="ffffff"
+WP_NGG_WATERMARK_OPAQUE="100"
+WP_NGG_WATERMARK_AT_UPLOAD="1"
+# Pro settings
+WP_NGG_STUDIO_NAME="Qin Diaz"
+WP_NGG_THUMB_EFFECT="photocrati-nextgen_pro_lightbox"
 
 
 # ********************************************* #
@@ -383,7 +417,30 @@ function wordpressPlugins() {
   echo -e "        * NextGEN Gallery"
   sudo -u www-data wp plugin install nextgen-gallery
   sudo -u www-data wp plugin activate nextgen-gallery
-  # TODO add configuration over here
+  # Watermark
+  sudo -u www-data wp ngg settings edit watermark_automatically_at_upload "${WP_NGG_WATERMARK_AT_UPLOAD}"
+  sudo -u www-data wp ngg settings edit wmPos "${WP_NGG_WATERMARK_POS}"
+  sudo -u www-data wp ngg settings edit wmXpos "${WP_NGG_WATERMARK_XPOS}"
+  sudo -u www-data wp ngg settings edit wmYpos "${WP_NGG_WATERMARK_YPOS}"
+  sudo -u www-data wp ngg settings edit wmType "${WP_NGG_WATERMARK_TYPE}"
+  sudo -u www-data wp ngg settings edit wmSize "${WP_NGG_WATERMARK_SIZE}"
+  sudo -u www-data wp ngg settings edit wmText "${WP_NGG_WATERMARK_TEXT}"
+  sudo -u www-data wp ngg settings edit wmColor "${WP_NGG_WATERMARK_COLOR}"
+  sudo -u www-data wp ngg settings edit wmOpaque "${WP_NGG_WATERMARK_OPAQUE}"
+  # Thumbnails
+  sudo -u www-data wp ngg settings edit thumbwidth "${WP_NGG_THUMB_WIDTH}"
+  sudo -u www-data wp ngg settings edit thumbheight "${WP_NGG_THUMB_HEIGHT}"
+  sudo -u www-data wp ngg settings edit thumbquality "${WP_NGG_THUMB_QUALITY}"
+  # Images
+  sudo -u www-data wp ngg settings edit imgWidth "${WP_NGG_IMG_SIZE_WIDTH}"
+  sudo -u www-data wp ngg settings edit imgHeight "${WP_NGG_IMG_SIZE_HEIGHT}"
+  sudo -u www-data wp ngg settings edit imgQuality "${WP_NGG_IMG_QUALITY}"
+  sudo -u www-data wp ngg settings edit imgBackup "${WP_NGG_IMG_BACKUP_ORIGINAL}"
+  sudo -u www-data wp ngg settings edit imgAutoResize "${WP_NGG_IMG_AUTO_RESIZE}"
+  # Gallery ordering
+  sudo -u www-data wp ngg settings edit galSort "${WP_NGG_GALLERY_SORT_BY}"
+  sudo -u www-data wp ngg settings edit galSortDir "${WP_NGG_GALLERY_SORT_DIRECTION}"
+
 
   echo -e "        * Simple page ordering"
   sudo -u www-data wp plugin install simple-page-ordering
@@ -414,8 +471,17 @@ function wordpressPlugins() {
   echo -e "        * NextGEN Gallery PRO"
   sudo -u www-data wp plugin install /tmp/wp-plugins/nextgen-gallery-pro/nextgen-gallery-pro.zip
   sudo -u www-data wp plugin activate nextgen-gallery-pro
+  # Thumbnails
+  sudo -u www-data wp ngg settings edit thumbEffect "${WP_NGG_THUMB_EFFECT}"
+  # Ecommerce settings
+  sudo -u www-data wp ngg settings edit ecommerce_studio_name "${WP_NGG_STUDIO_NAME}"
+  sudo -u www-data wp ngg settings edit ecommerce_studio_email "${WP_ADMIN_EMAIL}"
+  sudo -u www-data wp ngg settings edit ecommerce_email_notification_recipient "${WP_ADMIN_EMAIL}"
+  sudo -u www-data wp ngg settings edit ecommerce_studio_street_address "${WP_ADMIN_ADDRESS_STREET}"
+  sudo -u www-data wp ngg settings edit ecommerce_studio_city "${WP_ADMIN_ADDRESS_CITY}"
+  sudo -u www-data wp ngg settings edit ecommerce_home_zip "${WP_ADMIN_ADDRESS_POSTCODE}"
+  sudo -u www-data wp ngg settings edit ecommerce_home_country "${WP_ADMIN_ADDRESS_COUNTRY}"
 
-}
 
 ########################################
 # Install themes (public ones)
