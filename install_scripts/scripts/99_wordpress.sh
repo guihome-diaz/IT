@@ -231,6 +231,23 @@ function createWordpressApache2configuration() {
   echo -e "${BLUE}************************************${WHITE}"
 }
 
+
+#######################################
+# To check if WP CLI is installed or not ; install WP CLI if required ; then update
+# Arguments: None
+# Outputs:   None
+#######################################
+function checkAndInstallWpCli() {
+  if ! command -v wp &> /dev/null
+  then
+    echo "WP CLI is not installed"
+    installWpCli
+  fi
+
+  echo "WP CLI update"
+  sudo wp cli update
+}
+
 #######################################
 # To download and setup WP-CLI (wordpress command line utility)
 # see https://wp-cli.org/
@@ -377,6 +394,13 @@ function wordpressPlugins() {
   sudo -u www-data wp plugin activate wp-add-custom-css
 
 
+  ############### Performances
+  echo -e "        * Disable User Gravatar"
+  # Removing a call to 3rd party service makes the website more resistant + it also avoid timeouts and long waiting time (for ex. in China)
+  sudo -u www-data wp plugin install disable-user-gravatar
+  sudo -u www-data wp plugin activate disable-user-gravatar
+
+
   ############# Premium plugins
   #### PDF premium
   echo -e "        * PDF embedder premium"
@@ -387,13 +411,9 @@ function wordpressPlugins() {
   sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-thumbnails-premium/pdf-thumbnails-premium.zip
   sudo -u www-data wp plugin activate PDFThumbnails-premium
 
-
-
-  ############### Performances
-  echo -e "        * Disable User Gravatar"
-  # Removing a call to 3rd party service makes the website more resistant + it also avoid timeouts and long waiting time (for ex. in China)
-  sudo -u www-data wp plugin install disable-user-gravatar
-  sudo -u www-data wp plugin activate disable-user-gravatar
+  echo -e "        * NextGEN Gallery PRO"
+  sudo -u www-data wp plugin install /tmp/wp-plugins/nextgen-gallery-pro/nextgen-gallery-pro.zip
+  sudo -u www-data wp plugin activate nextgen-gallery-pro
 
 }
 
@@ -498,6 +518,7 @@ function doRollback() {
 ###### To test the script, just uncomment the following lines
 source ./check_root_rights.sh
 checkRootRights
+checkAndInstallWpCli
 doRollback
 doWordpressInstallation
 
