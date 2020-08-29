@@ -372,6 +372,8 @@ function wordpressPlugins() {
   echo -e "        * NextGEN Gallery"
   sudo -u www-data wp plugin install nextgen-gallery
   sudo -u www-data wp plugin activate nextgen-gallery
+  # Create gallery folder
+  sudo -u www-data mkdir -p ${WEBSITE_ROOT}/wp-content/gallery
   # Watermark
   sudo -u www-data wp ngg settings edit watermark_automatically_at_upload "${WP_NGG_WATERMARK_AT_UPLOAD}"
   sudo -u www-data wp ngg settings edit wmPos "${WP_NGG_WATERMARK_POS}"
