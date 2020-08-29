@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+#set -e
 export DEBIAN_FRONTEND=dialog
 
 ###############################################################################
@@ -52,7 +52,7 @@ export DEBIAN_FRONTEND=dialog
 # Thanks to WP-CLI team for writing such a convenient and efficient tool (https://wp-cli.org/)
 #
 ###############################################################################
-source ./wordpress_install_configuration.sh
+source ./wordpress_setup.conf
 
 RED="\\033[0;31m"
 RED_BOLD="\\033[1;31m"
@@ -60,16 +60,23 @@ BLUE="\\033[1;34m"
 GREEN="\\033[0;32m"
 WHITE="\\033[0;37m"
 YELLOW="\\033[1;33m"
-# Get current IP @, do not change that line
-CURRENT_IP_ADDRESS=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
 
 # ********************************************* #
 # ***              CONFIGURATION            *** #
 # ********************************************* #
-
-# ********************************************* #
-# ***              /CONFIGURATION            *** #
-# ********************************************* #
+echo -e "Configuration"
+echo -e "  * slug                 : ${WP_INSTALLATION_SLUG}"
+echo -e "  * Website title        : ${WP_TITLE}"
+echo -e "  * Website short desc.  : ${WP_DESCRIPTION}"
+echo -e "  * installation path    : ${WEBSITE_ROOT}"
+echo -e "  * website URL          : ${WEBSITE_URL}"
+echo -e "  * database schema      : ${WP_DB_SCHEMA}"
+echo -e "  * database user        : ${WP_DB_USER}"
+echo -e "  * database pwd         : ${WP_DB_PASSWORD}"
+echo -e "  * wordpress admin user : ${WP_ADMIN_USER}" 
+echo -e "  * wordpress admin pwd  : ${WP_ADMIN_PASSWORD}" 
+echo -e "  * wordpress hide my ass password: ${WP_HIDE_MY_SITE_PASSWORD}"
+echo -e " "
 
 #***************************************************************************#
 #***************************************************************************#
