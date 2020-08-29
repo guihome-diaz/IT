@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#set -e
+set -e
 export DEBIAN_FRONTEND=dialog
 
 ###############################################################################
@@ -64,17 +64,32 @@ YELLOW="\\033[1;33m"
 # ********************************************* #
 # ***              CONFIGURATION            *** #
 # ********************************************* #
-echo -e "Configuration"
+clear
+echo -e " "
+echo -e " "
+echo -e " "
+echo -e " "
+echo -e " "
+echo -e "Wordpress website installation"
+echo -e " "
+echo -e "${BLUE}************************************${WHITE}"
+echo -e "${YELLOW}Configuration${WHITE}"
+echo -e "${BLUE}************************************${WHITE}"
+echo -e " "
 echo -e "  * slug                 : ${WP_INSTALLATION_SLUG}"
 echo -e "  * Website title        : ${WP_TITLE}"
 echo -e "  * Website short desc.  : ${WP_DESCRIPTION}"
+echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo -e "  * installation path    : ${WEBSITE_ROOT}"
 echo -e "  * website URL          : ${WEBSITE_URL}"
+echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo -e "  * database schema      : ${WP_DB_SCHEMA}"
 echo -e "  * database user        : ${WP_DB_USER}"
 echo -e "  * database pwd         : ${WP_DB_PASSWORD}"
+echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo -e "  * wordpress admin user : ${WP_ADMIN_USER}" 
-echo -e "  * wordpress admin pwd  : ${WP_ADMIN_PASSWORD}" 
+echo -e "  * wordpress admin pwd  : ${WP_ADMIN_PASSWORD}"
+echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo -e "  * wordpress hide my ass password: ${WP_HIDE_MY_SITE_PASSWORD}"
 echo -e " "
 
