@@ -46,7 +46,7 @@ function getPhotosFiles() {
   #mapfile -d $'\0' photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
 
   # old bash (OVH server is v4.14 in 2020/09)
-  find . -name "${input}" -print0 >tmpfile
+  find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0 >tmpfile
   while IFS=  read -r -d $'\0'; do
       photos_files+=("$REPLY")
   done <tmpfile
