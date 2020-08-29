@@ -42,6 +42,9 @@ function getGalleries() {
 # Outputs:   array population 'photos_files'
 ########################################
 function getPhotosFiles() {
+  echo -e " "
+  echo -e "List photos..."
+
   # bash v4.4+
   #mapfile -d $'\0' photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
 
@@ -51,6 +54,9 @@ function getPhotosFiles() {
       photos_files+=("$REPLY")
   done <tmpfile
   rm -f tmpfile
+
+  echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
+  echo -e " "
 }
 
 
