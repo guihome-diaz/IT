@@ -229,6 +229,12 @@ function checkAndInstallWpCli() {
 
   echo "WP CLI update"
   sudo wp cli update
+
+  echo -e " "
+  echo -e "${WHITE}************************************"
+  echo -e "${YELLOW}WP-CLI is ready${WHITE}"
+  echo -e "${WHITE}************************************"
+  echo -e " "
 }
 
 #######################################
@@ -459,6 +465,12 @@ function wordpressThemes() {
 # Outputs:   None
 ########################################
 function doWordpressInstallation() {
+  echo -e " "
+  echo -e "${WHITE}************************************"
+  echo -e "${YELLOW}Installation start${WHITE}"
+  echo -e "${WHITE}************************************"
+  echo -e " "
+
   preparePremiumPlugins
   createWordpressDatabase
   downloadWordpress
@@ -467,6 +479,12 @@ function doWordpressInstallation() {
   wordpressConfiguration
   wordpressPlugins
   wordpressThemes
+
+  echo -e " "
+  echo -e "${WHITE}************************************"
+  echo -e "${YELLOW}Installation complete${WHITE}"
+  echo -e "${WHITE}************************************"
+  echo -e " "
 }
 
 #***************************************************************************#
@@ -523,9 +541,21 @@ function rollbackInstallation() {
 # Outputs:   None
 #######################################
 function doRollback() {
+  echo -e " "
+  echo -e "${WHITE}************************************"
+  echo -e "${YELLOW}Rollback start${WHITE}"
+  echo -e "${WHITE}************************************"
+  echo -e " "
+
   rollbackInstallation
   rollbackDatabase
   rollbackApache2Configuration
+
+  echo -e " "
+  echo -e "${WHITE}************************************"
+  echo -e "${YELLOW}Rollback complete${WHITE}"
+  echo -e "${WHITE}************************************"
+  echo -e " "
 }
 
 ###### To test the script, just uncomment the following lines
@@ -534,3 +564,5 @@ checkRootRights
 checkAndInstallWpCli
 doRollback
 doWordpressInstallation
+
+
