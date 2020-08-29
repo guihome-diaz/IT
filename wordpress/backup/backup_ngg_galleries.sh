@@ -10,28 +10,60 @@
 #
 #########################################################
 
-echo -e " "
-echo -e "List of galleries"
-echo -e " "
+##### Global variables (they are populated by the functions)
+declare -a galleries
+declare -a photos_files
+
+# Get current IP @, do not change that line
+WORDPRESS_ROOT=$(pwd)
 
 #####
 # Get galleries names
-####
-echo -e "    1. Get galleries names"
-declare -a galleries
-for gallery_name in wp-content/gallery/*; do
-    if [ -d "${gallery_name}" ]; then
-        # New gallery detected
-        #echo -e " * ${gallery_name}"
-        galleries+=(${gallery_name})
-    fi
-done
+# Arguments: None
+# Outputs:   array population 'galleries'
+########################################
+function getGalleries() {
+  echo -e " "
+  echo -e "List existing galleries..."
+
+  for gallery_name in ${WORDPRESS_ROOT}/wp-content/gallery/*; do
+      if [ -d "${gallery_name}" ]; then
+          galleries+=(${gallery_name})
+      fi
+  done
+
+  echo -e "    ${YELLOW}${#galleries[@]} galleries found${WHITE}"
+  echo -e " "
+}
+
+#####
+# To register photos files to save
+# Arguments: 1. gallery path
+# Outputs:   array population 'photos_files'
+########################################
+function getPhotosFiles() {
+  mapfile -d $'\0' photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
+}
+
 
 # List galleries
-echo -e "    2. Array content"
+getGalleries
+echo -e "    Galleries:"
 for gallery in "${galleries[@]}"; do
         echo -e " * ${gallery}"
 done
+echo -e " "
+echo -e " "
+
+# List files
+getPhotosFiles
+echo -e "    Files:"
+for gallery in "${photos_files[@]}"; do
+        echo -e "   * ${photos_files}"
+done
+echo -e " "
+echo -e " "
+
 
 echo -e " "
 echo -e "Scan complete!"
