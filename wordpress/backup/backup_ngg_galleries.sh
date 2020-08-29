@@ -12,8 +12,6 @@
 
 ##### Global variables (they are populated by the functions)
 declare -a galleries
-photos_files=()
-
 # Get current IP @, do not change that line
 WORDPRESS_ROOT=$(pwd)
 
@@ -50,10 +48,12 @@ function getPhotosFiles() {
 
   # old bash (OVH server is v4.14 in 2020/09)
 #  readarray -t photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup")
+set +m
+shopt -s lastpipe
+photos_files=()
+search_pattern="*.*_backup"
+find . -name "${search_pattern}" -print0 | while IFS=  read -r -d $'\0'; do photos_files+=("$REPLY"); done; declare -p photos_files
 
-  while IFS= read -r -d $'\0' photofile; do
-    photos_files+=("${photofile}")
-  done < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
 
   echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
   echo -e " "
