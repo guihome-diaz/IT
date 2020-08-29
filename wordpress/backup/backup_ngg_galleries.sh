@@ -27,9 +27,9 @@ function getGalleries() {
   echo -e "List existing galleries..."
 
   for gallery_name in ${WORDPRESS_ROOT}/wp-content/gallery/*; do
-      if [ -d "${gallery_name}" ]; then
-          galleries+=(${gallery_name})
-      fi
+    if [ -d "${gallery_name}" ]; then
+      galleries+=(${gallery_name})
+    fi
   done
 
   echo -e "    ${YELLOW}${#galleries[@]} galleries found${WHITE}"
@@ -49,26 +49,19 @@ function getPhotosFiles() {
   #mapfile -d $'\0' photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
 
   # old bash (OVH server is v4.14 in 2020/09)
-  find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0 | while read -d $'\0' photofile
-  do
-      photos_files+=("${photofile}")
-  done <tmpfile
-
-
-#  while IFS=  read -r -d $'\0'; do
-#      photos_files+=("$REPLY")
-#  done < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
+  while IFS= read -r -d '' photofile; do
+    photos_files+=("${photofile}")
+  done < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
 
   echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
   echo -e " "
 }
 
-
 # List galleries
 getGalleries
 echo -e "    Galleries:"
 for gallery in "${galleries[@]}"; do
-        echo -e " * ${gallery}"
+  echo -e " * ${gallery}"
 done
 echo -e " "
 echo -e " "
@@ -77,11 +70,10 @@ echo -e " "
 getPhotosFiles
 echo -e "    Files:"
 for gallery in "${photos_files[@]}"; do
-        echo -e "   * ${photos_files}"
+  echo -e "   * ${photos_files}"
 done
 echo -e " "
 echo -e " "
-
 
 echo -e " "
 echo -e "Scan complete!"
