@@ -193,9 +193,9 @@ function preparePremiumPlugins() {
   # Copy zip files
   echo -e "        * Copy premium plugins"
   mkdir -p /tmp/wp-plugins
-  cp ../wordpress/pdf-embedder-premium.zip /tmp/wp-plugins
-  cp ../wordpress/pdf-thumbnails-premium.zip /tmp/wp-plugins
-  cp ../wordpress/nextgen-gallery-pro.zip /tmp/wp-plugins
+  cp ./plugins/pdf-embedder-premium.zip /tmp/wp-plugins
+  cp ./plugins/pdf-thumbnails-premium.zip /tmp/wp-plugins
+  cp ./plugins/nextgen-gallery-pro.zip /tmp/wp-plugins
   # Unzip
   echo -e "        * Unzip premium plugins"
   echo -e "            ... Like us_year.country ..."
