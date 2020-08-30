@@ -12,6 +12,8 @@
 
 ##### Global variables (they are populated by the functions)
 declare -a galleries
+declare -a photos_files
+
 # Get current IP @, do not change that line
 WORDPRESS_ROOT=$(pwd)
 
@@ -43,7 +45,6 @@ function getPhotosFiles() {
   echo -e " "
   echo -e "List photos..."
 
-  declare -a photos_files
 
   # bash v4.4+
   #mapfile -d $'\0' photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
