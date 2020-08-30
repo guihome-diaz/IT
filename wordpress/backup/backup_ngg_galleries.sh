@@ -70,7 +70,6 @@ echo -e " "
 getPhotosFiles
 echo -e "    Files:"
 for photo_file in "${photos_files[@]}"; do
-  basename "${photo_file}"
   photo_file_filename="$(basename -- ${photo_file})"
   echo -e "   * ${photo_file} | filename: ${photo_file_filename}"
 done
