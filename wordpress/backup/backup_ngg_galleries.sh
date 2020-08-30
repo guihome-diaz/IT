@@ -48,12 +48,12 @@ function getPhotosFiles() {
 
   # old bash (OVH server is v4.14 in 2020/09)
 #  readarray -t photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup")
-set +m
-shopt -s lastpipe
-photos_files=()
-search_pattern="*.*_backup"
-find . -name "${search_pattern}" -print0 | while IFS=  read -r -d $'\0'; do photos_files+=("$REPLY"); done; declare -p photos_files
 
+search_pattern="*.*_backup"
+unset photos_files; declare -a photos_files
+while IFS= read -r -u3 -d $'\0' file; do
+    photos_files+=( "$file" )
+done 3< <(find . -name "${search_pattern}" -type f -print0)
 
   echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
   echo -e " "
