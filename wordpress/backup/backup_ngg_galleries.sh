@@ -71,7 +71,8 @@ getPhotosFiles
 echo -e "    Files:"
 for photo_file in "${photos_files[@]}"; do
   photo_file_filename="$(basename -- ${photo_file})"
-  echo -e "   * ${photo_file} | filename: ${photo_file_filename}"
+  photo_file_galleryname=$(basename $(dirname ${photo_file}))
+  echo -e "   * ${photo_file} | gallery: ${photo_file_galleryname} |filename: ${photo_file_filename}"
 done
 echo -e " "
 echo -e " "
