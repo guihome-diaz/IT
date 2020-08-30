@@ -72,7 +72,8 @@ echo -e "    Files:"
 for photo_file in "${photos_files[@]}"; do
   photo_file_filename="$(basename -- ${photo_file})"
   photo_file_galleryname=$(basename $(dirname ${photo_file}))
-  echo -e "   * ${photo_file} | gallery: ${photo_file_galleryname} |filename: ${photo_file_filename}"
+  #echo -e "   * ${photo_file} | gallery: ${photo_file_galleryname} |filename: ${photo_file_filename}"
+  printf '  * %gallery: %20s | file: %20s | %30s' "${photo_file_galleryname}" "${photo_file_filename}" "${photo_file}"
 done
 echo -e " "
 echo -e " "
