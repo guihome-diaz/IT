@@ -43,18 +43,14 @@ function getPhotosFiles() {
   echo -e " "
   echo -e "List photos..."
 
+  declare -a photos_files
+
   # bash v4.4+
   #mapfile -d $'\0' photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -print0)
 
   # old bash (OVH server is v4.14 in 2020/09)
-#  readarray -t photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup")
-
-unset photos_files;
-unset photos_index;
-declare -a photos_files
-while IFS= read -r -d $'\0' file; do
-    photos_files[photos_index++]="$file"
-done < <(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f -print0)
+  #  readarray -t photos_files < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup")
+  readarray -t photos_files < <(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f)
 
   echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
   echo -e " "
