@@ -48,16 +48,10 @@ function getPhotosFiles() {
 
   # This is for bash v4.3 and earlier
   # The OVH server is still running bash v4.14 (2020-08)
+  # See https://stackoverflow.com/questions/23356779/how-can-i-store-the-find-command-results-as-an-array-in-bash/54561526
   while IFS=  read -r -d $'\0'; do
     photos_files+=("${REPLY}")
   done < <(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f -print0)
-
-  #find_photos=$(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f)
-  #for photo_file in ${find_photos}; do
-  #  photos_files[${photos_index}]="${photo_file}"
-  #  photos_index=$(( photos_index + 1 ))
-  #  echo -e "   * ${photo_file}"
-  #done
 
   echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
   echo -e " "
@@ -76,7 +70,9 @@ echo -e " "
 getPhotosFiles
 echo -e "    Files:"
 for photo_file in "${photos_files[@]}"; do
-  echo -e "   * ${photo_file}"
+  basename "${photo_file}"
+  photo_file_filename="$(basename -- ${photo_file})"
+  echo -e "   * ${photo_file} | filename: ${photo_file_filename}"
 done
 echo -e " "
 echo -e " "
