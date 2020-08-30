@@ -51,6 +51,7 @@ function getPhotosFiles() {
 
 unset photos_files;
 unset photos_index;
+photos_index=0;
 declare -a photos_files
 while IFS= read -r -u3 -d $'\0' file; do
     photos_files[photos_index++]="$file"
