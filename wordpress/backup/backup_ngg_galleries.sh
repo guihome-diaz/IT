@@ -53,7 +53,7 @@ unset photos_files;
 unset photos_index;
 photos_index=0;
 declare -a photos_files
-while IFS= read -r -u3 -d $'\0' file; do
+while IFS= read -r -d '' file; do
     photos_files[photos_index++]="$file"
 done < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -type f -print0)
 
