@@ -51,11 +51,10 @@ function getPhotosFiles() {
 
 unset photos_files;
 unset photos_index;
-photos_index=0;
 declare -a photos_files
-while IFS= read -r -d '' file; do
+while IFS= read -r -d $'\0' file; do
     photos_files[photos_index++]="$file"
-done < <(find ${WORDPRESS_ROOT}/wp-content/gallery/ -name "*.*_backup" -type f -print0)
+done < <(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f -print0)
 
   echo -e "    ${YELLOW}${#photos_files[@]} photos found${WHITE}"
   echo -e " "
