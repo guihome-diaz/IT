@@ -71,8 +71,8 @@ echo -e " "
 # List files
 getPhotosFiles
 echo -e "    Files:"
-for gallery in "${photos_files[@]}"; do
-  echo -e "   * ${photos_files}"
+for photo_file in "${photos_files[@]}"; do
+  echo -e "   * ${photo_file}"
 done
 echo -e " "
 echo -e " "
