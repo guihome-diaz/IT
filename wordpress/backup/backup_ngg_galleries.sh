@@ -48,7 +48,7 @@ function getPhotosFiles() {
 
 
   # bash v4.4+
-  find_photos=(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f)
+  find_photos=$(find "${WORDPRESS_ROOT}/wp-content/gallery/" -name "*.*_backup" -type f)
   for photo_file in ${find_photos}; do
     photos_files[${photos_index}]="${photo_file}"
     photos_index=$(( photos_index + 1 ))
