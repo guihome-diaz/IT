@@ -60,38 +60,42 @@ BLUE="\\033[1;34m"
 GREEN="\\033[0;32m"
 WHITE="\\033[0;37m"
 YELLOW="\\033[1;33m"
+clear
 
 # ********************************************* #
 # ***              CONFIGURATION            *** #
 # ********************************************* #
-clear
-echo -e " "
-echo -e " "
-echo -e " "
-echo -e " "
-echo -e " "
-echo -e "Wordpress website installation"
-echo -e " "
-echo -e "${BLUE}************************************${WHITE}"
-echo -e "${YELLOW}Configuration${WHITE}"
-echo -e "${BLUE}************************************${WHITE}"
-echo -e " "
-echo -e "  * slug                 : ${WP_INSTALLATION_SLUG}"
-echo -e "  * Website title        : ${WP_TITLE}"
-echo -e "  * Website short desc.  : ${WP_DESCRIPTION}"
-echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo -e "  * installation path    : ${WEBSITE_ROOT}"
-echo -e "  * website URL          : ${WEBSITE_URL}"
-echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo -e "  * database schema      : ${WP_DB_SCHEMA}"
-echo -e "  * database user        : ${WP_DB_USER}"
-echo -e "  * database pwd         : ${WP_DB_PASSWORD}"
-echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo -e "  * wordpress admin user : ${WP_ADMIN_USER}" 
-echo -e "  * wordpress admin pwd  : ${WP_ADMIN_PASSWORD}"
-echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo -e "  * wordpress hide my ass password: ${WP_HIDE_MY_SITE_PASSWORD}"
-echo -e " "
+function listConfiguration() {
+  echo -e " "
+  echo -e " "
+  echo -e " "
+  echo -e " "
+  echo -e " "
+  echo -e "Wordpress website installation"
+  echo -e " "
+  echo -e "${BLUE}************************************${WHITE}"
+  echo -e "${YELLOW}Configuration${WHITE}"
+  echo -e "${BLUE}************************************${WHITE}"
+  echo -e " "
+  echo -e "  * slug                 : ${WP_INSTALLATION_SLUG}"
+  echo -e "  * Website title        : ${WP_TITLE}"
+  echo -e "  * Website short desc.  : ${WP_DESCRIPTION}"
+  echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  echo -e "  * installation path    : ${WEBSITE_ROOT}"
+  echo -e "  * website URL          : ${WEBSITE_URL}"
+  echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  echo -e "  * database schema      : ${WP_DB_SCHEMA}"
+  echo -e "  * database user        : ${WP_DB_USER}"
+  echo -e "  * database pwd         : ${WP_DB_PASSWORD}"
+  echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  echo -e "  * wordpress admin user : ${WP_ADMIN_USER}"
+  echo -e "  * wordpress admin pwd  : ${WP_ADMIN_PASSWORD}"
+  echo -e "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  echo -e "  * wordpress hide my ass password: ${WP_HIDE_MY_SITE_PASSWORD}"
+  echo -e " "
+  echo -e " "
+}
+
 
 #***************************************************************************#
 #***************************************************************************#
@@ -137,10 +141,13 @@ function createWordpressDatabase() {
 
 #######################################
 # To download latest version of Wordpress
-# Arguments: None
+# Arguments:
+#   $1 = premium password
 # Outputs:   /tmp/wp-plugins/  << folder with premium files
 #######################################
 function preparePremiumPlugins() {
+  ppassword=$1
+
   rm -rf /tmp/wp-plugins
   # Copy zip files
   echo -e "        * Copy premium plugins"
@@ -152,9 +159,9 @@ function preparePremiumPlugins() {
   echo -e "        * Unzip premium plugins"
   echo -e "            ... Like us_year.country ..."
   cd /tmp/wp-plugins
-  unzip pdf-embedder-premium.zip
-  unzip pdf-thumbnails-premium.zip
-  unzip nextgen-gallery-pro.zip
+  unzip -P "${ppassword}" pdf-embedder-premium.zip
+  unzip -P "${ppassword}" pdf-thumbnails-premium.zip
+  unzip -P "${ppassword}" nextgen-gallery-pro.zip
 }
 
 #######################################
@@ -463,7 +470,8 @@ function wordpressThemes() {
 ########################################
 # Installation workflow
 # >>>> METHOD TO EXECUTE <<<<
-# Arguments: None
+# Arguments:
+#   $1 = premium password
 # Outputs:   None
 ########################################
 function doWordpressInstallation() {
@@ -473,7 +481,9 @@ function doWordpressInstallation() {
   echo -e "${WHITE}************************************"
   echo -e " "
 
-  preparePremiumPlugins
+  ppassword="$1"
+
+  preparePremiumPlugins "${ppassword}"
   createWordpressDatabase
   downloadWordpress
   createWordpressApache2configuration
@@ -563,9 +573,27 @@ function doRollback() {
 
 ###### To test the script, just uncomment the following lines
 source ./check_root_rights.sh
+
+# display configuration
+listConfiguration
+
+##################################
+# Retrieve user input
+##################################
+premiumPassword=""
+while getopts "ph" option; do
+  case "${option}" in
+    p)
+      premiumPassword=${OPTARG}
+      ;;
+    \?|h|*)
+      echo "usage wordpress_setup.sh -p premiumPluginPasswordClearText"
+      exit 1
+      ;;
+  esac
+done
+
 checkRootRights
 checkAndInstallWpCli
 doRollback
-doWordpressInstallation
-
-
+doWordpressInstallation "${premiumPassword}"
