@@ -497,18 +497,19 @@ function doWordpressInstallation() {
 
 #######################################
 # To delete wordpress user and database
+# (i) this will not fail in case of error(s)
 # Arguments: None
 # Outputs:   None
 #######################################
 function rollbackDatabase() {
   echo -e "Remove wordpress user and database"
   # Revoke rights
-  mysql -u root -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${WP_DB_USER}'@'localhost'"
-  mysql -u root -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${WP_DB_USER}'@'%'"
+  mysql -u root -f -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${WP_DB_USER}'@'localhost'"
+  mysql -u root -f -e "REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${WP_DB_USER}'@'%'"
   # Remove user
-  mysql -u root -e "DROP USER IF EXISTS '${WP_DB_USER}'"
+  mysql -u root -f -e "DROP USER IF EXISTS '${WP_DB_USER}'"
   # Remove database
-  mysql -u root -e "DROP database ${WP_DB_SCHEMA}"
+  mysql -u root -f -e "DROP database ${WP_DB_SCHEMA}"
   # Apply changes
   mysql -u root -e "FLUSH PRIVILEGES"
 }
