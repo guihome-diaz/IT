@@ -580,13 +580,24 @@ listConfiguration
 ##################################
 # Retrieve user input
 ##################################
-premiumPassword=""
-while getopts "ph" option; do
+if [ $# -eq 0 ]; then
+    echo -e "${RED}**************************${WHITE}"
+    echo -e "${RED}*          ERROR         *${WHITE}"
+    echo -e "${RED}**************************${WHITE}"
+    echo -e "You did not pass any command arguments. You must give a password"
+    echo -e " "
+    echo -e "usage: ${YELLOW}./wordpress_setup.sh ${BLUE}-p${WHITE} premiumPluginPasswordClearText"
+    echo -e " "
+    exit 1
+fi
+
+while getopts p:h: option
+do
   case "${option}" in
     p)
       premiumPassword=${OPTARG}
       ;;
-    \?|h|*)
+    *)
       echo "usage wordpress_setup.sh -p premiumPluginPasswordClearText"
       exit 1
       ;;
