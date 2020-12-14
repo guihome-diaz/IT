@@ -315,6 +315,12 @@ function wordpressConfiguration() {
 # Outputs:   None
 ########################################
 function wordpressPlugins() {
+  if [[ $# -eq 0 ]] ; then
+    use_premium_plugins=false
+  else
+    use_premium_plugins="$1"
+  fi
+
   echo -e "Remove default plugin 'Hello Dolly'"
   sudo -u www-data wp plugin delete hello
 
@@ -425,29 +431,33 @@ function wordpressPlugins() {
   sudo -u www-data wp plugin install disable-user-gravatar
   sudo -u www-data wp plugin activate disable-user-gravatar
 
-  ############# Premium plugins
-  #### PDF premium
-  echo -e "        * PDF embedder premium"
-  sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-embedder-premium/pdf-embedder-premium.zip
-  sudo -u www-data wp plugin activate PDFEmbedder-premium
 
-  echo -e "        * PDF thumbnails premium"
-  sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-thumbnails-premium/pdf-thumbnails-premium.zip
-  sudo -u www-data wp plugin activate PDFThumbnails-premium
+  if [ "${use_premium_plugins}" = true ] ; then
+    ############# Premium plugins
+    #### PDF premium
+    echo -e "        * PDF embedder premium"
+    sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-embedder-premium/pdf-embedder-premium.zip
+    sudo -u www-data wp plugin activate PDFEmbedder-premium
 
-  echo -e "        * NextGEN Gallery PRO"
-  sudo -u www-data wp plugin install /tmp/wp-plugins/nextgen-gallery-pro/nextgen-gallery-pro.zip
-  sudo -u www-data wp plugin activate nextgen-gallery-pro
-  # Thumbnails
-  sudo -u www-data wp ngg settings edit thumbEffect "${WP_NGG_THUMB_EFFECT}"
-  # Ecommerce settings
-  sudo -u www-data wp ngg settings edit ecommerce_studio_name "${WP_NGG_STUDIO_NAME}"
-  sudo -u www-data wp ngg settings edit ecommerce_studio_email "${WP_ADMIN_EMAIL}"
-  sudo -u www-data wp ngg settings edit ecommerce_email_notification_recipient "${WP_ADMIN_EMAIL}"
-  sudo -u www-data wp ngg settings edit ecommerce_studio_street_address "${WP_ADMIN_ADDRESS_STREET}"
-  sudo -u www-data wp ngg settings edit ecommerce_studio_city "${WP_ADMIN_ADDRESS_CITY}"
-  sudo -u www-data wp ngg settings edit ecommerce_home_zip "${WP_ADMIN_ADDRESS_POSTCODE}"
-  sudo -u www-data wp ngg settings edit ecommerce_home_country "${WP_ADMIN_ADDRESS_COUNTRY}"
+    echo -e "        * PDF thumbnails premium"
+    sudo -u www-data wp plugin install /tmp/wp-plugins/pdf-thumbnails-premium/pdf-thumbnails-premium.zip
+    sudo -u www-data wp plugin activate PDFThumbnails-premium
+
+    echo -e "        * NextGEN Gallery PRO"
+    sudo -u www-data wp plugin install /tmp/wp-plugins/nextgen-gallery-pro/nextgen-gallery-pro.zip
+    sudo -u www-data wp plugin activate nextgen-gallery-pro
+    # Thumbnails
+    sudo -u www-data wp ngg settings edit thumbEffect "${WP_NGG_THUMB_EFFECT}"
+    # Ecommerce settings
+    sudo -u www-data wp ngg settings edit ecommerce_studio_name "${WP_NGG_STUDIO_NAME}"
+    sudo -u www-data wp ngg settings edit ecommerce_studio_email "${WP_ADMIN_EMAIL}"
+    sudo -u www-data wp ngg settings edit ecommerce_email_notification_recipient "${WP_ADMIN_EMAIL}"
+    sudo -u www-data wp ngg settings edit ecommerce_studio_street_address "${WP_ADMIN_ADDRESS_STREET}"
+    sudo -u www-data wp ngg settings edit ecommerce_studio_city "${WP_ADMIN_ADDRESS_CITY}"
+    sudo -u www-data wp ngg settings edit ecommerce_home_zip "${WP_ADMIN_ADDRESS_POSTCODE}"
+    sudo -u www-data wp ngg settings edit ecommerce_home_country "${WP_ADMIN_ADDRESS_COUNTRY}"
+  fi
+
 }
 
 ########################################
@@ -456,15 +466,24 @@ function wordpressPlugins() {
 # Outputs:   None
 ########################################
 function wordpressThemes() {
+  if [[ $# -eq 0 ]] ; then
+    use_premium_plugins=false
+  else
+    use_premium_plugins="$1"
+  fi
+
   echo -e "Managing Wordpress themes"
 
   echo -e "   * remove old themes"
   rm -rf ${WEBSITE_ROOT}/wp-content/twentyseventeen/
   rm -rf ${WEBSITE_ROOT}/wp-content/twentyeighteen/
   rm -rf ${WEBSITE_ROOT}/wp-content/twentynineteen/
-  #rm -rf ${WEBSITE_ROOT}/wp-content/twentytwenty/
+  rm -rf ${WEBSITE_ROOT}/wp-content/twentytwenty/
 
-  echo -e "   * add new theme"
+
+  if [ "${use_premium_plugins}" = true ] ; then
+    echo -e "   * add new theme"
+  fi
 }
 
 ########################################
@@ -481,16 +500,22 @@ function doWordpressInstallation() {
   echo -e "${WHITE}************************************"
   echo -e " "
 
-  ppassword="$1"
+  if [[ $# -eq 0 ]] ; then
+    use_premium_plugins=false
+    echo 'No arguments passed: no premium plugins to install'
+  else
+    use_premium_plugins=true
+    ppassword="$1"
+    preparePremiumPlugins "${ppassword}"
+  fi
 
-  preparePremiumPlugins "${ppassword}"
   createWordpressDatabase
   downloadWordpress
   createWordpressApache2configuration
   startWordpress
   wordpressConfiguration
-  wordpressPlugins
-  wordpressThemes
+  wordpressPlugins "${use_premium_plugins}"
+  wordpressThemes "${use_premium_plugins}"
 
   echo -e " "
   echo -e "${WHITE}************************************"
@@ -582,11 +607,13 @@ listConfiguration
 ##################################
 if [ $# -eq 0 ]; then
     echo -e "${RED}**************************${WHITE}"
-    echo -e "${RED}*          ERROR         *${WHITE}"
+    echo -e "${RED}*          WARNING       *${WHITE}"
     echo -e "${RED}**************************${WHITE}"
-    echo -e "You did not pass any command arguments. You must give a password"
+    echo -e "You did not pass any command arguments. Without a password you cannot install premium plugins"
     echo -e " "
     echo -e "usage: ${YELLOW}./wordpress_setup.sh ${BLUE}-p${WHITE} premiumPluginPasswordClearText"
+    echo -e " "
+    echo -e "${RED}**************************${WHITE}"
     echo -e " "
     exit 1
 fi
