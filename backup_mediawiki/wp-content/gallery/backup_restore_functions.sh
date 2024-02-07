@@ -273,10 +273,10 @@ function resizeImage() {
   # This only occurs if original image side is bigger than resize_size (comparison in px)
   # remove base file and replace it with a resized one.
   if [ ${should_resize} -eq 0 ]; then
-    echo -e "[DEBUG]     .. resize image [${resize_description}: ${resize_size} px]"
+    echo -e "[DEBUG]     .. resize image [${resize_description}: ${resize_size} px] and apply watermark"
     rm "${1}"
     ### Resize without watermark
-    /usr/bin/convert "${img_path}/backup/${img_filename}" -resize "${resize_param}" "${1}"
+    #/usr/bin/convert "${img_path}/backup/${img_filename}" -resize "${resize_param}" "${1}"
 
     echo -e "[DEBUG]     .. apply watermark"
     ### Apply watermark (see https://www.imagemagick.org/Usage/annotating/#wmark_text)
@@ -284,8 +284,10 @@ function resizeImage() {
     # -fill white -undercolor '#00000080' -gravity South -annotate +0+0 'Qin Diaz ©'
     # where 'gravity' indicates where to put the watermark (NorthWest, NorthEast, SouthWest, SouthEast)
     #
-    #convert "${1}" -background transparent -fill grey -font Calibri -size 140x80 -pointsize 14 -gravity southeast -annotate +0+0 'copyright text' output.jpg
-    convert "${1}" -fill white -undercolor '#00000080' -pointsize 14 -gravity South -annotate +0+0 'QIN-DIAZ.COM ©' "${img_path}/watermark/${img_filename}"
+    #convert "${1}" -fill white -undercolor '#00000080' -pointsize 14 -gravity South -annotate +0+0 'QIN-DIAZ.COM ©' "${img_path}/watermark/${img_filename}"
+    convert "${img_path}/backup/${img_filename}" -resize "${resize_param}" \
+          -fill white -undercolor '#00000080' -pointsize 14 -gravity South -annotate +0+0 'QIN-DIAZ.COM ©' \
+          "${1}"
   fi
 
 	# --- 3. Create thumb ---
