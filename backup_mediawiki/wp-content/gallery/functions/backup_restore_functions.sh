@@ -27,6 +27,10 @@ function removeFolders() {
 		  echo -e "   .. remove cache folder: ${folder}"
       rm -rf "${folder}"
     done;
+    for folder in $(find ${search_path} -type d -iname *watermark*); do
+		  echo -e "   .. remove watermark folder: ${folder}"
+      rm -rf "${folder}"
+    done;
 }
 
 # To check if the given image file should be processed or not.
