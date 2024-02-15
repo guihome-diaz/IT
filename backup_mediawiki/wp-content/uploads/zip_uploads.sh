@@ -1,20 +1,19 @@
-
 #!/bin/bash
 
 ############################
-# Simple script to zip all galleries by month
+# Simple script to zip all uploads by month
 # @author Guillaume Diaz
 # @version 1.0 2024/02
 #########################
 
 function usage() {
   echo -e " "
-  echo -e "Script to compress all uploads by month"
+  echo -e "Script to compress all guploads  by month"
   echo -e " "
   echo -e "Objectives"
   echo -e "-------------------------------"
   echo -e "This script will:"
-  echo -e "   Zip all files from uploads_folder/01 to images_folder/12.zip"
+  echo -e "   Zip all uploads from uploads_folder/01 to images_folder/12.zip"
   echo -e " "
   echo -e "Usage"
   echo -e "--------------------------------"
@@ -42,10 +41,11 @@ startMonth=${3}
 for monthIndex in $(seq ${startMonth} 12);
 do
   if [[ ${monthIndex} -lt 10 ]]; then
-    echo -e "ZIP ${uploadsFolder}/0${monthIndex}*    to    ${uploadsFolder}/${year}_0${monthIndex}.zip"
-    zip -r "${uploadsFolder}/0${monthIndex}.zip" ${uploadsFolder}/${year}_0${monthIndex}*
+    echo -e "ZIP ${uploadsFolder}/${year}-0${monthIndex}*    to    ${uploadsFolder}/0${monthIndex}.zip"
+    zip -r "${uploadsFolder}/${year}-0${monthIndex}.zip" ${uploadsFolder}/0${monthIndex}*
   else
-    echo -e "ZIP ${uploadsFolder}/${monthIndex}*    to    ${uploadsFolder}/${year}_${monthIndex}.zip"
-    zip -r "${uploadsFolder}/${monthIndex}.zip" ${uploadsFolder}/${year}_${monthIndex}*
+    echo -e "ZIP ${uploadsFolder}/${year}-${monthIndex}*    to    ${uploadsFolder}/${monthIndex}.zip"
+    zip -r "${uploadsFolder}/${year}-${monthIndex}.zip" ${uploadsFolder}/${monthIndex}*
   fi
 done
+
