@@ -139,7 +139,7 @@ function restoreAllImages() {
 
   total_images=0
   restored_images=0
-  for file in $(find ${image_folder} -type f -iname *.jpg); do
+  for file in $(find ${image_folder} -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) ); do
     # Skip backups or thumbs folders
     if ! isImageFileToProcess ${file}; then
       echo -e "[DEBUG]     .. ${file}     | skipped | ignore backup, thumbs or cache file"
@@ -178,7 +178,7 @@ function resizeAllImages() {
 
   total_images=0
   resized_images=0
-  for file in $(find ${image_folder} -type f -iname *.jpg); do
+  for file in $(find ${image_folder} -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) ); do
     # Skip backups or thumbs folders
     if ! isImageFileToProcess ${file}; then
       echo -e "[DEBUG]     .. ${file}     | skipped | ignore backup, thumbs or cache file"
